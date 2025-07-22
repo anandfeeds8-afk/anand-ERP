@@ -37,18 +37,17 @@ if (cluster.isPrimary) {
 
   // Restart a worker if it crashes or exits
   let restartCount = 0;
-const MAX_RESTARTS = 5;
+  const MAX_RESTARTS = 5;
 
-cluster.on('exit', (worker, code, signal) => {
-  if (restartCount < MAX_RESTARTS) {
-    console.log(`Restarting worker ${worker.process.pid}...`);
-    cluster.fork();
-    restartCount++;
-  } else {
-    console.log(`Max restart limit reached. Not forking anymore.`);
-  }
-});
-
+  cluster.on('exit', (worker, code, signal) => {
+    if (restartCount < MAX_RESTARTS) {
+      console.log(`Restarting worker ${worker.process.pid}...`);
+      cluster.fork();
+      restartCount++;
+    } else {
+      console.log(`Max restart limit reached. Not forking anymore.`);
+    }
+  });
 
 } else {
   // Worker process logic starts here
