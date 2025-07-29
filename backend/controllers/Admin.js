@@ -267,7 +267,50 @@ const getSalesman = async (req, res) => {
   }
 }
 
-const updateSalesman = async (req, res) => {}
+const updateSalesman = async (req, res) => {
+  const { id } = req.params;
+  const { name, email, password, phone } = req.body;
+  if (!id) {
+    return res.status(422).json({
+      success: false,
+      message: "Salesman ID is required",
+    });
+  }
+  try{
+    const salesman = await salesmanModel.findById(id);
+    if (!salesman) {
+      return res.status(404).json({
+        success: false,
+        message: "Salesman not found",
+      });
+    }
+    if (name) {
+      salesman.name = name;
+    }
+    if (email) {
+      salesman.email = email;
+    }
+    if (password) {
+      const hashedPassword = await bcrypt.hash(password, saltRounds); // Hash here
+      salesman.password = hashedPassword; // Save hashed password
+    }
+    if (phone) {
+      salesman.phone = phone;
+    }
+    await salesman.save();
+    res.status(200).json({
+      success: true,
+      message: "Salesman updated successfully",
+      data: salesman,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Something went wrong. Please contact the development team.",
+      error: error.message,
+    });
+  }
+}
 
 
 const deleteSalesman = async (req, res) => {
@@ -405,7 +448,46 @@ const getSalesManager = async (req, res) => {
   }
 }
 
-const updateSalesManager = async (req, res) => {};
+const updateSalesManager = async (req, res) => {
+  const { id } = req.params;
+  const { name, email, password, phone } = req.body;
+
+  if (!id) {
+    return res.status(422).json({
+      success: false,
+      message: "Sales Manager ID is required",
+    });
+  }
+
+  try {
+    const salesManager = await salesManagerModel.findById(id);
+    if (!salesManager) {
+      return res.status(404).json({
+        success: false,
+        message: "Sales Manager not found",
+      });
+    }
+
+    if (name) salesManager.name = name;
+    if (email) salesManager.email = email;
+    if (password) salesManager.password = await bcrypt.hash(password, saltRounds);
+    if (phone) salesManager.phone = phone;
+
+    await salesManager.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Sales Manager updated successfully",
+      data: salesManager,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Something went wrong. Please contact the development team.",
+      error: error.message,
+    });
+  }
+};
 
 const deleteSalesManager = async (req, res) => {
   const { id } = req.params;
@@ -979,7 +1061,32 @@ const getPlantHead = async (req, res) => {
   res.status(200).json({ success: true, data: head });
 };
 
-const updatePlantHead = async (req, res) => {};
+const updatePlantHead = async (req, res) => {
+  const { id } = req.params;
+  const { name, email, password, phone } = req.body;
+
+  if (!id) {
+    return res.status(422).json({ success: false, message: "Plant Head ID is required" });
+  }
+
+  try {
+    const head = await plantHeadModel.findById(id);
+    if (!head) {
+      return res.status(404).json({ success: false, message: "Plant Head not found" });
+    }
+
+    if (name) head.name = name;
+    if (email) head.email = email;
+    if (password) head.password = await bcrypt.hash(password, saltRounds);
+    if (phone) head.phone = phone;
+
+    await head.save();
+    res.status(200).json({ success: true, message: "Plant Head updated successfully", data: head });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Error updating Plant Head", error: error.message });
+  }
+
+};
 const deletePlantHead = async (req, res) => {
   const { id } = req.params;
   const deleted = await plantHeadModel.findByIdAndDelete(id);
@@ -1032,7 +1139,31 @@ const getAccountant = async (req, res) => {
   res.status(200).json({ success: true, data: acc });
 };
 
-const updateAccountant = async (req, res) => {};
+const updateAccountant = async (req, res) => {
+  const { id } = req.params;
+  const { name, email, password, phone } = req.body;
+
+  if (!id) {
+    return res.status(422).json({ success: false, message: "Accountant ID is required" });
+  }
+
+  try {
+    const accountant = await accountantModel.findById(id);
+    if (!accountant) {
+      return res.status(404).json({ success: false, message: "Accountant not found" });
+    }
+
+    if (name) accountant.name = name;
+    if (email) accountant.email = email;
+    if (password) accountant.password = await bcrypt.hash(password, saltRounds);
+    if (phone) accountant.phone = phone;
+
+    await accountant.save();
+    res.status(200).json({ success: true, message: "Accountant updated successfully", data: accountant });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Error updating accountant", error: error.message });
+  }
+};
 const deleteAccountant = async (req, res) => {
   const { id } = req.params;
   const deleted = await accountantModel.findByIdAndDelete(id);
