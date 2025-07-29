@@ -267,53 +267,8 @@ const getSalesman = async (req, res) => {
   }
 }
 
-const updateSalesman = async (req, res) => {
-  const { id } = req.params;
-  const { name, email, password, phone } = req.body;
+const updateSalesman = async (req, res) => {}
 
-  if (!id || !name || !email || !password || !phone) {
-    return res.status(422).json({
-      success: false,
-      message: "All fields are required",
-    });
-  }
-
-  if (!isCorrectEmail(email)) {
-    return res.status(422).json({
-      success: false,
-      message: "Incorrect email format!",
-    });
-  }
-
-  try {
-    const hashedPassword = await bcrypt.hash(password, saltRounds);
-
-    const updatedSalesman = await salesmanModel.findByIdAndUpdate(
-      id,
-      { name, email, password: hashedPassword, phone },
-      { new: true }
-    ).select("-password");
-
-    if (!updatedSalesman) {
-      return res.status(404).json({
-        success: false,
-        message: "Salesman not found",
-      });
-    }
-
-    res.status(200).json({
-      success: true,
-      message: "Salesman updated successfully",
-      data: updatedSalesman,
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: "Something went wrong. Please contact the development team.",
-      error: error.message,
-    });
-  }
-};
 
 const deleteSalesman = async (req, res) => {
   const { id } = req.params;
@@ -450,61 +405,7 @@ const getSalesManager = async (req, res) => {
   }
 }
 
-const updateSalesManager = async (req, res) => {
-  const { id } = req.params;
-  const { name, email, password, phone } = req.body;
-
-  if (!id) {
-    return res.status(422).json({
-      success: false,
-      message: "Sales Manager ID is required",
-    });
-  }
-
-  if (!name || !email || !password || !phone) {
-    return res.status(422).json({
-      success: false,
-      message: "Missing input fields",
-    });
-  }
-
-  if (!isCorrectEmail(email)) {
-    return res.status(422).json({
-      success: false,
-      message: "Incorrect email format!",
-    });
-  }
-
-  try {
-    // Hash the password before updating
-    const hashedPassword = await bcrypt.hash(password, saltRounds);
-
-    const updatedSalesManager = await salesManagerModel.findByIdAndUpdate(
-      id,
-      { name, email, password: hashedPassword, phone },
-      { new: true }
-    ).select("-password"); // hide password in response
-
-    if (!updatedSalesManager) {
-      return res.status(404).json({
-        success: false,
-        message: "Sales Manager not found",
-      });
-    }
-
-    res.status(200).json({
-      success: true,
-      message: "Sales Manager updated successfully",
-      data: updatedSalesManager,
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: "Something went wrong. Please contact the development team.",
-      error: error.message,
-    });
-  }
-};
+const updateSalesManager = async (req, res) => {};
 
 const deleteSalesManager = async (req, res) => {
   const { id } = req.params;
@@ -645,40 +546,33 @@ const updateSalesAuthorizer = async (req, res) => {
   const { id } = req.params;
   const { name, email, password, phone } = req.body;
 
-  if (!id || !name || !email || !password || !phone) {
+  if (!id) {
     return res.status(422).json({
       success: false,
-      message: "All fields are required",
-    });
-  }
-
-  if (!isCorrectEmail(email)) {
-    return res.status(422).json({
-      success: false,
-      message: "Incorrect email format!",
+      message: "Sales Authorizer ID is required",
     });
   }
 
   try {
-    const hashedPassword = await bcrypt.hash(password, saltRounds);
-
-    const updatedSalesAuthorizer = await salesAuthorizerModel.findByIdAndUpdate(
-      id,
-      { name, email, password: hashedPassword, phone },
-      { new: true }
-    ).select("-password");
-
-    if (!updatedSalesAuthorizer) {
+    const salesAuthorizer = await salesAuthorizerModel.findById(id);
+    if (!salesAuthorizer) {
       return res.status(404).json({
         success: false,
         message: "Sales Authorizer not found",
       });
     }
 
+    if (name) salesAuthorizer.name = name;
+    if (email) salesAuthorizer.email = email;
+    if (password) salesAuthorizer.password = password;
+    if (phone) salesAuthorizer.phone = phone;
+
+    await salesAuthorizer.save();
+
     res.status(200).json({
       success: true,
       message: "Sales Authorizer updated successfully",
-      data: updatedSalesAuthorizer,
+      data: salesAuthorizer,
     });
   } catch (error) {
     res.status(500).json({
@@ -687,7 +581,7 @@ const updateSalesAuthorizer = async (req, res) => {
       error: error.message,
     });
   }
-};
+}
 
 const deleteSalesAuthorizer = async (req, res) => {
   const { id } = req.params;
@@ -1085,25 +979,7 @@ const getPlantHead = async (req, res) => {
   res.status(200).json({ success: true, data: head });
 };
 
-const updatePlantHead = async (req, res) => {
-  const { id } = req.params;
-  const { name, email, password, phone } = req.body;
-
-  if (!name || !email || !password || !phone) {
-    return res.status(422).json({ success: false, message: "All fields required" });
-  }
-
-  const hashedPassword = await bcrypt.hash(password, saltRounds);
-  const updated = await plantHeadModel.findByIdAndUpdate(
-    id,
-    { name, email, password: hashedPassword, phone },
-    { new: true }
-  ).select("-password");
-
-  if (!updated) return res.status(404).json({ success: false, message: "Plant Head not found" });
-  res.status(200).json({ success: true, message: "Updated successfully", data: updated });
-};
-
+const updatePlantHead = async (req, res) => {};
 const deletePlantHead = async (req, res) => {
   const { id } = req.params;
   const deleted = await plantHeadModel.findByIdAndDelete(id);
@@ -1156,25 +1032,7 @@ const getAccountant = async (req, res) => {
   res.status(200).json({ success: true, data: acc });
 };
 
-const updateAccountant = async (req, res) => {
-  const { id } = req.params;
-  const { name, email, password, phone } = req.body;
-
-  if (!name || !email || !password || !phone) {
-    return res.status(422).json({ success: false, message: "All fields required" });
-  }
-
-  const hashedPassword = await bcrypt.hash(password, saltRounds);
-  const updated = await accountantModel.findByIdAndUpdate(
-    id,
-    { name, email, password: hashedPassword, phone },
-    { new: true }
-  ).select("-password");
-
-  if (!updated) return res.status(404).json({ success: false, message: "Accountant not found" });
-  res.status(200).json({ success: true, data: updated });
-};
-
+const updateAccountant = async (req, res) => {};
 const deleteAccountant = async (req, res) => {
   const { id } = req.params;
   const deleted = await accountantModel.findByIdAndDelete(id);
