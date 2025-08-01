@@ -1,29 +1,42 @@
 const mongoose = require('mongoose');
 
+const stockSchema = new mongoose.Schema({
+  product: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Product',
+    required: true
+  },
+  quantity: {
+    type: Number,
+    default: 0,
+    min: 0
+  },
+  price: {
+    type: Number,
+    default: 0,
+    min: 0
+  }
+}, { _id: false }); // optional: prevent _id for subdocuments
+
 const warehouseSchema = new mongoose.Schema({
-  name: String,
+  name: { type: String, required: true },
   location: String,
   approved: { type: Boolean, default: false },
 
   plantHead: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'PlantHead',
-    unique: true
+    unique: true,
+    required: true
   },
   accountant: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Accountant',
-    unique: true
+    unique: true,
+    required: true
   },
 
-  stock: [
-    {
-      product: { type: mongoose.Schema.Types.ObjectId, ref: 'Product' },
-      quantity: { type: Number, default: 0 },
-      price: { type: Number, default: 0 },
-      lastUpdated: { type: Date, default: Date.now }
-    }
-  ]
+  stock: [stockSchema]
 }, { timestamps: true });
 
 module.exports = mongoose.model('Warehouse', warehouseSchema);
