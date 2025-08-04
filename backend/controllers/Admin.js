@@ -4,7 +4,6 @@ const salesManagerModel = require("../models/SalesManager");
 const salesAuthorizerModel = require("../models/SalesAuthorizer");
 const accountantModel = require('../models/Accountant');
 const plantHeadModel = require('../models/PlantHead');
-const partyModel = require("../models/Party");
 const Product = require("../models/Product");
 const orderModel = require("../models/Order");
 const bcrypt = require("bcrypt");
@@ -861,7 +860,7 @@ const addWarehouse = async (req, res) => {
     }
 
     // Check if plantHead exists
-    const existingPlantHead = await PlantHead.findById(plantHead);
+    const existingPlantHead = await plantHeadModel.findById(plantHead);
     if (!existingPlantHead) {
       return res.status(404).json({
         success: false,
@@ -870,7 +869,7 @@ const addWarehouse = async (req, res) => {
     }
 
     // Check if accountant exists
-    const existingAccountant = await Accountant.findById(accountant);
+    const existingAccountant = await accountantModel.findById(accountant);
     if (!existingAccountant) {
       return res.status(404).json({
         success: false,
@@ -935,7 +934,7 @@ const updateWarehouse = async (req, res) => {
 
     // 2. If plantHead is being updated
     if (plantHead && plantHead !== warehouse.plantHead.toString()) {
-      const existingPlantHead = await PlantHead.findById(plantHead);
+      const existingPlantHead = await plantHeadModel.findById(plantHead);
       if (!existingPlantHead) {
         return res.status(404).json({ success: false, message: "Invalid Plant Head ID" });
       }
@@ -953,7 +952,7 @@ const updateWarehouse = async (req, res) => {
 
     // 3. If accountant is being updated
     if (accountant && accountant !== warehouse.accountant.toString()) {
-      const existingAccountant = await Accountant.findById(accountant);
+      const existingAccountant = await accountantModel.findById(accountant);
       if (!existingAccountant) {
         return res.status(404).json({ success: false, message: "Invalid Accountant ID" });
       }
@@ -1036,7 +1035,7 @@ const getWarehouse = async (req, res) => {
     }
 
     // 2. Get all assigned orders (where this warehouse is assigned)
-    const assignedOrders = await Order.find({ assignedWarehouse: id })
+    const assignedOrders = await orderModel.find({ assignedWarehouse: id })
       .populate('placedBy', 'name email')
       .populate('party', 'companyName')
       .sort({ createdAt: -1 });

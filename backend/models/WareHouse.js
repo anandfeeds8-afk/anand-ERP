@@ -10,11 +10,6 @@ const stockSchema = new mongoose.Schema({
     type: Number,
     default: 0,
     min: 0
-  },
-  price: {
-    type: Number,
-    default: 0,
-    min: 0
   }
 }, { _id: false }); // optional: prevent _id for subdocuments
 
