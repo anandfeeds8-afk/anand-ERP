@@ -9,8 +9,8 @@ export const API_PATHS = {
 
   ADMIN: {
     REGISTER: '/api/admin/register',
+    LOGIN: '/api/admin/login',
 
-    // SALESMAN
     SALESMAN: {
       ADD: '/api/admin/add_salesman',
       GET_ALL: '/api/admin/get_allSalesman',
@@ -19,7 +19,6 @@ export const API_PATHS = {
       DELETE: (id) => `/api/admin/delete_salesman/${id}`,
     },
 
-    // SALES MANAGER
     SALESMANAGER: {
       ADD: '/api/admin/add_salesmanager',
       GET_ALL: '/api/admin/get_allsalesmanager',
@@ -28,7 +27,6 @@ export const API_PATHS = {
       DELETE: (id) => `/api/admin/delete_salesmanager/${id}`,
     },
 
-    // SALES AUTHORIZER
     SALESAUTHORIZER: {
       ADD: '/api/admin/add_salesauthorizer',
       GET_ALL: '/api/admin/get_allsalesauthorizer',
@@ -37,7 +35,6 @@ export const API_PATHS = {
       DELETE: (id) => `/api/admin/delete_salesauthorizer/${id}`,
     },
 
-    // PLANT HEAD
     PLANTHEAD: {
       ADD: '/api/admin/add_planthead',
       GET_ALL: '/api/admin/get_allplantheads',
@@ -46,7 +43,6 @@ export const API_PATHS = {
       DELETE: (id) => `/api/admin/delete_planthead/${id}`,
     },
 
-    // ACCOUNTANT
     ACCOUNTANT: {
       ADD: '/api/admin/add_accountant',
       GET_ALL: '/api/admin/get_allaccountants',
@@ -55,7 +51,6 @@ export const API_PATHS = {
       DELETE: (id) => `/api/admin/delete_accountant/${id}`,
     },
 
-    // WAREHOUSE
     WAREHOUSE: {
       ADD: '/api/admin/add_warehouse',
       GET_ALL: '/api/admin/get_allwarehouse',
@@ -63,10 +58,13 @@ export const API_PATHS = {
       UPDATE: (id) => `/api/admin/update_warehouse/${id}`,
       DELETE: (id) => `/api/admin/delete_warehouse/${id}`,
       APPROVE: '/api/admin/approve_warehouse',
-      UPDATE_PRODUCTS: (id) => `/api/admin/update_products/${id}`,
+
+      ADD_PRODUCT: (warehouseId) => `/api/admin/warehouse/${warehouseId}/add_product`,
+      GET_PRODUCTS: (warehouseId) => `/api/admin/${warehouseId}/products`,
+      UPDATE_PRODUCT_PRICE: (warehouseId, productId) => `/api/admin/${warehouseId}/products/${productId}`,
+      DELETE_PRODUCT: (warehouseId, productId) => `/api/admin/${warehouseId}/products/${productId}`,
     },
 
-    // ORDER MANAGEMENT
     ORDERS: {
       GET_TO_APPROVE: '/api/admin/get_orders_to_approve',
       GET_ALL: '/api/admin/get_allorder',
@@ -76,6 +74,7 @@ export const API_PATHS = {
   },
 
   SALESMAN: {
+    LOGIN: '/api/salesman/login',
     CREATE_ORDER: '/api/salesman/create_order',
     DELETE_ORDER: (orderId) => `/api/salesman/delete_order/${orderId}`,
     GET_ALL_ORDERS: '/api/salesman/get_allorder',
@@ -85,28 +84,36 @@ export const API_PATHS = {
   },
 
   MANAGER: {
-    GET_ASSIGNED_ORDERS: (managerId) => `/api/manager/orders/${managerId}`,
+    LOGIN: '/api/manager/login',
+    GET_ASSIGNED_ORDERS: '/api/manager/orders/getAll',
+    GET_ORDER: (orderId) => `/api/manager/orders/${orderId}`,
     FORWARD_ORDER: (orderId) => `/api/manager/forward/${orderId}`,
+    GET_FORWARDED_ORDERS: '/api/manager/orders/forwarded',
   },
 
   AUTHORIZER: {
-    GET_ASSIGNED_ORDERS: (authorizerId) => `/api/authorizer/orders/${authorizerId}`,
-    GET_ORDER_DETAIL: (orderId) => `/api/authorizer/order/${orderId}`,
+    LOGIN: '/api/authorizer/login',
+    GET_ASSIGNED_ORDERS: '/api/authorizer/orders/getAll',
+    GET_ORDER: (orderId) => `/api/authorizer/orders/${orderId}`,
     ASSIGN_WAREHOUSE: (orderId) => `/api/authorizer/assign-warehouse/${orderId}`,
-    GET_HISTORY: (authorizerId) => `/api/authorizer/history/${authorizerId}`,
+    GET_ASSIGNMENT_HISTORY: '/api/authorizer/get-assignment-history',
     CHECK_WAREHOUSE_STATUS: (orderId) => `/api/authorizer/warehouse-status/${orderId}`,
   },
 
   PLANT_HEAD: {
-    UPDATE_STOCK: '/api/planthead/production',
-    GET_PRODUCTION_CHART: '/api/planthead/production/chart',
+    LOGIN: '/api/planthead/login',
+    GET_ALL_ORDERS: '/api/planthead/orders/getAll',
+    GET_ORDER: (orderId) => `/api/planthead/orders/${orderId}`,
+    GET_PRODUCTS: '/api/planthead/warehouse/products',
+    UPDATE_PRODUCT_STOCK: (productId) => `/api/planthead/warehouse/products/${productId}`,
     DISPATCH_ORDER: (orderId) => `/api/planthead/dispatch/${orderId}`,
-    UPLOAD_TRANSPORT: (orderId) => `/api/planthead/transport/${orderId}`,
+    GET_DISPATCHED_ORDERS: '/api/planthead/dispatched-orders',
   },
 
   ACCOUNTANT: {
+    LOGIN: '/api/accountant/login',
     GET_DISPATCHED_ORDERS: '/api/accountant/dispatched-orders',
     GENERATE_INVOICE: (orderId) => `/api/accountant/generate-invoice/${orderId}`,
     GET_INVOICE: (orderId) => `/api/accountant/invoice/${orderId}`,
-  },
+  }
 };
