@@ -5,7 +5,7 @@ const salesAuthorizerModel = require("../models/SalesAuthorizer");
 const accountantModel = require('../models/Accountant');
 const plantHeadModel = require('../models/PlantHead');
 const partyModel = require("../models/Party");
-const productModel = require("../models/Product");
+const Product = require("../models/Product");
 const orderModel = require("../models/Order");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
@@ -919,6 +919,79 @@ const addWarehouse = async (req, res) => {
 };
 
 
+const updateWarehouse = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name, location, plantHead, accountant } = req.body;
+
+    // 1. Fetch existing warehouse
+    const warehouse = await Warehouse.findById(id);
+    if (!warehouse) {
+      return res.status(404).json({
+        success: false,
+        message: "Warehouse not found",
+      });
+    }
+
+    // 2. If plantHead is being updated
+    if (plantHead && plantHead !== warehouse.plantHead.toString()) {
+      const existingPlantHead = await PlantHead.findById(plantHead);
+      if (!existingPlantHead) {
+        return res.status(404).json({ success: false, message: "Invalid Plant Head ID" });
+      }
+
+      const alreadyAssigned = await Warehouse.findOne({ plantHead });
+      if (alreadyAssigned && alreadyAssigned._id.toString() !== id) {
+        return res.status(400).json({
+          success: false,
+          message: "This Plant Head is already assigned to another warehouse",
+        });
+      }
+
+      warehouse.plantHead = plantHead;
+    }
+
+    // 3. If accountant is being updated
+    if (accountant && accountant !== warehouse.accountant.toString()) {
+      const existingAccountant = await Accountant.findById(accountant);
+      if (!existingAccountant) {
+        return res.status(404).json({ success: false, message: "Invalid Accountant ID" });
+      }
+
+      const alreadyAssigned = await Warehouse.findOne({ accountant });
+      if (alreadyAssigned && alreadyAssigned._id.toString() !== id) {
+        return res.status(400).json({
+          success: false,
+          message: "This Accountant is already assigned to another warehouse",
+        });
+      }
+
+      warehouse.accountant = accountant;
+    }
+
+    // 4. Update name and location if provided
+    if (name) warehouse.name = name;
+    if (location) warehouse.location = location;
+
+    // 5. Save changes
+    await warehouse.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Warehouse updated successfully",
+      data: warehouse,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Something went wrong while updating the warehouse",
+      error: error.message,
+    });
+  }
+};
+
+
+
 const getAllWarehouse = async (req, res) => {
   try {
     const warehouses = await Warehouse.find()
@@ -954,7 +1027,6 @@ const getWarehouse = async (req, res) => {
     const warehouse = await Warehouse.findById(id)
       .populate('plantHead', 'name email')
       .populate('accountant', 'name email')
-      .populate('stock.product', 'name rate unit');
 
     if (!warehouse) {
       return res.status(404).json({
@@ -998,51 +1070,119 @@ const getWarehouse = async (req, res) => {
 };
 
 
-const addProducts = async (req, res) => {}
 
-const updateProductsPrice = async (req, res) => {}
-
-const deleteProducts = async (req, res) => {}
-
-const updateWarehouse = async (req, res) => {
+const addProductToWarehouse = async (req, res) => {
   try {
-    const { id } = req.params;
-    const { name, location } = req.body;  // Extract name and location from the request body
+    const { warehouseId } = req.params;
+    const { name, category, description, price } = req.body;
 
-    if (!id) {
-      return res.status(422).json({
-        success: false,
-        message: "Warehouse ID is required",
-      });
+    if (!name || !category || !price) {
+      return res.status(422).json({ success: false, message: 'Product name, category and price are required' });
     }
 
-    // Check if the warehouse exists
-    const existingWarehouse = await Warehouse.findById(id);
-    if (!existingWarehouse) {
-      return res.status(404).json({
-        success: false,
-        message: "Warehouse not found",
-      });
+    // 1. Create the product in Product collection
+    const newProduct = await Product.create({ name, category, description });
+
+    // 2. Add reference to warehouse stock
+    const warehouse = await Warehouse.findById(warehouseId);
+    if (!warehouse) {
+      return res.status(404).json({ success: false, message: 'Warehouse not found' });
     }
 
-    // Update the warehouse details
-    existingWarehouse.name = name;
-    existingWarehouse.location = location;
-    await existingWarehouse.save();
+    // 3. Prevent duplicate product
+    const alreadyExists = warehouse.stock.find(item => item.product.toString() === newProduct._id.toString());
+    if (alreadyExists) {
+      return res.status(409).json({ success: false, message: 'Product already exists in warehouse' });
+    }
+
+    warehouse.stock.push({ product: newProduct._id, price, quantity: 0 });
+    await warehouse.save();
+
+    res.status(201).json({
+      success: true,
+      message: 'Product added to warehouse successfully',
+      product: newProduct
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Error adding product', error: error.message });
+  }
+};
+
+
+
+//get all products that are in that particular warehouse when he click on the warehouse it will show all the products that are in that warehouse
+const getAllProducts = async (req, res) => {
+  try {
+    const { warehouseId } = req.params;
+
+    const warehouse = await Warehouse.findById(warehouseId).populate('stock.product');
+
+    if (!warehouse) {
+      return res.status(404).json({ success: false, message: 'Warehouse not found' });
+    }
 
     res.status(200).json({
       success: true,
-      message: "Warehouse updated successfully",
-      data: existingWarehouse,
+      message: 'Products in warehouse fetched',
+      data: warehouse.stock
     });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: "Something went wrong while updating the warehouse.",
-      error: error.message,
-    });
-    }
+
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Error fetching products', error: err.message });
+  }
 };
+
+
+
+
+
+const updateProductsPrice = async (req, res) => {
+  try {
+    const { warehouseId, productId } = req.params;
+    const { price } = req.body;
+
+    const warehouse = await Warehouse.findById(warehouseId);
+    if (!warehouse) return res.status(404).json({ success: false, message: 'Warehouse not found' });
+
+    const productEntry = warehouse.stock.find(item => item.product.toString() === productId);
+    if (!productEntry) {
+      return res.status(404).json({ success: false, message: 'Product not found in warehouse stock' });
+    }
+
+    productEntry.price = price;
+    await warehouse.save();
+
+    res.status(200).json({ success: true, message: 'Product price updated', data: productEntry });
+
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Error updating price', error: err.message });
+  }
+};
+
+const deleteProducts = async (req, res) => {
+  try {
+    const { warehouseId, productId } = req.params;
+
+    const warehouse = await Warehouse.findById(warehouseId);
+    if (!warehouse) return res.status(404).json({ success: false, message: 'Warehouse not found' });
+
+    const index = warehouse.stock.findIndex(item => item.product.toString() === productId);
+    if (index === -1) {
+      return res.status(404).json({ success: false, message: 'Product not found in stock' });
+    }
+
+    warehouse.stock.splice(index, 1);
+    await warehouse.save();
+
+    res.status(200).json({ success: true, message: 'Product removed from warehouse stock' });
+
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Error deleting product', error: err.message });
+  }
+};
+
+
+
 
 
 const deleteWarehouse = async (req, res) => {
@@ -1134,5 +1274,5 @@ module.exports = {
   addPlantHead, getAllPlantHeads, getPlantHead, updatePlantHead, deletePlantHead,
   addAccountant, getAllAccountants, getAccountant, updateAccountant, deleteAccountant,
   addWarehouse, getAllWarehouse, getWarehouse, updateWarehouse, deleteWarehouse, approveWarehouse,
-  addProducts, updateProductsPrice, deleteProducts
+  addProductToWarehouse, updateProductsPrice, deleteProducts, getAllProducts, 
 };

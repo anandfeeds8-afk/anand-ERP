@@ -1,6 +1,6 @@
 const express=require('express');
 const adminRouter=express.Router();
-const {registerAdmin,loginAdmin, addSalesman, getAllSalesman, getSalesman, updateSalesman, deleteSalesman, addSalesManager, getAllSalesManager, getSalesManager, updateSalesManager, deleteSalesManager, addSalesAuthorizer, getAllSalesAuthorizer, getSalesAuthorizer, updateSalesAuthorizer, deleteSalesAuthorizer, addWarehouse, getAllWarehouse, getWarehouse, updateWarehouse, deleteWarehouse, approveWarehouse, updateProducts, addPlantHead, getAllPlantHeads, getPlantHead, updatePlantHead, deletePlantHead, addAccountant, getAllAccountants, getAccountant, updateAccountant, deleteAccountant }=require('../controllers/Admin');
+const {registerAdmin,loginAdmin, addSalesman, getAllSalesman, getSalesman, updateSalesman, deleteSalesman, addSalesManager, getAllSalesManager, getSalesManager, updateSalesManager, deleteSalesManager, addSalesAuthorizer, getAllSalesAuthorizer, getSalesAuthorizer, updateSalesAuthorizer, deleteSalesAuthorizer, addWarehouse, getAllWarehouse, getWarehouse, updateWarehouse, deleteWarehouse, approveWarehouse, addProductToWarehouse, addPlantHead, getAllPlantHeads, getPlantHead, updatePlantHead, deletePlantHead, addAccountant, getAllAccountants, getAccountant, updateAccountant, deleteAccountant, getAllProducts, updateProductsPrice, deleteProducts }=require('../controllers/Admin');
 
 const {verifyAdmin} = require('../middleware/verifyAdmin');
 const { cancelOrder, getOrderDetails,getAllOrder, getOrdersToApprove } = require('../controllers/Orders');
@@ -47,9 +47,14 @@ adminRouter.delete('/delete_accountant/:id', verifyAdmin, deleteAccountant);
 adminRouter.post('/add_warehouse', verifyAdmin, addWarehouse);
 adminRouter.get('/get_allwarehouse', verifyAdmin, getAllWarehouse);
 adminRouter.get('/get_warehouse/:id', verifyAdmin, getWarehouse);
-adminRouter.put('/update_warehouse/:id', verifyAdmin, updateWarehouse);
-adminRouter.put('/update_products/:id', verifyAdmin, updateProducts);
+adminRouter.patch('/update_warehouse/:id', updateWarehouse);
 adminRouter.delete('/delete_warehouse/:id', verifyAdmin, deleteWarehouse);
+
+adminRouter.post('/warehouse/:warehouseId/add_product', addProductToWarehouse);
+adminRouter.get('/:warehouseId/products', getAllProducts);
+adminRouter.put('/:warehouseId/products/:productId', updateProductsPrice);
+adminRouter.delete('/:warehouseId/products/:productId', deleteProducts);
+
 
 
 adminRouter.get('/get_orders_to_approve', verifyAdmin, getOrdersToApprove);
