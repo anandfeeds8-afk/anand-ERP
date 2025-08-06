@@ -10,7 +10,7 @@ const useWarehouse = () => {
 
   //GET warehouses
   const { data: warehouses, isPending: warehouseLoading } = useQuery({
-    queryKey: ["warehouse"],
+    queryKey: ["warehouses"],
     queryFn: async () => {
       const response = await axios.get(
         BASE_URL + API_PATHS.ADMIN.WAREHOUSE.GET_ALL,
@@ -20,7 +20,7 @@ const useWarehouse = () => {
           },
         }
       );
-      console.log("warehouses", response.data.data);
+      // console.log("warehouses", response.data.data);
       return response.data.data;
     },
     onError: (error) => {
@@ -44,7 +44,7 @@ const useWarehouse = () => {
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({
-        queryKey: ["warehouse"],
+        queryKey: ["warehouses"],
       });
       toast.success("Warehouse added successfully");
     },
@@ -58,7 +58,7 @@ const useWarehouse = () => {
   const { mutate: updateWarehouse, isPending: isUpdatingWarehouse } =
     useMutation({
       mutationFn: async (data) => {
-        const response = await axios.put(
+        const response = await axios.patch(
           BASE_URL + API_PATHS.ADMIN.WAREHOUSE.UPDATE(data._id),
           data,
           {
@@ -71,9 +71,35 @@ const useWarehouse = () => {
       },
       onSuccess: () => {
         queryClient.invalidateQueries({
-          queryKey: ["warehouse"],
+          queryKey: ["warehouses"],
         });
         toast.success("Warehouse updated successfully");
+      },
+      onError: (error) => {
+        console.log(error);
+        toast.error(error.response.data.message);
+      },
+    });
+
+  //   Approve Warehouse
+  const { mutate: approveWarehouse, isPending: isApprovingWarehouse } =
+    useMutation({
+      mutationFn: async () => {
+        const response = await axios.post(
+          BASE_URL + API_PATHS.ADMIN.WAREHOUSE.APPROVE,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        return response.data;
+      },
+      onSuccess: () => {
+        queryClient.invalidateQueries({
+          queryKey: ["warehouses"],
+        });
+        toast.success("Warehouse approved successfully");
       },
       onError: (error) => {
         console.log(error);
@@ -97,7 +123,7 @@ const useWarehouse = () => {
       },
       onSuccess: (data) => {
         queryClient.invalidateQueries({
-          queryKey: ["warehouse"],
+          queryKey: ["warehouses"],
         });
         toast.success("Warehouse deleted successfully");
       },
@@ -111,12 +137,14 @@ const useWarehouse = () => {
     warehouseLoading ||
     isAddingWarehouse ||
     isUpdatingWarehouse ||
+    isApprovingWarehouse ||
     isDeletingWarehouse;
 
   return {
     addWarehouse,
     updateWarehouse,
     deleteWarehouse,
+    approveWarehouse,
     warehouses,
     isLoading,
   };

@@ -1,12 +1,25 @@
 import React, { useState } from "react";
 import { SiDecentraland } from "react-icons/si";
 import { IoLocationOutline } from "react-icons/io5";
-import { Eye, Mail, Phone, SquarePen, Trash2 } from "lucide-react";
+import { BadgeCheck, Phone } from "lucide-react";
+import {
+  MdOutlineAccountBalance,
+  MdOutlineManageAccounts,
+} from "react-icons/md";
+import {
+  Box,
+  EditIcon,
+  Eye,
+  Mail,
+  SquarePen,
+  Trash2,
+  User,
+} from "lucide-react";
 import CloseIcon from "@mui/icons-material/Close";
 import useWarehouse from "../../../hooks/useWarehouse";
 import {
-  Avatar,
   Button,
+  CircularProgress,
   FormControl,
   IconButton,
   InputLabel,
@@ -16,10 +29,43 @@ import {
 } from "@mui/material";
 import { Controller, useForm } from "react-hook-form";
 import useEmployees from "../../../hooks/useEmployees";
+import { useSingleWarehouse } from "../../../hooks/useSingleWarehouse";
+import { CgDollar } from "react-icons/cg";
+import { useProduct } from "../../../hooks/useProduct";
 
+/**
+ * Warehouse component manages the display and operations related to a specific warehouse.
+ * It shows warehouse details such as name, location, and status (approved or pending).
+ * It allows for editing warehouse details, managing products, and viewing warehouse data.
+ *
+ * Props:
+ * - warehouse: Object containing the warehouse details.
+ *
+ * Hooks:
+ * - useEmployees: Fetches plant heads and accountants.
+ * - useWarehouse: Provides functions to update, delete, and approve warehouse.
+ * - useSingleWarehouse: Fetches single warehouse data.
+ * - useProduct: Fetches and updates product information.
+ *
+ * Handles:
+ * - Editing warehouse details.
+ * - Updating product quantities and prices.
+ * - Adding new products.
+ * - Opening and closing modals for various operations.
+ */
 const Warehouse = ({ warehouse }) => {
-  const { updateWarehouse, deleteWarehouse, isLoading } = useWarehouse();
   const { planthead, accountant } = useEmployees();
+  const { updateWarehouse, deleteWarehouse, isLoading, approveWarehouse } =
+    useWarehouse();
+  const { singleWarehouse, singleWarehouseLoading } = useSingleWarehouse(
+    warehouse._id
+  );
+  const {
+    products,
+    isLoading: isProductsLoading,
+    updateProductPrice,
+  } = useProduct(warehouse._id);
+
   const {
     register,
     handleSubmit,
@@ -29,13 +75,38 @@ const Warehouse = ({ warehouse }) => {
   const [openEdit, setOpenEdit] = useState(false);
   const [openView, setOpenView] = useState(false);
   const [openDelete, setOpenDelete] = useState(false);
+  const [openManageStock, setOpenManageStock] = useState(false);
+  const [isUpdateMode, setIsUpdateMode] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState(null);
+
+  console.log("selectedProduct", selectedProduct);
 
   const handleEditWarehouse = (data) => {
     data._id = warehouse._id;
     updateWarehouse(data);
-    console.log(data);
     setOpenEdit(false);
   };
+
+  const handleUpdateButton = (productId, quantity) => {
+    const selectedProduct = products?.find((p) => p.product._id == productId);
+    console.log("quantity", quantity);
+    selectedProduct.quantity = quantity;
+    setSelectedProduct(selectedProduct);
+    setIsUpdateMode(true);
+  };
+
+  const handleUpdateProductPrice = (data) => {
+    data.warehouseId = warehouse._id;
+    data.productId = selectedProduct.product._id;
+    console.log("data", data);
+    updateProductPrice(data);
+  };
+
+  const handleAddProduct = (data) => {
+    console.log(data);
+  };
+
+  if (singleWarehouseLoading) return <CircularProgress />;
 
   return (
     <div className="bg-white rounded-lg p-5 shadow hover:shadow-md transition-all">
@@ -69,39 +140,52 @@ const Warehouse = ({ warehouse }) => {
 
       <div className="mt-5 space-y-2">
         <div className="text-sm text-gray-600 flex justify-between">
-          <span>Plant Head:</span>
+          <span className="flex items-center gap-1">
+            <MdOutlineManageAccounts className="text-pink-600" />
+            Plant Head:
+          </span>
           <span className="text-black">{warehouse?.plantHead?.name}</span>
         </div>
         <div className="text-sm text-gray-600 flex justify-between">
-          <span>Accountant:</span>
+          <span className="flex items-center gap-1">
+            <MdOutlineAccountBalance className="text-green-600" />
+            Accountant:
+          </span>
           <span className="text-black">{warehouse?.accountant?.name}</span>
         </div>
         <div className="text-sm text-gray-600 flex justify-between">
-          <span>Stock items:</span>
+          <span className="flex items-center gap-1">
+            <Box className="text-blue-600" size={15} strokeWidth={1.5} />
+            Stock items:
+          </span>
           <span className="text-black">{warehouse?.stock?.length}</span>
         </div>
       </div>
 
-      <div className="flex items-center gap-1 mt-5">
-        <button className="p-1 px-2 rounded-lg bg-violet-100 text-violet-800 w-full text-sm hover:bg-violet-200 active:scale-95 transition-all">
-          Manage Stock
+      <div className="flex gap-1 mt-5">
+        <button
+          onClick={() => setOpenManageStock(true)}
+          className="p-1 px-2 rounded-lg bg-violet-100 text-violet-800 w-full text-sm hover:bg-violet-200 active:scale-95 transition-all flex items-center justify-center gap-2"
+        >
+          <Box size={15} strokeWidth={1.5} />
+          Manage Products
         </button>
         <Eye
           color="blue"
-          className="hover:bg-blue-100 active:scale-95 transition-all p-1.5 rounded-lg"
-          size={30}
+          className="hover:bg-blue-100 active:scale-95 transition-all p-0.5 px-2 rounded-lg"
+          size={40}
           onClick={() => setOpenView(true)}
         />
         <SquarePen
           color="green"
-          className="hover:bg-green-100 active:scale-95 transition-all p-1.5 rounded-lg"
-          size={30}
+          className="hover:bg-green-100 active:scale-95 transition-all p-0.5 px-2 rounded-lg"
+          size={40}
           onClick={() => setOpenEdit(true)}
         />
         <Trash2
           color="red"
-          className="hover:bg-red-100 active:scale-95 transition-all p-1.5 rounded-lg"
-          size={30}
+          className="hover:bg-red-100 active:scale-95 transition-all p-0.5 px-2 rounded-lg"
+          size={40}
           onClick={() => setOpenDelete(true)}
         />
       </div>
@@ -267,10 +351,10 @@ const Warehouse = ({ warehouse }) => {
         </div>
       )}
 
-      {/* --- View Employee Modal --- */}
+      {/* --- View Warehouse Modal --- */}
       {openView && (
         <div className="transition-all bg-black/30 backdrop-blur-sm w-full z-50 h-screen absolute top-0 left-0 flex items-center justify-center">
-          <div className="bg-white relative p-7 rounded-lg w-[40rem] grid">
+          <div className="bg-white relative p-7 rounded-lg w-[90%] h-[90%] overflow-auto">
             <div>
               <div className="flex items-center justify-between">
                 <p className="text-xl font-semibold">Warehouse Details</p>
@@ -278,65 +362,467 @@ const Warehouse = ({ warehouse }) => {
                   <CloseIcon />
                 </IconButton>
               </div>
-              <div className="grid lg:grid-cols-2 gap-7 mt-5">
-                <div>
-                  <div className="flex items-center gap-3">
-                    <div className="p-3 bg-pink-100 rounded-full">
-                      <SiDecentraland className="text-4xl opacity-70 text-pink-600" />
+              <div className="grid lg:grid-cols-2 mt-5">
+                <div className="pe-5">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="p-3 bg-pink-100 rounded-full">
+                        <SiDecentraland className="text-4xl opacity-70 text-pink-600" />
+                      </div>
+                      <div>
+                        <p className="font-semibold text-lg">
+                          {warehouse.name}
+                        </p>
+                        <div className="flex items-center gap-1">
+                          <IoLocationOutline className="text-gray-600" />
+                          <p className="text-sm text-gray-600">
+                            {warehouse.location}
+                          </p>
+                        </div>
+                      </div>
                     </div>
                     <div>
-                      <p className="font-semibold text-lg">{warehouse.name}</p>
-                      <div className="flex items-center gap-1">
-                        <IoLocationOutline className="text-gray-600" />
-                        <p className="text-sm text-gray-600">
-                          {warehouse.location}
+                      {warehouse.approved ? (
+                        <p className="bg-green-100 p-1 px-3 rounded-full text-green-800 text-sm">
+                          Approved
                         </p>
+                      ) : (
+                        <div className="flex items-center gap-3">
+                          <p className="bg-gray-100 p-1 px-3 rounded-full text-gray-800 text-sm">
+                            Pending
+                          </p>
+                          <Button
+                            onClick={() => approveWarehouse(warehouse._id)}
+                            color="success"
+                            variant="contained"
+                            size="small"
+                            startIcon={<BadgeCheck size={18} />}
+                            disableElevation
+                            sx={{
+                              textTransform: "none",
+                              borderRadius: "999px",
+                            }}
+                          >
+                            Approve
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Total Earnings */}
+                  <div className="border p-3 rounded-lg flex justify-between items-center mt-5">
+                    <div>
+                      <p className="font-semibold mb-1">Total Earnings</p>
+                      <p className="text-2xl font-semibold">
+                        {singleWarehouse?.totalEarnings}
+                      </p>
+                    </div>
+                    <div className="w-12 h-12 flex items-center justify-center bg-green-100 rounded-full">
+                      <CgDollar className="text-3xl opacity-70 text-green-600" />
+                    </div>
+                  </div>
+
+                  {/* Plant Head and Accountant */}
+                  <div className="grid grid-cols-2 gap-5 mt-5">
+                    <div className="bg-white border rounded-lg p-3">
+                      <h3 className="font-semibold">Plant Head</h3>
+
+                      <div className="flex items-center my-1">
+                        <User className="text-green-600 mr-2" size={20} />
+                        <span className="font-medium text-sm">
+                          {warehouse.plantHead.name}
+                        </span>
+                      </div>
+
+                      <div className="flex items-center">
+                        <Mail className="text-blue-600 mr-2" size={18} />
+                        <a
+                          href={`mailto:${warehouse.plantHead.email}`}
+                          className="hover:underline text-sm font-medium"
+                        >
+                          {warehouse.plantHead.email}
+                        </a>
+                      </div>
+                      <div className="flex items-center my-1">
+                        <Phone className="text-violet-600 mr-2" size={18} />
+                        <span className="font-medium text-sm">
+                          {warehouse.plantHead.phone}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="bg-white border rounded-lg p-3">
+                      <h3 className="font-semibold">Accountant</h3>
+
+                      <div className="flex items-center my-1">
+                        <User className="text-green-600 mr-2" size={20} />
+                        <span className="font-medium text-sm">
+                          {warehouse.accountant.name}
+                        </span>
+                      </div>
+
+                      <div className="flex items-center">
+                        <Mail className="text-blue-600 mr-2" size={18} />
+                        <a
+                          href={`mailto:${warehouse.accountant.email}`}
+                          className="hover:underline text-sm font-medium"
+                        >
+                          {warehouse.accountant.email}
+                        </a>
+                      </div>
+                      <div className="flex items-center my-1">
+                        <Phone className="text-violet-600 mr-2" size={18} />
+                        <span className="font-medium text-sm">
+                          {warehouse.accountant.phone}
+                        </span>
                       </div>
                     </div>
                   </div>
-                  <div className="text-gray-700 text-sm py-3 mt-3 p-3 rounded-lg border-2 border-gray-100">
-                    <p className="font-semibold text-base">Plant Head</p>
-                    <p>
-                      Name:{" "}
-                      <span className="font-semibold">
-                        {warehouse.plantHead.name}
-                      </span>
+                </div>
+
+                {/* Stock Items */}
+                <div className="border-s border-gray-100 ps-5">
+                  <div>
+                    <p className="font-semibold text-base text-black">
+                      Stock Items
                     </p>
-                    <p>
-                      Email:{" "}
-                      <span className="font-semibold">
-                        {warehouse.plantHead.email}
-                      </span>
-                    </p>
-                  </div>
-                  <div className="text-gray-700 text-sm py-3 mb-3 mt-2 p-3 rounded-lg border-2 border-gray-100">
-                    <p className="font-semibold text-base">Accountant</p>
-                    <p>
-                      Name:{" "}
-                      <span className="font-semibold">
-                        {warehouse.accountant.name}
-                      </span>
-                    </p>
-                    <p>
-                      Email:{" "}
-                      <span className="font-semibold">
-                        {warehouse.accountant.email}
-                      </span>
-                    </p>
+
+                    <div className="relative h-[17rem] border overflow-auto rounded mt-2">
+                      <table className="w-full text-center border-collapse">
+                        <thead className="sticky top-0 bg-blue-50 text-blue-800 z-10">
+                          <tr className="text-sm">
+                            <th className="p-3 border-b">Product Name</th>
+                            <th className="p-3 border-b">Description</th>
+                            <th className="p-3 border-b">Quantity</th>
+                            <th className="p-3 border-b">Price</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {singleWarehouse?.stock.length > 0 ? (
+                            singleWarehouse?.stock.map((item, index) => (
+                              <tr
+                                key={index}
+                                className="hover:bg-gray-50 text-sm"
+                              >
+                                <td className="p-3 border-b">
+                                  {item.product.name}
+                                </td>
+                                <td className="p-3 border-b">
+                                  {item.product.description}
+                                </td>
+                                <td className="p-3 border-b">
+                                  {item.quantity}
+                                </td>
+                                <td className="p-3 border-b">
+                                  {item.product.price}
+                                </td>
+                              </tr>
+                            ))
+                          ) : (
+                            <tr>
+                              <td
+                                colSpan="4"
+                                className="p-4 text-center text-sm text-gray-500"
+                              >
+                                No available stock
+                              </td>
+                            </tr>
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
                   </div>
                 </div>
+              </div>
+
+              {/* Assigned Orders */}
+              <div className="mt-5">
+                <p className="font-semibold text-base text-black">
+                  Assigned Orders
+                </p>
+
+                <div className="relative max-h-52 overflow-auto rounded mt-2 border">
+                  <table className="w-full text-center border-collapse">
+                    <thead className="sticky top-0 bg-violet-50 text-violet-800 z-10">
+                      <tr className="text-sm">
+                        <th className="p-3 border-b">Product Name</th>
+                        <th className="p-3 border-b">Description</th>
+                        <th className="p-3 border-b">Quantity</th>
+                        <th className="p-3 border-b">Price</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {singleWarehouse?.assignedOrders?.length > 0 ? (
+                        singleWarehouse?.assignedOrders?.map((item, index) => (
+                          <tr key={index} className="hover:bg-gray-50 text-sm">
+                            <td className="p-3 border-b">
+                              {item.product.name}
+                            </td>
+                            <td className="p-3 border-b">
+                              {item.product.description}
+                            </td>
+                            <td className="p-3 border-b">{item.quantity}</td>
+                            <td className="p-3 border-b">
+                              {item.product.price}
+                            </td>
+                          </tr>
+                        ))
+                      ) : (
+                        <tr>
+                          <td
+                            colSpan="4"
+                            className="p-4 text-center text-sm text-gray-500"
+                          >
+                            No assigned orders
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* Dispatched Orders */}
+              <div className="mt-5">
+                <p className="font-semibold text-base text-black">
+                  Dispatched Orders
+                </p>
+
+                <div className="relative max-h-52 overflow-auto rounded mt-2 border">
+                  <table className="w-full text-center border-collapse">
+                    <thead className="sticky top-0 bg-green-50 text-green-800 z-10">
+                      <tr className="text-sm">
+                        <th className="p-3 border-b">Product Name</th>
+                        <th className="p-3 border-b">Description</th>
+                        <th className="p-3 border-b">Quantity</th>
+                        <th className="p-3 border-b">Price</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {singleWarehouse?.dispatchedOrders?.length > 0 ? (
+                        singleWarehouse?.dispatchedOrders?.map(
+                          (item, index) => (
+                            <tr
+                              key={index}
+                              className="hover:bg-gray-50 text-sm"
+                            >
+                              <td className="p-3 border-b">
+                                {item.product.name}
+                              </td>
+                              <td className="p-3 border-b">
+                                {item.product.description}
+                              </td>
+                              <td className="p-3 border-b">{item.quantity}</td>
+                              <td className="p-3 border-b">
+                                {item.product.price}
+                              </td>
+                            </tr>
+                          )
+                        )
+                      ) : (
+                        <tr>
+                          <td
+                            colSpan="4"
+                            className="p-4 text-center text-sm text-gray-500"
+                          >
+                            No dispatched orders
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* --- Manage Products Modal --- */}
+      {openManageStock && (
+        <div className="transition-all bg-black/30 backdrop-blur-sm w-full z-50 h-screen absolute top-0 left-0 flex items-center justify-center">
+          <div className="bg-white p-7 rounded-lg w-[60rem] h-[22rem]">
+            <div className="flex items-center justify-between">
+              <p className="text-xl font-semibold">
+                Product Management - {warehouse?.name}
+              </p>
+              <IconButton
+                size="small"
+                onClick={() => setOpenManageStock(false)}
+              >
+                <CloseIcon />
+              </IconButton>
+            </div>
+            <div className="grid lg:grid-cols-2 gap-5 mt-2">
+              <div>
+                <p className="font-semibold mb-3">Available Products</p>
+                <div className="relative h-[14rem] overflow-auto rounded mt-2">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="bg-blue-50 sticky z-50 top-0 text-blue-800 text-center text-sm">
+                        <th className="p-2">Product Name</th>
+                        <th className="p-2">Quantity</th>
+                        <th className="p-2">Price</th>
+                        <th className="p-2">Action</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {singleWarehouse?.stock?.length > 0 ? (
+                        singleWarehouse?.stock?.map((item, index) => (
+                          <tr key={index} className="text-center text-sm">
+                            <td className="p-2">{item.product.name}</td>
+                            <td className="p-2">{item.quantity}kg</td>
+                            <td className="p-2">₹{item.product.price}</td>
+                            <td className="p-2 flex items-center justify-center">
+                              <Button
+                                startIcon={
+                                  <EditIcon size={15} strokeWidth={1.5} />
+                                }
+                                variant="text"
+                                size="small"
+                                disableElevation
+                                onClick={() =>
+                                  handleUpdateButton(
+                                    item.product._id,
+                                    item.quantity
+                                  )
+                                }
+                              >
+                                Update
+                              </Button>
+                            </td>
+                          </tr>
+                        ))
+                      ) : (
+                        <tr>
+                          <td
+                            colSpan="4"
+                            className="p-4 text-center text-sm text-gray-500"
+                          >
+                            No available products
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+              <div>
+                <p className="font-semibold mb-3">Add/Update Products</p>
                 <div>
-                  <p className="font-semibold text-lg">Stock</p>
-                  <div>
-                    {warehouse.stock?.map((stock) => (
-                      <p key={stock._id}>{stock.product.name}</p>
-                    ))}
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <p>Product name</p>
-                    <p>Quantity</p>
-                    <p>Price</p>
-                  </div>
+                  {isUpdateMode ? (
+                    <form onSubmit={handleSubmit(handleUpdateProductPrice)}>
+                      <div className="space-y-4">
+                        <TextField
+                          fullWidth
+                          disabled
+                          InputLabelProps={{
+                            shrink: true,
+                          }}
+                          defaultValue={selectedProduct?.product?.name}
+                          size="small"
+                          id="outlined-basic"
+                          label="Product Name"
+                          variant="outlined"
+                        />
+                        <TextField
+                          fullWidth
+                          InputLabelProps={{
+                            shrink: true,
+                          }}
+                          disabled
+                          defaultValue={selectedProduct?.quantity}
+                          size="small"
+                          id="outlined-basic"
+                          label="Quantity"
+                          variant="outlined"
+                        />
+                        <TextField
+                          fullWidth
+                          InputLabelProps={{
+                            shrink: true,
+                          }}
+                          size="small"
+                          type="number"
+                          id="outlined-basic"
+                          label="Price"
+                          variant="outlined"
+                          defaultValue={selectedProduct?.product?.price}
+                          {...register("price", {
+                            required: {
+                              value: true,
+                              message: "Price is required",
+                            },
+                          })}
+                        />
+
+                        <Button
+                          fullWidth
+                          color="success"
+                          variant="contained"
+                          disableElevation
+                          type="submit"
+                        >
+                          Update Product
+                        </Button>
+                      </div>
+                    </form>
+                  ) : (
+                    <form onSubmit={handleSubmit(handleAddProduct)}>
+                      <div className="space-y-4">
+                        <TextField
+                          fullWidth
+                          {...register("productName", {
+                            required: {
+                              value: true,
+                              message: "Product Name is required",
+                            },
+                          })}
+                          size="small"
+                          id="outlined-basic"
+                          label="Product Name"
+                          variant="outlined"
+                        />
+                        <TextField
+                          fullWidth
+                          {...register("quantity", {
+                            required: {
+                              value: true,
+                              message: "Quantity is required",
+                            },
+                          })}
+                          size="small"
+                          id="outlined-basic"
+                          label="Quantity"
+                          variant="outlined"
+                        />
+                        <TextField
+                          fullWidth
+                          type="number"
+                          size="small"
+                          id="outlined-basic"
+                          label="Price"
+                          variant="outlined"
+                          {...register("price", {
+                            required: {
+                              value: true,
+                              message: "Price is required",
+                            },
+                          })}
+                        />
+
+                        <Button
+                          fullWidth
+                          color="success"
+                          variant="contained"
+                          disableElevation
+                          type="submit"
+                        >
+                          Add Product
+                        </Button>
+                      </div>
+                    </form>
+                  )}
                 </div>
               </div>
             </div>

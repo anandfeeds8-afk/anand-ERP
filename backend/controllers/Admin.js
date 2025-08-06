@@ -2,16 +2,15 @@ const adminModel = require("../models/Admin");
 const salesmanModel = require("../models/Salesman");
 const salesManagerModel = require("../models/SalesManager");
 const salesAuthorizerModel = require("../models/SalesAuthorizer");
-const accountantModel = require('../models/Accountant');
-const plantHeadModel = require('../models/PlantHead');
+const accountantModel = require("../models/Accountant");
+const plantHeadModel = require("../models/PlantHead");
 const Product = require("../models/Product");
 const orderModel = require("../models/Order");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-const Warehouse = require('../models/Warehouse');
+const Warehouse = require("../models/Warehouse");
 
 const SECRET_TOKEN = process.env.JWT_SECRET;
-
 
 const dotenv = require("dotenv");
 
@@ -78,7 +77,6 @@ const registerAdmin = async (req, res) => {
         email: newAdmin.email,
       },
     });
-
   } catch (error) {
     return res.status(500).json({
       success: false,
@@ -87,10 +85,6 @@ const registerAdmin = async (req, res) => {
     });
   }
 };
-
-
-
-
 
 const loginAdmin = async (req, res) => {
   try {
@@ -124,17 +118,16 @@ const loginAdmin = async (req, res) => {
 
     // Generate token
     const token = jwt.sign(
-      { id: isAdmin._id, role: 'Admin' }, // Use uniform structure
+      { id: isAdmin._id, role: "Admin" }, // Use uniform structure
       SECRET_TOKEN,
-      { expiresIn: '1d' }
+      { expiresIn: "1d" }
     );
 
-    
     // Set cookie (optional for frontend auth handling)
     res.cookie("adminToken", token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax',
+      secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax",
       maxAge: 24 * 60 * 60 * 1000, // 24 hours
     });
 
@@ -146,11 +139,10 @@ const loginAdmin = async (req, res) => {
         _id: isAdmin._id,
         name: isAdmin.name,
         email: isAdmin.email,
-        role: 'Admin',
-        token
-      }
+        role: "Admin",
+        token,
+      },
     });
-
   } catch (error) {
     res.status(500).json({
       success: false,
@@ -159,7 +151,6 @@ const loginAdmin = async (req, res) => {
     });
   }
 };
-
 
 const addSalesman = async (req, res) => {
   const { name, email, password, phone } = req.body;
@@ -214,8 +205,6 @@ const addSalesman = async (req, res) => {
   }
 };
 
-
-
 const getAllSalesman = async (req, res) => {
   try {
     const salesmen = await salesmanModel.find().select("-password");
@@ -231,8 +220,7 @@ const getAllSalesman = async (req, res) => {
       error: error.message,
     });
   }
-}
-
+};
 
 const getSalesman = async (req, res) => {
   const { id } = req.params;
@@ -264,7 +252,7 @@ const getSalesman = async (req, res) => {
       error: error.message,
     });
   }
-}
+};
 
 const updateSalesman = async (req, res) => {
   const { id } = req.params;
@@ -275,7 +263,7 @@ const updateSalesman = async (req, res) => {
       message: "Salesman ID is required",
     });
   }
-  try{
+  try {
     const salesman = await salesmanModel.findById(id);
     if (!salesman) {
       return res.status(404).json({
@@ -309,8 +297,7 @@ const updateSalesman = async (req, res) => {
       error: error.message,
     });
   }
-}
-
+};
 
 const deleteSalesman = async (req, res) => {
   const { id } = req.params;
@@ -341,7 +328,7 @@ const deleteSalesman = async (req, res) => {
       error: error.message,
     });
   }
-}
+};
 
 const addSalesManager = async (req, res) => {
   const { name, email, password, phone } = req.body;
@@ -413,7 +400,7 @@ const getAllSalesManager = async (req, res) => {
       error: error.message,
     });
   }
-}
+};
 
 const getSalesManager = async (req, res) => {
   const { id } = req.params;
@@ -426,7 +413,9 @@ const getSalesManager = async (req, res) => {
   }
 
   try {
-    const salesManager = await salesManagerModel.findById(id).select("-password");
+    const salesManager = await salesManagerModel
+      .findById(id)
+      .select("-password");
     if (!salesManager) {
       return res.status(404).json({
         success: false,
@@ -445,7 +434,7 @@ const getSalesManager = async (req, res) => {
       error: error.message,
     });
   }
-}
+};
 
 const updateSalesManager = async (req, res) => {
   const { id } = req.params;
@@ -469,7 +458,8 @@ const updateSalesManager = async (req, res) => {
 
     if (name) salesManager.name = name;
     if (email) salesManager.email = email;
-    if (password) salesManager.password = await bcrypt.hash(password, saltRounds);
+    if (password)
+      salesManager.password = await bcrypt.hash(password, saltRounds);
     if (phone) salesManager.phone = phone;
 
     await salesManager.save();
@@ -515,7 +505,7 @@ const deleteSalesManager = async (req, res) => {
       error: error.message,
     });
   }
-}
+};
 
 const addSalesAuthorizer = async (req, res) => {
   const { name, email, password, phone } = req.body;
@@ -578,7 +568,9 @@ const addSalesAuthorizer = async (req, res) => {
 
 const getAllSalesAuthorizer = async (req, res) => {
   try {
-    const salesAuthorizers = await salesAuthorizerModel.find().select("-password");
+    const salesAuthorizers = await salesAuthorizerModel
+      .find()
+      .select("-password");
     res.status(200).json({
       success: true,
       message: "Sales Authorizers fetched successfully",
@@ -591,7 +583,7 @@ const getAllSalesAuthorizer = async (req, res) => {
       error: error.message,
     });
   }
-}
+};
 
 const getSalesAuthorizer = async (req, res) => {
   const { id } = req.params;
@@ -602,7 +594,9 @@ const getSalesAuthorizer = async (req, res) => {
     });
   }
   try {
-    const salesAuthorizer = await salesAuthorizerModel.findById(id).select("-password");
+    const salesAuthorizer = await salesAuthorizerModel
+      .findById(id)
+      .select("-password");
     if (!salesAuthorizer) {
       return res.status(404).json({
         success: false,
@@ -621,7 +615,7 @@ const getSalesAuthorizer = async (req, res) => {
       error: error.message,
     });
   }
-}
+};
 
 const updateSalesAuthorizer = async (req, res) => {
   const { id } = req.params;
@@ -662,7 +656,7 @@ const updateSalesAuthorizer = async (req, res) => {
       error: error.message,
     });
   }
-}
+};
 
 const deleteSalesAuthorizer = async (req, res) => {
   const { id } = req.params;
@@ -673,7 +667,9 @@ const deleteSalesAuthorizer = async (req, res) => {
     });
   }
   try {
-    const deletedSalesAuthorizer = await salesAuthorizerModel.findByIdAndDelete(id);
+    const deletedSalesAuthorizer = await salesAuthorizerModel.findByIdAndDelete(
+      id
+    );
     if (!deletedSalesAuthorizer) {
       return res.status(404).json({
         success: false,
@@ -691,49 +687,67 @@ const deleteSalesAuthorizer = async (req, res) => {
       error: error.message,
     });
   }
-}
-
-
+};
 
 const addPlantHead = async (req, res) => {
   const { name, email, password, phone } = req.body;
 
   if (!name || !email || !password || !phone) {
-    return res.status(422).json({ success: false, message: "Missing input fields" });
+    return res
+      .status(422)
+      .json({ success: false, message: "Missing input fields" });
   }
 
   if (!isCorrectEmail(email)) {
-    return res.status(422).json({ success: false, message: "Incorrect email format!" });
+    return res
+      .status(422)
+      .json({ success: false, message: "Incorrect email format!" });
   }
 
   const existing = await plantHeadModel.findOne({ email });
   if (existing) {
-    return res.status(409).json({ success: false, message: "Email already in use" });
+    return res
+      .status(409)
+      .json({ success: false, message: "Email already in use" });
   }
 
   const hashedPassword = await bcrypt.hash(password, saltRounds);
-  const newPlantHead = await plantHeadModel.create({ name, email, password: hashedPassword, phone });
+  const newPlantHead = await plantHeadModel.create({
+    name,
+    email,
+    password: hashedPassword,
+    phone,
+  });
 
   res.status(201).json({
     success: true,
     message: "Plant Head created successfully",
-    data: { _id: newPlantHead._id, name, email, phone }
+    data: { _id: newPlantHead._id, name, email, phone },
   });
 };
 
 const getAllPlantHeads = async (req, res) => {
   try {
     const heads = await plantHeadModel.find().select("-password");
-    res.status(200).json({ success: true, message: "All Plant Heads", data: heads });
+    res
+      .status(200)
+      .json({ success: true, message: "All Plant Heads", data: heads });
   } catch (err) {
-    res.status(500).json({ success: false, message: "Error fetching data", error: err.message });
+    res.status(500).json({
+      success: false,
+      message: "Error fetching data",
+      error: err.message,
+    });
   }
 };
 
 const getPlantHead = async (req, res) => {
   const { id } = req.params;
   const head = await plantHeadModel.findById(id).select("-password");
-  if (!head) return res.status(404).json({ success: false, message: "Plant Head not found" });
+  if (!head)
+    return res
+      .status(404)
+      .json({ success: false, message: "Plant Head not found" });
   res.status(200).json({ success: true, data: head });
 };
 
@@ -742,13 +756,17 @@ const updatePlantHead = async (req, res) => {
   const { name, email, password, phone } = req.body;
 
   if (!id) {
-    return res.status(422).json({ success: false, message: "Plant Head ID is required" });
+    return res
+      .status(422)
+      .json({ success: false, message: "Plant Head ID is required" });
   }
 
   try {
     const head = await plantHeadModel.findById(id);
     if (!head) {
-      return res.status(404).json({ success: false, message: "Plant Head not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "Plant Head not found" });
     }
 
     if (name) head.name = name;
@@ -757,45 +775,63 @@ const updatePlantHead = async (req, res) => {
     if (phone) head.phone = phone;
 
     await head.save();
-    res.status(200).json({ success: true, message: "Plant Head updated successfully", data: head });
+    res.status(200).json({
+      success: true,
+      message: "Plant Head updated successfully",
+      data: head,
+    });
   } catch (error) {
-    res.status(500).json({ success: false, message: "Error updating Plant Head", error: error.message });
+    res.status(500).json({
+      success: false,
+      message: "Error updating Plant Head",
+      error: error.message,
+    });
   }
-
 };
 const deletePlantHead = async (req, res) => {
   const { id } = req.params;
   const deleted = await plantHeadModel.findByIdAndDelete(id);
-  if (!deleted) return res.status(404).json({ success: false, message: "Plant Head not found" });
+  if (!deleted)
+    return res
+      .status(404)
+      .json({ success: false, message: "Plant Head not found" });
   res.status(200).json({ success: true, message: "Deleted successfully" });
 };
-
-
-
 
 const addAccountant = async (req, res) => {
   const { name, email, password, phone } = req.body;
 
   if (!name || !email || !password || !phone) {
-    return res.status(422).json({ success: false, message: "Missing input fields" });
+    return res
+      .status(422)
+      .json({ success: false, message: "Missing input fields" });
   }
 
   if (!isCorrectEmail(email)) {
-    return res.status(422).json({ success: false, message: "Incorrect email format!" });
+    return res
+      .status(422)
+      .json({ success: false, message: "Incorrect email format!" });
   }
 
   const existing = await accountantModel.findOne({ email });
   if (existing) {
-    return res.status(409).json({ success: false, message: "Email already in use" });
+    return res
+      .status(409)
+      .json({ success: false, message: "Email already in use" });
   }
 
   const hashedPassword = await bcrypt.hash(password, saltRounds);
-  const newAccountant = await accountantModel.create({ name, email, password: hashedPassword, phone });
+  const newAccountant = await accountantModel.create({
+    name,
+    email,
+    password: hashedPassword,
+    phone,
+  });
 
   res.status(201).json({
     success: true,
     message: "Accountant created successfully",
-    data: { _id: newAccountant._id, name, email, phone }
+    data: { _id: newAccountant._id, name, email, phone },
   });
 };
 
@@ -811,7 +847,10 @@ const getAllAccountants = async (req, res) => {
 const getAccountant = async (req, res) => {
   const { id } = req.params;
   const acc = await accountantModel.findById(id).select("-password");
-  if (!acc) return res.status(404).json({ success: false, message: "Accountant not found" });
+  if (!acc)
+    return res
+      .status(404)
+      .json({ success: false, message: "Accountant not found" });
   res.status(200).json({ success: true, data: acc });
 };
 
@@ -820,13 +859,17 @@ const updateAccountant = async (req, res) => {
   const { name, email, password, phone } = req.body;
 
   if (!id) {
-    return res.status(422).json({ success: false, message: "Accountant ID is required" });
+    return res
+      .status(422)
+      .json({ success: false, message: "Accountant ID is required" });
   }
 
   try {
     const accountant = await accountantModel.findById(id);
     if (!accountant) {
-      return res.status(404).json({ success: false, message: "Accountant not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "Accountant not found" });
     }
 
     if (name) accountant.name = name;
@@ -835,18 +878,28 @@ const updateAccountant = async (req, res) => {
     if (phone) accountant.phone = phone;
 
     await accountant.save();
-    res.status(200).json({ success: true, message: "Accountant updated successfully", data: accountant });
+    res.status(200).json({
+      success: true,
+      message: "Accountant updated successfully",
+      data: accountant,
+    });
   } catch (error) {
-    res.status(500).json({ success: false, message: "Error updating accountant", error: error.message });
+    res.status(500).json({
+      success: false,
+      message: "Error updating accountant",
+      error: error.message,
+    });
   }
 };
 const deleteAccountant = async (req, res) => {
   const { id } = req.params;
   const deleted = await accountantModel.findByIdAndDelete(id);
-  if (!deleted) return res.status(404).json({ success: false, message: "Accountant not found" });
+  if (!deleted)
+    return res
+      .status(404)
+      .json({ success: false, message: "Accountant not found" });
   res.status(200).json({ success: true, message: "Accountant deleted" });
 };
-
 
 const addWarehouse = async (req, res) => {
   try {
@@ -855,7 +908,8 @@ const addWarehouse = async (req, res) => {
     if (!name || !location || !plantHead || !accountant) {
       return res.status(422).json({
         success: false,
-        message: "All fields (name, location, plantHead, accountant) are required.",
+        message:
+          "All fields (name, location, plantHead, accountant) are required.",
       });
     }
 
@@ -900,13 +954,13 @@ const addWarehouse = async (req, res) => {
       name,
       location,
       plantHead,
-      accountant
+      accountant,
     });
 
     res.status(201).json({
       success: true,
       message: "Warehouse created and assigned successfully.",
-      data: warehouse
+      data: warehouse,
     });
   } catch (error) {
     res.status(500).json({
@@ -916,7 +970,6 @@ const addWarehouse = async (req, res) => {
     });
   }
 };
-
 
 const updateWarehouse = async (req, res) => {
   try {
@@ -936,7 +989,9 @@ const updateWarehouse = async (req, res) => {
     if (plantHead && plantHead !== warehouse.plantHead.toString()) {
       const existingPlantHead = await plantHeadModel.findById(plantHead);
       if (!existingPlantHead) {
-        return res.status(404).json({ success: false, message: "Invalid Plant Head ID" });
+        return res
+          .status(404)
+          .json({ success: false, message: "Invalid Plant Head ID" });
       }
 
       const alreadyAssigned = await Warehouse.findOne({ plantHead });
@@ -954,7 +1009,9 @@ const updateWarehouse = async (req, res) => {
     if (accountant && accountant !== warehouse.accountant.toString()) {
       const existingAccountant = await accountantModel.findById(accountant);
       if (!existingAccountant) {
-        return res.status(404).json({ success: false, message: "Invalid Accountant ID" });
+        return res
+          .status(404)
+          .json({ success: false, message: "Invalid Accountant ID" });
       }
 
       const alreadyAssigned = await Warehouse.findOne({ accountant });
@@ -989,18 +1046,16 @@ const updateWarehouse = async (req, res) => {
   }
 };
 
-
-
 const getAllWarehouse = async (req, res) => {
   try {
     const warehouses = await Warehouse.find()
-      .populate('plantHead', 'name email')
-      .populate('accountant', 'name email');
+      .populate("plantHead", "name email phone")
+      .populate("accountant", "name email phone");
 
     res.status(200).json({
       success: true,
       message: "All warehouses fetched successfully.",
-      data: warehouses
+      data: warehouses,
     });
   } catch (error) {
     res.status(500).json({
@@ -1009,7 +1064,7 @@ const getAllWarehouse = async (req, res) => {
       error: error.message,
     });
   }
-}
+};
 
 const getWarehouse = async (req, res) => {
   const { id } = req.params;
@@ -1024,8 +1079,9 @@ const getWarehouse = async (req, res) => {
   try {
     // 1. Get warehouse with stock, plantHead, accountant, and product details
     const warehouse = await Warehouse.findById(id)
-      .populate('plantHead', 'name email')
-      .populate('accountant', 'name email')
+      .populate("plantHead", "name email phone")
+      .populate("accountant", "name email phone")
+      .populate("stock.product", "name category price description");
 
     if (!warehouse) {
       return res.status(404).json({
@@ -1035,18 +1091,25 @@ const getWarehouse = async (req, res) => {
     }
 
     // 2. Get all assigned orders (where this warehouse is assigned)
-    const assignedOrders = await orderModel.find({ assignedWarehouse: id })
-      .populate('placedBy', 'name email')
-      .populate('party', 'companyName')
+    const assignedOrders = await orderModel
+      .find({ assignedWarehouse: id })
+      .populate("placedBy", "name email")
+      .populate("party", "companyName")
       .sort({ createdAt: -1 });
 
     // 3. Get all dispatched orders from this warehouse
     const dispatchedOrders = assignedOrders.filter(
-      order => order.orderStatus === 'Dispatched' || order.orderStatus === 'Delivered' || order.orderStatus === 'Paid'
+      (order) =>
+        order.orderStatus === "Dispatched" ||
+        order.orderStatus === "Delivered" ||
+        order.orderStatus === "Paid"
     );
 
     // 4. Calculate total earnings (only from dispatched orders)
-    const totalEarnings = dispatchedOrders.reduce((sum, order) => sum + order.totalAmount, 0);
+    const totalEarnings = dispatchedOrders.reduce(
+      (sum, order) => sum + order.totalAmount,
+      0
+    );
 
     res.status(200).json({
       success: true,
@@ -1057,7 +1120,7 @@ const getWarehouse = async (req, res) => {
         assignedOrders,
         dispatchedOrders,
         totalEarnings,
-      }
+      },
     });
   } catch (error) {
     res.status(500).json({
@@ -1068,15 +1131,16 @@ const getWarehouse = async (req, res) => {
   }
 };
 
-
-
 const addProductToWarehouse = async (req, res) => {
   try {
     const { warehouseId } = req.params;
     const { name, category, description, price } = req.body;
 
     if (!name || !category || !price) {
-      return res.status(422).json({ success: false, message: 'Product name, category and price are required' });
+      return res.status(422).json({
+        success: false,
+        message: "Product name, category and price are required",
+      });
     }
 
     // 1. Create the product in Product collection
@@ -1085,13 +1149,20 @@ const addProductToWarehouse = async (req, res) => {
     // 2. Add reference to warehouse stock
     const warehouse = await Warehouse.findById(warehouseId);
     if (!warehouse) {
-      return res.status(404).json({ success: false, message: 'Warehouse not found' });
+      return res
+        .status(404)
+        .json({ success: false, message: "Warehouse not found" });
     }
 
     // 3. Prevent duplicate product
-    const alreadyExists = warehouse.stock.find(item => item.product.toString() === newProduct._id.toString());
+    const alreadyExists = warehouse.stock.find(
+      (item) => item.product.toString() === newProduct._id.toString()
+    );
     if (alreadyExists) {
-      return res.status(409).json({ success: false, message: 'Product already exists in warehouse' });
+      return res.status(409).json({
+        success: false,
+        message: "Product already exists in warehouse",
+      });
     }
 
     warehouse.stock.push({ product: newProduct._id, price, quantity: 0 });
@@ -1099,41 +1170,46 @@ const addProductToWarehouse = async (req, res) => {
 
     res.status(201).json({
       success: true,
-      message: 'Product added to warehouse successfully',
-      product: newProduct
+      message: "Product added to warehouse successfully",
+      product: newProduct,
     });
   } catch (error) {
-    res.status(500).json({ success: false, message: 'Error adding product', error: error.message });
+    res.status(500).json({
+      success: false,
+      message: "Error adding product",
+      error: error.message,
+    });
   }
 };
-
-
 
 //get all products that are in that particular warehouse when he click on the warehouse it will show all the products that are in that warehouse
 const getAllProducts = async (req, res) => {
   try {
     const { warehouseId } = req.params;
 
-    const warehouse = await Warehouse.findById(warehouseId).populate('stock.product');
+    const warehouse = await Warehouse.findById(warehouseId).populate(
+      "stock.product"
+    );
 
     if (!warehouse) {
-      return res.status(404).json({ success: false, message: 'Warehouse not found' });
+      return res
+        .status(404)
+        .json({ success: false, message: "Warehouse not found" });
     }
 
     res.status(200).json({
       success: true,
-      message: 'Products in warehouse fetched',
-      data: warehouse.stock
+      message: "Products in warehouse fetched",
+      data: warehouse.stock,
     });
-
   } catch (err) {
-    res.status(500).json({ success: false, message: 'Error fetching products', error: err.message });
+    res.status(500).json({
+      success: false,
+      message: "Error fetching products",
+      error: err.message,
+    });
   }
 };
-
-
-
-
 
 const updateProductsPrice = async (req, res) => {
   try {
@@ -1141,20 +1217,35 @@ const updateProductsPrice = async (req, res) => {
     const { price } = req.body;
 
     const warehouse = await Warehouse.findById(warehouseId);
-    if (!warehouse) return res.status(404).json({ success: false, message: 'Warehouse not found' });
+    if (!warehouse)
+      return res
+        .status(404)
+        .json({ success: false, message: "Warehouse not found" });
 
-    const productEntry = warehouse.stock.find(item => item.product.toString() === productId);
+    const productEntry = warehouse.stock.find(
+      (item) => item.product.toString() === productId
+    );
     if (!productEntry) {
-      return res.status(404).json({ success: false, message: 'Product not found in warehouse stock' });
+      return res.status(404).json({
+        success: false,
+        message: "Product not found in warehouse stock",
+      });
     }
 
     productEntry.price = price;
     await warehouse.save();
 
-    res.status(200).json({ success: true, message: 'Product price updated', data: productEntry });
-
+    res.status(200).json({
+      success: true,
+      message: "Product price updated",
+      data: productEntry,
+    });
   } catch (err) {
-    res.status(500).json({ success: false, message: 'Error updating price', error: err.message });
+    res.status(500).json({
+      success: false,
+      message: "Error updating price",
+      error: err.message,
+    });
   }
 };
 
@@ -1163,26 +1254,34 @@ const deleteProducts = async (req, res) => {
     const { warehouseId, productId } = req.params;
 
     const warehouse = await Warehouse.findById(warehouseId);
-    if (!warehouse) return res.status(404).json({ success: false, message: 'Warehouse not found' });
+    if (!warehouse)
+      return res
+        .status(404)
+        .json({ success: false, message: "Warehouse not found" });
 
-    const index = warehouse.stock.findIndex(item => item.product.toString() === productId);
+    const index = warehouse.stock.findIndex(
+      (item) => item.product.toString() === productId
+    );
     if (index === -1) {
-      return res.status(404).json({ success: false, message: 'Product not found in stock' });
+      return res
+        .status(404)
+        .json({ success: false, message: "Product not found in stock" });
     }
 
     warehouse.stock.splice(index, 1);
     await warehouse.save();
 
-    res.status(200).json({ success: true, message: 'Product removed from warehouse stock' });
-
+    res
+      .status(200)
+      .json({ success: true, message: "Product removed from warehouse stock" });
   } catch (err) {
-    res.status(500).json({ success: false, message: 'Error deleting product', error: err.message });
+    res.status(500).json({
+      success: false,
+      message: "Error deleting product",
+      error: err.message,
+    });
   }
 };
-
-
-
-
 
 const deleteWarehouse = async (req, res) => {
   try {
@@ -1192,7 +1291,7 @@ const deleteWarehouse = async (req, res) => {
     if (!deleted) {
       return res.status(404).json({
         success: false,
-        message: "Warehouse not found."
+        message: "Warehouse not found.",
       });
     }
 
@@ -1204,11 +1303,10 @@ const deleteWarehouse = async (req, res) => {
     res.status(500).json({
       success: false,
       message: "Failed to delete warehouse.",
-      error: error.message
+      error: error.message,
     });
   }
 };
-
 
 const approveWarehouse = async (req, res) => {
   try {
@@ -1219,7 +1317,7 @@ const approveWarehouse = async (req, res) => {
     if (!orderId) {
       return res.status(422).json({
         success: false,
-        message: "Order ID is required"
+        message: "Order ID is required",
       });
     }
 
@@ -1228,50 +1326,73 @@ const approveWarehouse = async (req, res) => {
     if (!order) {
       return res.status(404).json({
         success: false,
-        message: "Order not found"
+        message: "Order not found",
       });
     }
 
     // Check order status
-    if (order.orderStatus !== 'WarehouseAssigned') {
+    if (order.orderStatus !== "WarehouseAssigned") {
       return res.status(400).json({
         success: false,
-        message: `Order is not in 'WarehouseAssigned' status, current status: ${order.orderStatus}`
+        message: `Order is not in 'WarehouseAssigned' status, current status: ${order.orderStatus}`,
       });
     }
 
     // Approve order
-    order.orderStatus = 'Approved';
+    order.orderStatus = "Approved";
     order.approvedBy = adminId;
     await order.save();
 
     res.status(200).json({
       success: true,
       message: "Order approved successfully",
-      data: order
+      data: order,
     });
-
   } catch (error) {
     res.status(500).json({
       success: false,
       message: "Error approving the warehouse for this order",
-      error: error.message
+      error: error.message,
     });
   }
 };
 
-
-
-
-
-
 module.exports = {
-  registerAdmin, loginAdmin,
-  addSalesman, getAllSalesman, getSalesman, updateSalesman, deleteSalesman,
-  addSalesManager, getAllSalesManager, getSalesManager, updateSalesManager, deleteSalesManager,
-  addSalesAuthorizer, getAllSalesAuthorizer, getSalesAuthorizer, updateSalesAuthorizer, deleteSalesAuthorizer,
-  addPlantHead, getAllPlantHeads, getPlantHead, updatePlantHead, deletePlantHead,
-  addAccountant, getAllAccountants, getAccountant, updateAccountant, deleteAccountant,
-  addWarehouse, getAllWarehouse, getWarehouse, updateWarehouse, deleteWarehouse, approveWarehouse,
-  addProductToWarehouse, updateProductsPrice, deleteProducts, getAllProducts, 
+  registerAdmin,
+  loginAdmin,
+  addSalesman,
+  getAllSalesman,
+  getSalesman,
+  updateSalesman,
+  deleteSalesman,
+  addSalesManager,
+  getAllSalesManager,
+  getSalesManager,
+  updateSalesManager,
+  deleteSalesManager,
+  addSalesAuthorizer,
+  getAllSalesAuthorizer,
+  getSalesAuthorizer,
+  updateSalesAuthorizer,
+  deleteSalesAuthorizer,
+  addPlantHead,
+  getAllPlantHeads,
+  getPlantHead,
+  updatePlantHead,
+  deletePlantHead,
+  addAccountant,
+  getAllAccountants,
+  getAccountant,
+  updateAccountant,
+  deleteAccountant,
+  addWarehouse,
+  getAllWarehouse,
+  getWarehouse,
+  updateWarehouse,
+  deleteWarehouse,
+  approveWarehouse,
+  addProductToWarehouse,
+  updateProductsPrice,
+  deleteProducts,
+  getAllProducts,
 };

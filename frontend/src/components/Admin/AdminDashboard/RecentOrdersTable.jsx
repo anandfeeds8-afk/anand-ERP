@@ -129,7 +129,24 @@ const RecentOrdersTable = () => {
 
   return (
     <div className="p-5 bg-white shadow hover:shadow-md transition-all rounded-lg my-7">
-      <h1 className="text-xl font-semibold mb-4">Recent Orders</h1>
+      <div className="flex justify-between items-center mb-4">
+        <h1 className="text-xl font-semibold">Recent Orders</h1>
+        {customerFilter || dateFilter || statusFilter ? (
+          <Button
+            variant="text"
+            size="small"
+            disableElevation
+            sx={{ fontWeight: "600" }}
+            onClick={() => {
+              setCustomerFilter("");
+              setDateFilter("");
+              setStatusFilter("");
+            }}
+          >
+            Clear filters
+          </Button>
+        ) : null}
+      </div>
       <div className="grid grid-cols-4 gap-3 items-center">
         <div className="col-span-2">
           <TextField

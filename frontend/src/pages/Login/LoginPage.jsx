@@ -103,7 +103,7 @@ const LoginPage = () => {
             <span className="text-red-500">{errors?.password?.message}</span>
           )}
         </div>
-        <Button fullWidth type="submit" variant="contained">
+        <Button disableElevation fullWidth type="submit" variant="contained">
           Login
         </Button>
       </form>

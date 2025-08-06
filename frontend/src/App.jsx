@@ -5,12 +5,13 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import AdminDashboardPage from "./pages/Admin/AdminDashboardPage";
 import MainLayout from "./layouts/MainLayout";
 import LoginPage from "./pages/Login/LoginPage";
-import SalesmanDashboard from "./pages/Salesman/SalesmanDashboard";
+import SalesmanDashboardPage from "./pages/Salesman/SalesmanDashboardPage";
 import ProductManagementPage from "./pages/Admin/ProductManagementPage";
 import EmployeeManagementPage from "./pages/Admin/EmployeeManagementPage";
 import { Toaster } from "react-hot-toast";
 import OrderManagementPage from "./pages/Admin/OrderManagementPage";
 import WarehouseManagementPage from "./pages/Admin/WarehouseManagementPage";
+import ProtectedRoutes from "./ui/ProtectedRoutes";
 
 const App = () => {
   const queryClient = new QueryClient();
@@ -19,7 +20,14 @@ const App = () => {
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<MainLayout />}>
+          <Route
+            path="/"
+            element={
+              <ProtectedRoutes>
+                <MainLayout />
+              </ProtectedRoutes>
+            }
+          >
             {/* Admin routes*/}
             <Route path="admin">
               <Route index element={<Navigate to="dashboard" replace />} />
@@ -51,7 +59,7 @@ const App = () => {
             {/* Salesman routes */}
             <Route path="salesman">
               <Route index element={<Navigate to="dashboard" replace />} />
-              <Route path="dashboard" element={<SalesmanDashboard />} />
+              <Route path="dashboard" element={<SalesmanDashboardPage />} />
             </Route>
           </Route>
 

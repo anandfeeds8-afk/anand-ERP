@@ -30,7 +30,10 @@ const WarehouseManagementPage = () => {
     (warehouse) => !warehouse.approved
   );
 
-  const stockItems = warehouses?.map((warehouse) => warehouse.stock?.length);
+  const stockItems = warehouses?.reduce(
+    (acc, curr) => acc + curr.stock?.length,
+    0
+  );
 
   const {
     register,

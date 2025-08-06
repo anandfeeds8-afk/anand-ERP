@@ -1,22 +1,23 @@
 // Import core modules and packages
-const express = require('express');
-const mongoose = require('mongoose');
-const cors = require('cors');
-require('dotenv').config();
-const os = require('os');
+const express = require("express");
+const mongoose = require("mongoose");
+const cors = require("cors");
+require("dotenv").config();
+const os = require("os");
 const cluster = require("cluster");
-const cookieParser = require('cookie-parser');
+const cookieParser = require("cookie-parser");
 
 // Import custom route files
-const salesmanRoutes = require('./routes/salesmanRouter');
-const adminRoutes = require('./routes/adminRouter');
-const managerRoutes = require('./routes/managerRouter');
-const authorizerRoutes = require('./routes/authorizerRouter');
-const plantHeadRoutes = require('./routes/plantheadRouter');
-const accountantRoutes = require('./routes/accountantRouter');
+const salesmanRoutes = require("./routes/salesmanRouter");
+const adminRoutes = require("./routes/adminRouter");
+const managerRoutes = require("./routes/managerRouter");
+const authorizerRoutes = require("./routes/authorizerRouter");
+const plantHeadRoutes = require("./routes/plantheadRouter");
+const accountantRoutes = require("./routes/accountantRouter");
+const meRoutes = require("./routes/meRouter");
 
 // Import database connection function
-const connectDatabase = require('./config/db');
+const connectDatabase = require("./config/db");
 
 // Create Express app instance
 const app = express();
@@ -40,7 +41,7 @@ if (cluster.isPrimary) {
   let restartCount = 0;
   const MAX_RESTARTS = 5;
 
-  cluster.on('exit', (worker, code, signal) => {
+  cluster.on("exit", (worker, code, signal) => {
     if (restartCount < MAX_RESTARTS) {
       console.log(`Restarting worker ${worker.process.pid}...`);
       cluster.fork();
@@ -49,7 +50,6 @@ if (cluster.isPrimary) {
       console.log(`Max restart limit reached. Not forking anymore.`);
     }
   });
-
 } else {
   // Worker process logic starts here
 
@@ -63,16 +63,17 @@ if (cluster.isPrimary) {
   app.use(cookieParser());
 
   // Mount route handlers for each user role
-  app.use('/api/admin', adminRoutes);
-  app.use('/api/salesman', salesmanRoutes);
-  app.use('/api/manager', managerRoutes);
-  app.use('/api/authorizer', authorizerRoutes);
-  app.use('/api/planthead', plantHeadRoutes);
-  app.use('/api/accountant', accountantRoutes);
+  app.use("/api/admin", adminRoutes);
+  app.use("/api/salesman", salesmanRoutes);
+  app.use("/api/manager", managerRoutes);
+  app.use("/api/authorizer", authorizerRoutes);
+  app.use("/api/planthead", plantHeadRoutes);
+  app.use("/api/accountant", accountantRoutes);
+  app.use("/api/me", meRoutes);
 
   // Root route (API health check)
-  app.get('/', (req, res) => {
-    res.send('🐣 Poultry Feed Management API Running...');
+  app.get("/", (req, res) => {
+    res.send("🐣 Poultry Feed Management API Running...");
   });
 
   // Start Express server

@@ -1,0 +1,26 @@
+import { useQuery } from "@tanstack/react-query";
+import axios from "axios";
+import { API_PATHS, BASE_URL } from "../../../backend/config/apiPaths";
+
+export const useSingleWarehouse = (id) => {
+  const token = localStorage.getItem("token");
+  const { data: singleWarehouse, isPending: singleWarehouseLoading } = useQuery(
+    {
+      queryKey: ["singleWarehouse", id],
+      queryFn: async () => {
+        const response = await axios.get(
+          BASE_URL + API_PATHS.ADMIN.WAREHOUSE.GET(id),
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        // console.log("singleWarehouse", response.data.data);
+        return response.data.data;
+      },
+    }
+  );
+
+  return { singleWarehouse, singleWarehouseLoading };
+};
