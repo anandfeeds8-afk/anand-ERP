@@ -8,7 +8,7 @@ export const useProduct = (warehouseId) => {
   const token = localStorage.getItem("token");
   const queryClient = useQueryClient();
 
-  // GET Products
+  // GET Products from warehouse
   const { data: products, isPending: productsLoading } = useQuery({
     queryKey: ["product", warehouseId],
     queryFn: async () => {
@@ -21,6 +21,22 @@ export const useProduct = (warehouseId) => {
         }
       );
       // console.log("products", response.data.data);
+      return response.data.data;
+    },
+  });
+  // GET all Products
+  const { data: allProducts, isPending: allProductsLoading } = useQuery({
+    queryKey: ["product", warehouseId],
+    queryFn: async () => {
+      const response = await axios.get(
+        BASE_URL + API_PATHS.ADMIN.WAREHOUSE.GET_ALL_PRODUCTS,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      console.log("allProducts", response.data.data);
       return response.data.data;
     },
   });
@@ -60,12 +76,45 @@ export const useProduct = (warehouseId) => {
       },
     });
 
+  // ADD Product to warehouse
+  const {
+    mutate: addProductToWarehouse,
+    isPending: isAddingProductToWarehouse,
+  } = useMutation({
+    mutationFn: async (data) => {
+      const response = await axios.post(
+        BASE_URL +
+          API_PATHS.ADMIN.WAREHOUSE.ADD_PRODUCT_TO_WAREHOUSE(data.warehouseId),
+        data,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["singleWarehouse", warehouseId],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["product", warehouseId],
+      });
+      toast.success("Product added successfully");
+    },
+    onError: (error) => {
+      console.log(error);
+      toast.error(error.response.data.message);
+    },
+  });
+
   // ADD Product
   const { mutate: addProduct, isPending: isAddingProduct } = useMutation({
     mutationFn: async (data) => {
       console.log("data in add product", data);
       const response = await axios.post(
-        BASE_URL + API_PATHS.ADMIN.WAREHOUSE.ADD_PRODUCT(data.warehouseId),
+        BASE_URL + API_PATHS.ADMIN.WAREHOUSE.ADD_PRODUCT,
         data,
         {
           headers: {
@@ -124,15 +173,19 @@ export const useProduct = (warehouseId) => {
 
   const isLoading =
     productsLoading ||
+    allProductsLoading ||
     isUpdatingProductPrice ||
     isAddingProduct ||
-    isDeletingProduct;
+    isDeletingProduct ||
+    isAddingProductToWarehouse;
 
   return {
     updateProductPrice,
+    addProductToWarehouse,
     addProduct,
     deleteProduct,
     products,
+    allProducts,
     isLoading,
   };
 };

@@ -59,7 +59,10 @@ export const API_PATHS = {
       DELETE: (id) => `/api/admin/delete_warehouse/${id}`,
       APPROVE: "/api/admin/approve_warehouse",
 
-      ADD_PRODUCT: (warehouseId) =>
+      ADD_PRODUCT: "/api/admin/add_product",
+      GET_ALL_PRODUCTS: "/api/admin/get_allproducts",
+
+      ADD_PRODUCT_TO_WAREHOUSE: (warehouseId) =>
         `/api/admin/warehouse/${warehouseId}/add_product`,
       GET_PRODUCTS: (warehouseId) => `/api/admin/${warehouseId}/products`,
       UPDATE_PRODUCT_PRICE: (warehouseId, productId) =>
