@@ -270,6 +270,7 @@ const getOrderDetails = async (req, res) => {
 
   try {
     const order = await Order.findById(orderId)
+      .populate('item', 'name category description')
       .populate('party', 'name contact')
       .populate('placedBy', 'name email');
 
