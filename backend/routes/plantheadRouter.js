@@ -17,7 +17,7 @@ const { cancelOrder } = require("../controllers/Orders");
 // Login
 plantHeadRouter.post("/login", loginPlantHead);
 
-// //get the orders which is assigned to this warehouse
+//get the orders which is assigned to this warehouse
 plantHeadRouter.get("/orders/getAll", verifyPlanthead, getAllOrders);
 
 //get order details

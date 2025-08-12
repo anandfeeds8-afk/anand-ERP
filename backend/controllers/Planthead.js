@@ -264,6 +264,7 @@ const getDispatchedOrders = async (req, res) => {
         "dispatchInfo.dispatchedBy": plantHeadId,
         orderStatus: "Dispatched",
       })
+      .populate('item', 'name category description')
       .populate("party", "name contact")
       .populate("placedBy", "name");
 
