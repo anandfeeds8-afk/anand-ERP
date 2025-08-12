@@ -19,7 +19,7 @@ export const API_PATHS = {
       DELETE: (id) => `/api/admin/delete_salesman/${id}`,
     },
 
-    SALESMANAGER: {
+    SALES_MANAGER: {
       ADD: "/api/admin/add_salesmanager",
       GET_ALL: "/api/admin/get_allsalesmanager",
       GET: (id) => `/api/admin/get_salesmanager/${id}`,
@@ -27,7 +27,7 @@ export const API_PATHS = {
       DELETE: (id) => `/api/admin/delete_salesmanager/${id}`,
     },
 
-    SALESAUTHORIZER: {
+    SALES_AUTHORIZER: {
       ADD: "/api/admin/add_salesauthorizer",
       GET_ALL: "/api/admin/get_allsalesauthorizer",
       GET: (id) => `/api/admin/get_salesauthorizer/${id}`,
@@ -35,7 +35,7 @@ export const API_PATHS = {
       DELETE: (id) => `/api/admin/delete_salesauthorizer/${id}`,
     },
 
-    PLANTHEAD: {
+    PLANT_HEAD: {
       ADD: "/api/admin/add_planthead",
       GET_ALL: "/api/admin/get_allplantheads",
       GET: (id) => `/api/admin/get_planthead/${id}`,
@@ -51,24 +51,25 @@ export const API_PATHS = {
       DELETE: (id) => `/api/admin/delete_accountant/${id}`,
     },
 
+    PRODUCT: {
+      ADD: "/api/admin/add_product",
+      GET_ALL: "/api/admin/get_allproducts",
+      UPDATE_PRICE: (productId) => `/api/admin/products/${productId}`,
+      DELETE: (productId) => `/api/admin/delete_product/${productId}`,
+    },
+
     WAREHOUSE: {
       ADD: "/api/admin/add_warehouse",
       GET_ALL: "/api/admin/get_allwarehouse",
-      GET: (id) => `/api/admin/get_warehouse/${id}`,
-      UPDATE: (id) => `/api/admin/update_warehouse/${id}`,
-      DELETE: (id) => `/api/admin/delete_warehouse/${id}`,
-      APPROVE: "/api/admin/approve_warehouse",
-
-      ADD_PRODUCT: "/api/admin/add_product",
-      GET_ALL_PRODUCTS: "/api/admin/get_allproducts",
-
-      ADD_PRODUCT_TO_WAREHOUSE: (warehouseId) =>
+      GET: (warehouseId) => `/api/admin/get_warehouse/${warehouseId}`,
+      UPDATE: (warehouseId) => `/api/admin/update_warehouse/${warehouseId}`,
+      DELETE: (warehouseId) => `/api/admin/delete_warehouse/${warehouseId}`,
+      ADD_PRODUCT: (warehouseId) =>
         `/api/admin/warehouse/${warehouseId}/add_product`,
       GET_PRODUCTS: (warehouseId) => `/api/admin/${warehouseId}/products`,
-      UPDATE_PRODUCT_PRICE: (warehouseId, productId) =>
-        `/api/admin/${warehouseId}/products/${productId}`,
       DELETE_PRODUCT: (warehouseId, productId) =>
         `/api/admin/${warehouseId}/products/${productId}`,
+      
     },
 
     ORDERS: {
@@ -76,6 +77,7 @@ export const API_PATHS = {
       GET_ALL: "/api/admin/get_allorder",
       GET: (id) => `/api/admin/get_order/${id}`,
       CANCEL: (id) => `/api/admin/cancel_order/${id}`,
+      APPROVE: "/api/admin/approve_warehouse",
     },
   },
 

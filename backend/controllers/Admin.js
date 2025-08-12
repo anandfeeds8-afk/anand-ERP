@@ -1363,7 +1363,7 @@ const updateProductsPrice = async (req, res) => {
   }
 };
 
-const deleteProducts = async (req, res) => {
+const deleteProduct = async (req, res) => {
   try {
     const { productId } = req.params;
 
@@ -1480,7 +1480,7 @@ module.exports = {
   approveWarehouse,
   addProductToWarehouse,
   updateProductsPrice,
-  deleteProducts,
+  deleteProduct,
   getAllProductsFromWarehouse,
   addProduct,
   getAllProducts,
