@@ -1,6 +1,6 @@
 import { useMutation } from "@tanstack/react-query";
 import axios from "axios";
-import { BASE_URL, API_PATHS } from "../../../backend/config/apiPaths";
+import { BASE_URL, API_PATHS } from "../utils/apiPaths";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-hot-toast";
 

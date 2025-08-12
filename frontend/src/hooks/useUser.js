@@ -1,6 +1,6 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 import axios from "axios";
-import { BASE_URL, API_PATHS } from "../../../backend/config/apiPaths";
+import { BASE_URL, API_PATHS } from"../utils/apiPaths";
 import { toast } from "react-hot-toast";
 import { useQueryClient } from "@tanstack/react-query";
 

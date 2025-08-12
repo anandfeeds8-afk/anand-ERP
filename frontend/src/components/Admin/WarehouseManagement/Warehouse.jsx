@@ -32,6 +32,7 @@ import useEmployees from "../../../hooks/useEmployees";
 import { useSingleWarehouse } from "../../../hooks/useSingleWarehouse";
 import { CgDollar } from "react-icons/cg";
 import { useProduct } from "../../../hooks/useProduct";
+import useFilteredProducts from "../../../hooks/useFilteredProducts";
 
 const Warehouse = ({ warehouse }) => {
   const { planthead, accountant } = useEmployees();
@@ -40,13 +41,9 @@ const Warehouse = ({ warehouse }) => {
   const { singleWarehouse, singleWarehouseLoading } = useSingleWarehouse(
     warehouse._id
   );
-  const {
-    products,
-    addProduct,
-    isLoading: isProductsLoading,
-    updateProductPrice,
-    deleteProduct,
-  } = useProduct(warehouse._id);
+  const { deleteProductFromWarehouse, addProductToWarehouse } = useProduct(
+    warehouse._id
+  );
 
   const {
     register,
@@ -59,26 +56,10 @@ const Warehouse = ({ warehouse }) => {
   const [openView, setOpenView] = useState(false);
   const [openDelete, setOpenDelete] = useState(false);
   const [openManageStock, setOpenManageStock] = useState(false);
-  const [isUpdateMode, setIsUpdateMode] = useState(false);
-  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [selectedCategory, setSelectedCategory] = useState(null);
+  const [selectedProductId, setSelectedProductId] = useState(null);
 
-  useEffect(() => {
-    if (isUpdateMode && selectedProduct) {
-      reset({
-        name: selectedProduct.name,
-        quantity: selectedProduct.quantity,
-        price: selectedProduct.price,
-      });
-    } else {
-      reset({
-        name: "",
-        quantity: "",
-        price: "",
-        category: "",
-        description: "",
-      });
-    }
-  }, [isUpdateMode, selectedProduct, reset]);
+  const { filteredProducts, isPending } = useFilteredProducts(selectedCategory);
 
   const handleEditWarehouse = (data) => {
     data._id = warehouse._id;
@@ -86,33 +67,20 @@ const Warehouse = ({ warehouse }) => {
     setOpenEdit(false);
   };
 
-  const handleUpdateButton = (productId, quantity) => {
-    const selectedProduct = products?.find((p) => p.productId == productId);
-    selectedProduct.quantity = quantity;
-    setSelectedProduct(selectedProduct);
-    setIsUpdateMode(true);
-  };
-
   const handleDeleteProduct = (productId) => {
-    console.log("productId in delete", productId);
     const data = {
       warehouseId: warehouse._id,
       productId: productId,
     };
-    deleteProduct(data);
+    deleteProductFromWarehouse(data);
     setOpenDelete(false);
-  };
-
-  const handleUpdateProductPrice = (data) => {
-    data.warehouseId = warehouse._id;
-    data.productId = selectedProduct.productId;
-    updateProductPrice(data);
   };
 
   const handleAddProduct = (data) => {
     data.warehouseId = warehouse._id;
+    data.productId = selectedProductId;
     console.log("handle add product", data);
-    addProduct(data);
+    addProductToWarehouse(data);
   };
 
   if (singleWarehouseLoading) return <CircularProgress />;
@@ -199,7 +167,7 @@ const Warehouse = ({ warehouse }) => {
         />
       </div>
 
-      {/* --- Edit Employee Modal --- */}
+      {/* --- Edit Warehouse Modal --- */}
       {openEdit && (
         <div className="transition-all bg-black/30 backdrop-blur-sm w-full z-50 h-screen absolute top-0 left-0 flex items-center justify-center">
           <div className="bg-white p-7 rounded-lg w-[29rem]">
@@ -214,7 +182,7 @@ const Warehouse = ({ warehouse }) => {
                 id="outlined-basic"
                 label="Name"
                 variant="outlined"
-                defaultValue={warehouse.name}
+                defaultValue={warehouse?.name}
                 {...register("name", {
                   required: { value: true, message: "Name is required" },
                 })}
@@ -225,7 +193,7 @@ const Warehouse = ({ warehouse }) => {
                 id="outlined-basic"
                 label="Location"
                 variant="outlined"
-                defaultValue={warehouse.location}
+                defaultValue={warehouse?.location}
                 {...register("location", {
                   required: { value: true, message: "Location is required" },
                 })}
@@ -258,9 +226,9 @@ const Warehouse = ({ warehouse }) => {
                     </Select>
                   )}
                 />
-                {errors?.planthead && (
+                {errors?.plantHead && (
                   <span className="text-red-500 text-sm mt-1">
-                    {errors.planthead.message}
+                    {errors.plantHead.message}
                   </span>
                 )}
               </FormControl>
@@ -325,7 +293,7 @@ const Warehouse = ({ warehouse }) => {
         </div>
       )}
 
-      {/* Delete Warehouse Modal */}
+      {/* --- Delete Warehouse Modal --- */}
       {openDelete && (
         <div className="transition-all bg-black/30 backdrop-blur-sm w-full z-50 h-screen absolute top-0 left-0 flex items-center justify-center">
           <div className="bg-white p-7 rounded-lg w-[29rem]">
@@ -662,14 +630,15 @@ const Warehouse = ({ warehouse }) => {
                 <CloseIcon />
               </IconButton>
             </div>
-            <div className="grid lg:grid-cols-2 gap-5 mt-2">
-              <div>
+            <div className="grid lg:grid-cols-3 gap-5 mt-2">
+              <div className="col-span-2">
                 <p className="font-semibold mb-3">Available Products</p>
                 <div className="relative max-h-64 overflow-auto rounded mt-2">
                   <table className="w-full">
                     <thead>
                       <tr className="bg-blue-50 sticky z-50 top-0 text-blue-800 text-center text-sm">
                         <th className="p-2">Product Name</th>
+                        <th className="p-2">Category</th>
                         <th className="p-2">Quantity</th>
                         <th className="p-2">Price</th>
                         <th className="p-2">Action</th>
@@ -679,27 +648,17 @@ const Warehouse = ({ warehouse }) => {
                       {singleWarehouse?.stock?.length > 0 ? (
                         singleWarehouse?.stock?.map((item, index) => (
                           <tr key={index} className="text-center text-sm">
-                            <td className="p-2">{item.product.name}</td>
-                            <td className="p-2">{item.quantity}kg</td>
-                            <td className="p-2">₹{item.product.price}</td>
+                            <td className="p-2">{item?.product?.name}</td>
+                            <td className="p-2">{item?.product?.category}</td>
+                            <td className="p-2">{item?.quantity}kg</td>
+                            <td className="p-2">₹{item?.product?.price}/kg</td>
                             <td className="p-2 flex items-center justify-center">
-                              <SquarePen
-                                color="green"
-                                className="hover:bg-green-100 active:scale-95 transition-all p-1.5 rounded-lg"
-                                size={30}
-                                onClick={() =>
-                                  handleUpdateButton(
-                                    item.product._id,
-                                    item.quantity
-                                  )
-                                }
-                              />
                               <Trash2
                                 color="red"
                                 className="hover:bg-red-100 active:scale-95 transition-all p-1.5 rounded-lg"
                                 size={30}
                                 onClick={() =>
-                                  handleDeleteProduct(item.product._id)
+                                  handleDeleteProduct(item?.product?._id)
                                 }
                               />
                             </td>
@@ -721,166 +680,125 @@ const Warehouse = ({ warehouse }) => {
               </div>
               <div>
                 <div className="flex items-center justify-between mb-3">
-                  <p className="font-semibold ">{`${
-                    isUpdateMode ? "Update" : "Add"
-                  } Products`}</p>
-                  {isUpdateMode && (
-                    <Button
-                      sx={{
-                        textTransform: "none",
-                      }}
-                      onClick={() => {
-                        setIsUpdateMode(false);
-                        setSelectedProduct(null);
-                      }}
-                    >
-                      Back to Add
-                    </Button>
-                  )}
+                  <p className="font-semibold ">Add Products</p>
                 </div>
                 <div>
-                  {isUpdateMode ? (
-                    // Update product form
-                    <form onSubmit={handleSubmit(handleUpdateProductPrice)}>
-                      <div className="space-y-4">
-                        <TextField
-                          fullWidth
-                          disabled
-                          InputLabelProps={{
-                            shrink: true,
-                          }}
-                          size="small"
-                          id="outlined-basic"
-                          label="Product Name"
-                          variant="outlined"
-                          {...register("name", {
-                            required: {
-                              value: true,
-                              message: "Product is required",
-                            },
-                          })}
+                  <form onSubmit={handleSubmit(handleAddProduct)}>
+                    <div className="space-y-4">
+                      <FormControl
+                        fullWidth
+                        size="small"
+                        error={!!errors.category}
+                        className="mb-4"
+                      >
+                        <InputLabel id="category-label">Category</InputLabel>
+                        <Controller
+                          name="category"
+                          control={control}
+                          rules={{ required: "Category is required" }}
+                          render={({ field }) => (
+                            <Select
+                              {...field}
+                              labelId="category-label"
+                              id="category"
+                              label="Category"
+                              onChange={(e) => {
+                                field.onChange(e);
+                                setSelectedCategory(e.target.value);
+                              }}
+                            >
+                              <MenuItem>Select Product Category</MenuItem>
+                              <MenuItem value="broiler starter feed">
+                                Broiler Starter Feed
+                              </MenuItem>
+                              <MenuItem value="broiler grower feed">
+                                Broiler Grower Feed
+                              </MenuItem>
+                              <MenuItem value="broiler finisher feed">
+                                Broiler Finisher Feed
+                              </MenuItem>
+                              <MenuItem value="layer starter feed">
+                                Layer Starter Feed
+                              </MenuItem>
+                              <MenuItem value="layer grower feed">
+                                Layer Grower Feed
+                              </MenuItem>
+                              <MenuItem value="layer finisher feed">
+                                Layer Finisher Feed
+                              </MenuItem>
+                              <MenuItem value="layer mash">Layer Mash</MenuItem>
+                              <MenuItem value="concentrates & premixes">
+                                Concentrates & Premixes
+                              </MenuItem>
+                              <MenuItem value="supplements">
+                                Supplements
+                              </MenuItem>
+                              <MenuItem value="additives">Additives</MenuItem>
+                              <MenuItem value="grains">Grains</MenuItem>
+                              <MenuItem value="protein meals">
+                                Protein Meals
+                              </MenuItem>
+                              <MenuItem value="other">Other</MenuItem>
+                            </Select>
+                          )}
                         />
-                        <TextField
-                          fullWidth
-                          InputLabelProps={{
-                            shrink: true,
-                          }}
-                          disabled
-                          size="small"
-                          id="outlined-basic"
-                          label="Quantity"
-                          variant="outlined"
-                          {...register("quantity", {
-                            required: {
-                              value: true,
-                              message: "Quantity is required",
-                            },
-                          })}
-                        />
-                        <TextField
-                          fullWidth
-                          InputLabelProps={{
-                            shrink: true,
-                          }}
-                          size="small"
-                          type="number"
-                          id="outlined-basic"
-                          label="Price"
-                          variant="outlined"
-                          {...register("price", {
-                            required: {
-                              value: true,
-                              message: "Price is required",
-                            },
-                          })}
-                        />
-
-                        <Button
-                          fullWidth
-                          color="success"
-                          variant="contained"
-                          disableElevation
-                          type="submit"
-                        >
-                          Update Product
-                        </Button>
-                      </div>
-                    </form>
-                  ) : (
-                    // Add product form
-                    <form onSubmit={handleSubmit(handleAddProduct)}>
-                      <div className="space-y-4">
-                        <TextField
-                          fullWidth
-                          {...register("name", {
-                            required: {
-                              value: true,
-                              message: "Product Name is required",
-                            },
-                          })}
-                          size="small"
-                          id="outlined-basic"
-                          label="Product Name"
-                          variant="outlined"
-                        />
-                        {errors.name?.message && (
-                          <span className="text-red-500 text-xs">
-                            {errors.name?.message}
+                        {errors?.category && (
+                          <span className="text-red-500 text-xs mt-1">
+                            {errors.category.message}
                           </span>
                         )}
-                        <TextField
-                          fullWidth
-                          {...register("category", {
-                            required: {
-                              value: true,
-                              message: "Category is required",
-                            },
-                          })}
-                          size="small"
-                          id="outlined-basic"
-                          label="Category"
-                          variant="outlined"
+                      </FormControl>
+                      <FormControl
+                        fullWidth
+                        size="small"
+                        error={!!errors.productId}
+                        disabled={filteredProducts?.length === 0}
+                        className="mb-4"
+                      >
+                        <InputLabel id="productId-label">
+                          Product Name
+                        </InputLabel>
+                        <Controller
+                          name="productId"
+                          control={control}
+                          rules={{ required: "Product Name is required" }}
+                          render={({ field }) => (
+                            <Select
+                              {...field}
+                              labelId="productId-label"
+                              id="productId"
+                              onChange={(e) => {
+                                field.onChange(e);
+                                setSelectedProductId(e.target.value);
+                              }}
+                              label="Product Name"
+                            >
+                              <MenuItem>Select Product Name</MenuItem>
+                              {filteredProducts?.map((product) => (
+                                <MenuItem key={product._id} value={product._id}>
+                                  {product.name}
+                                </MenuItem>
+                              ))}
+                            </Select>
+                          )}
                         />
-                        <TextField
-                          fullWidth
-                          {...register("description", {
-                            required: {
-                              value: true,
-                              message: "Description is required",
-                            },
-                          })}
-                          size="small"
-                          id="outlined-basic"
-                          label="Description"
-                          variant="outlined"
-                        />
-                        <TextField
-                          fullWidth
-                          type="number"
-                          size="small"
-                          id="outlined-basic"
-                          label="Price"
-                          variant="outlined"
-                          {...register("price", {
-                            required: {
-                              value: true,
-                              message: "Price is required",
-                            },
-                          })}
-                        />
-
-                        <Button
-                          fullWidth
-                          color="success"
-                          variant="contained"
-                          disableElevation
-                          type="submit"
-                        >
-                          Add Product
-                        </Button>
-                      </div>
-                    </form>
-                  )}
+                        {errors?.productId && (
+                          <span className="text-red-500 text-xs mt-1">
+                            {errors.productId.message}
+                          </span>
+                        )}
+                      </FormControl>
+                      <Button
+                        fullWidth
+                        color="success"
+                        variant="contained"
+                        disableElevation
+                        type="submit"
+                      >
+                        Add Product
+                      </Button>
+                    </div>
+                  </form>
                 </div>
               </div>
             </div>

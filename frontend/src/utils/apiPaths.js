@@ -69,7 +69,8 @@ export const API_PATHS = {
       GET_PRODUCTS: (warehouseId) => `/api/admin/${warehouseId}/products`,
       DELETE_PRODUCT: (warehouseId, productId) =>
         `/api/admin/${warehouseId}/products/${productId}`,
-      
+      GET_FILTERED_PRODUCTS: (category) =>
+        `/api/admin/get-filtered-products/${category}`,
     },
 
     ORDERS: {

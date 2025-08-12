@@ -65,8 +65,6 @@ const EmployeeManagementPage = () => {
     planthead?.length +
     accountant?.length;
 
-  console.log(totalEmployees);
-
   const {
     register,
     control,

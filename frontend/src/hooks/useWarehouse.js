@@ -1,6 +1,6 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 import axios from "axios";
-import { API_PATHS, BASE_URL } from "../../../backend/config/apiPaths";
+import { API_PATHS, BASE_URL } from "../utils/apiPaths";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "react-hot-toast";
 
@@ -20,7 +20,7 @@ const useWarehouse = () => {
           },
         }
       );
-      // console.log("warehouses", response.data.data);
+      console.log("warehouses", response.data.data);
       return response.data.data;
     },
     onError: (error) => {
@@ -81,32 +81,6 @@ const useWarehouse = () => {
       },
     });
 
-  //   Approve Warehouse
-  const { mutate: approveWarehouse, isPending: isApprovingWarehouse } =
-    useMutation({
-      mutationFn: async () => {
-        const response = await axios.post(
-          BASE_URL + API_PATHS.ADMIN.WAREHOUSE.APPROVE,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-        return response.data;
-      },
-      onSuccess: () => {
-        queryClient.invalidateQueries({
-          queryKey: ["warehouses"],
-        });
-        toast.success("Warehouse approved successfully");
-      },
-      onError: (error) => {
-        console.log(error);
-        toast.error(error.response.data.message);
-      },
-    });
-
   // DELETE Warehouse
   const { mutate: deleteWarehouse, isPending: isDeletingWarehouse } =
     useMutation({
@@ -121,7 +95,7 @@ const useWarehouse = () => {
         );
         return response.data;
       },
-      onSuccess: (data) => {
+      onSuccess: () => {
         queryClient.invalidateQueries({
           queryKey: ["warehouses"],
         });
@@ -137,14 +111,12 @@ const useWarehouse = () => {
     warehouseLoading ||
     isAddingWarehouse ||
     isUpdatingWarehouse ||
-    isApprovingWarehouse ||
     isDeletingWarehouse;
 
   return {
     addWarehouse,
     updateWarehouse,
     deleteWarehouse,
-    approveWarehouse,
     warehouses,
     isLoading,
   };

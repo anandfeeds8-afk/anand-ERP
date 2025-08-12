@@ -26,6 +26,7 @@ const ProductManagementPage = () => {
   const onSubmit = (data) => {
     console.log(data);
     addProduct(data);
+    setOpenForm(false);
   };
 
   console.log("allProducts", allProducts);
@@ -50,17 +51,17 @@ const ProductManagementPage = () => {
         </Button>
       </div>
 
-      <div>
+      <div className="grid lg:grid-cols-3 lg:gap-5">
         {allProducts?.map((product) => (
           <Product key={product._id} product={product} />
         ))}
       </div>
 
-      {/* Add Warehouse Modal */}
+      {/* Add Product Modal */}
       {openForm && (
         <div className="transition-all bg-black/30 backdrop-blur-sm w-full z-50 h-screen absolute top-0 left-0 flex items-center justify-center">
           <div className="bg-white p-7 rounded-lg w-[29rem]">
-            <p className="text-lg font-semibold mb-5">Add Warehouse</p>
+            <p className="text-lg font-semibold mb-5">Add Product</p>
             <form className="space-y-5" onSubmit={handleSubmit(onSubmit)}>
               <FormControl
                 fullWidth
@@ -147,7 +148,7 @@ const ProductManagementPage = () => {
                 size="small"
                 fullWidth
                 id="outlined-basic"
-                label="Price"
+                label="Price per kg"
                 variant="outlined"
                 {...register("price", {
                   required: {

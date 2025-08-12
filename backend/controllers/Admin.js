@@ -1132,9 +1132,6 @@ const getWarehouse = async (req, res) => {
   }
 };
 
-
-
-
 const addProductToWarehouse = async (req, res) => {
   try {
     const { warehouseId } = req.params;
@@ -1143,13 +1140,17 @@ const addProductToWarehouse = async (req, res) => {
     // Check warehouse
     const warehouse = await Warehouse.findById(warehouseId);
     if (!warehouse) {
-      return res.status(404).json({ success: false, message: "Warehouse not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "Warehouse not found" });
     }
 
     // Check product
     const product = await Product.findById(productId);
     if (!product) {
-      return res.status(404).json({ success: false, message: "Product not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "Product not found" });
     }
 
     // Check if product already exists in stock
@@ -1157,27 +1158,33 @@ const addProductToWarehouse = async (req, res) => {
       (item) => item.product.toString() === productId
     );
     if (alreadyExists) {
-      return res.status(400).json({ success: false, message: "Product already added to warehouse" });
+      return res.status(400).json({
+        success: false,
+        message: "Product already added to warehouse",
+      });
     }
 
     // Add product with quantity 0
     warehouse.stock.push({
       product: productId,
-      quantity: 0
+      quantity: 0,
     });
 
     await warehouse.save();
 
-    res.status(200).json({ success: true, message: "Product added to warehouse", warehouse });
+    res.status(200).json({
+      success: true,
+      message: "Product added to warehouse",
+      warehouse,
+    });
   } catch (err) {
     res.status(500).json({
       success: false,
       message: "Error adding product to warehouse",
-      error: err.message
+      error: err.message,
     });
   }
 };
-
 
 //OK
 const getAllProductsFromWarehouse = async (req, res) => {
@@ -1275,7 +1282,6 @@ const deleteWarehouse = async (req, res) => {
   }
 };
 
-
 const addProduct = async (req, res) => {
   try {
     let { name, category, description, price } = req.body;
@@ -1287,13 +1293,13 @@ const addProduct = async (req, res) => {
     // Check for existing product in same category
     const existing = await Product.findOne({
       name: normalizedName,
-      category: normalizedCategory
+      category: normalizedCategory,
     });
 
     if (existing) {
       return res.status(400).json({
         success: false,
-        message: 'This product already exists in this category.'
+        message: "This product already exists in this category.",
       });
     }
 
@@ -1301,20 +1307,19 @@ const addProduct = async (req, res) => {
       name: normalizedName,
       category: normalizedCategory,
       description,
-      price
+      price,
     });
 
     await newProduct.save();
 
     res.status(201).json({
       success: true,
-      message: 'Product added successfully.',
-      product: newProduct
+      message: "Product added successfully.",
+      product: newProduct,
     });
-
   } catch (err) {
-    console.error('Add Product Error:', err);
-    res.status(500).json({ success: false, message: 'Server error' });
+    console.error("Add Product Error:", err);
+    res.status(500).json({ success: false, message: "Server error" });
   }
 };
 
@@ -1333,8 +1338,7 @@ const getAllProducts = async (req, res) => {
       error: error.message,
     });
   }
-  
-}
+};
 const updateProductsPrice = async (req, res) => {
   try {
     const { productId } = req.params;
@@ -1364,6 +1368,24 @@ const updateProductsPrice = async (req, res) => {
   }
 };
 
+const getFilteredProducts = async (req, res) => {
+  try {
+    const { category } = req.params;
+    const products = await Product.find({ category });
+    res.status(200).json({
+      success: true,
+      message: "Filtered products fetched successfully",
+      data: products,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Something went wrong while fetching filtered products",
+      error: error.message,
+    });
+  }
+};
+
 const deleteProduct = async (req, res) => {
   try {
     const { productId } = req.params;
@@ -1380,7 +1402,7 @@ const deleteProduct = async (req, res) => {
     res.status(200).json({
       success: true,
       message: "Product deleted successfully",
-      deletedProduct
+      deletedProduct,
     });
   } catch (err) {
     res.status(500).json({
@@ -1390,13 +1412,6 @@ const deleteProduct = async (req, res) => {
     });
   }
 };
-
-
-
-
-
-
-
 
 module.exports = {
   registerAdmin,
@@ -1438,4 +1453,5 @@ module.exports = {
   addProduct,
   getAllProducts,
   deleteProductsFromWarehouse,
+  getFilteredProducts,
 };

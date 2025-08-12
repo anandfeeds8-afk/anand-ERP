@@ -1,6 +1,6 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 import axios from "axios";
-import { API_PATHS, BASE_URL } from "../../../backend/config/apiPaths";
+import { API_PATHS, BASE_URL } from "../utils/apiPaths";
 import { toast } from "react-hot-toast";
 import { useQueryClient } from "@tanstack/react-query";
 
@@ -24,7 +24,11 @@ const useEmployees = () => {
           },
         }
       );
+      // console.log("salesman", response.data.data);
       return response.data.data;
+    },
+    onError: (error) => {
+      console.log(error);
     },
   });
 
@@ -37,7 +41,7 @@ const useEmployees = () => {
     queryKey: ["salesmanager"],
     queryFn: async () => {
       const response = await axios.get(
-        BASE_URL + API_PATHS.ADMIN.SALESMANAGER.GET_ALL,
+        BASE_URL + API_PATHS.ADMIN.SALES_MANAGER.GET_ALL,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -57,7 +61,7 @@ const useEmployees = () => {
     queryKey: ["salesauthorizer"],
     queryFn: async () => {
       const response = await axios.get(
-        BASE_URL + API_PATHS.ADMIN.SALESAUTHORIZER.GET_ALL,
+        BASE_URL + API_PATHS.ADMIN.SALES_AUTHORIZER.GET_ALL,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -77,7 +81,7 @@ const useEmployees = () => {
     queryKey: ["planthead"],
     queryFn: async () => {
       const response = await axios.get(
-        BASE_URL + API_PATHS.ADMIN.PLANTHEAD.GET_ALL,
+        BASE_URL + API_PATHS.ADMIN.PLANT_HEAD.GET_ALL,
         {
           headers: {
             Authorization: `Bearer ${token}`,

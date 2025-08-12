@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
-import { API_PATHS, BASE_URL } from "../../../backend/config/apiPaths";
+import { API_PATHS, BASE_URL } from "../utils/apiPaths";
 
 export const useSingleWarehouse = (id) => {
   const token = localStorage.getItem("token");
