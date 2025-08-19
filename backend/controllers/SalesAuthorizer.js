@@ -126,8 +126,6 @@ const assignWarehouse = async (req, res) => {
   try {
     const { orderId } = req.params;
     const { warehouseId } = req.body;
-    console.log("warehouse id", warehouseId);
-    console.log("req.body", req.body);
     const authorizerId = req.user.id;
 
     const order = await Order.findById(orderId);
@@ -146,8 +144,6 @@ const assignWarehouse = async (req, res) => {
     order.orderStatus = "WarehouseAssigned";
     order.forwardedByAuthorizer = authorizerId;
     await order.save();
-
-    console.log("order in assign warehouse", order.assignedWarehouse);
 
     res
       .status(200)

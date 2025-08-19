@@ -5,15 +5,21 @@ import { format } from "date-fns";
 import { DataGrid } from "@mui/x-data-grid";
 import CloseIcon from "@mui/icons-material/Close";
 import { formatRupee } from "../../utils/formatRupee.js";
-import { usePlantheadOrder } from "../../hooks/usePlanthead.js";
 import { useAccountantOrder } from "../../hooks/useAccountant.js";
 
 const OrdersForAccountant = () => {
   const [singleOrderId, setSingleOrderId] = useState(null);
   const [openView, setOpenView] = useState(false);
 
-  const { ordersInAccountant, ordersInAccountantLoading } =
-    useAccountantOrder(singleOrderId);
+  const {
+    ordersInAccountant,
+    generateInvoice,
+    ordersInAccountantLoading,
+    singleOrderInAccountant,
+    singleOrderInAccountantLoading,
+  } = useAccountantOrder(singleOrderId);
+
+  console.log("ordersInAccountant", ordersInAccountant);
 
   const [paginationModel, setPaginationModel] = useState({
     page: 0,
@@ -36,6 +42,11 @@ const OrdersForAccountant = () => {
 
   const handleInvoiceGeneration = () => {
     console.log(singleOrderId);
+    const data = {
+      orderId: singleOrderId,
+      dueDate: format(singleOrderInAccountant?.dueDate, "yyyy-MM-dd"),
+    };
+    generateInvoice(data);
   };
 
   const columns = [
@@ -119,7 +130,7 @@ const OrdersForAccountant = () => {
     orderStatus: order.orderStatus,
   }));
 
-  if (ordersInAccountantLoading)
+  if (ordersInAccountantLoading || singleOrderInAccountantLoading)
     return (
       <div className="flex items-center justify-center h-full w-full">
         <CircularProgress />
@@ -193,29 +204,29 @@ const OrdersForAccountant = () => {
                     <span className="text-gray-600 font-normal">
                       Product Category:
                     </span>{" "}
-                    {singleOrderFromPlanthead?.item?.category}
+                    {singleOrderInAccountant?.item?.category}
                   </div>
                   <div className="flex items-center justify-between font-semibold">
                     <span className="text-gray-600 font-normal">
                       Product Name:
                     </span>{" "}
-                    {singleOrderFromPlanthead?.item?.name}
+                    {singleOrderInAccountant?.item?.name}
                   </div>
                   <div className="flex items-center justify-between font-semibold">
                     <span className="text-gray-600 font-normal">Quantity:</span>{" "}
-                    {singleOrderFromPlanthead?.quantity} kg
+                    {singleOrderInAccountant?.quantity} kg
                   </div>
                   <div className="flex items-center justify-between font-semibold">
                     <span className="text-gray-600 font-normal">
                       Placed By:
                     </span>
-                    {singleOrderFromPlanthead?.placedBy?.name}
+                    {singleOrderInAccountant?.placedBy?.name}
                   </div>
                   <div className="flex items-center justify-between font-semibold">
                     <span className="text-gray-600 font-normal">
                       Placed Date:
                     </span>
-                    {format(singleOrderFromPlanthead?.createdAt, "dd MMM yyyy")}
+                    {format(singleOrderInAccountant?.createdAt, "dd MMM yyyy")}
                   </div>
                 </div>
                 <div className="flex flex-col gap-2 text-sm">
@@ -226,29 +237,29 @@ const OrdersForAccountant = () => {
                     <span className="text-gray-600 font-normal">
                       Total Amount:
                     </span>
-                    {formatRupee(singleOrderFromPlanthead?.totalAmount)}
+                    {formatRupee(singleOrderInAccountant?.totalAmount)}
                   </div>
                   <div className="flex items-center justify-between font-semibold text-green-700">
                     <span className="text-gray-600 font-normal">
                       Advance Amount:
                     </span>{" "}
-                    {formatRupee(singleOrderFromPlanthead?.advanceAmount)}
+                    {formatRupee(singleOrderInAccountant?.advanceAmount)}
                   </div>
                   <div className="flex items-center justify-between font-semibold text-red-700">
                     <span className="text-gray-600 font-normal">
                       Due Amount:
                     </span>{" "}
-                    {formatRupee(singleOrderFromPlanthead?.dueAmount)}
+                    {formatRupee(singleOrderInAccountant?.dueAmount)}
                   </div>
                   <div className="flex items-center justify-between font-semibold">
                     <span className="text-gray-600 font-normal">
                       Payment Mode:
                     </span>{" "}
-                    {singleOrderFromPlanthead?.paymentMode}
+                    {singleOrderInAccountant?.paymentMode}
                   </div>
                   <div className="flex items-center justify-between font-semibold">
                     <span className="text-gray-600 font-normal">Due Date:</span>{" "}
-                    {format(singleOrderFromPlanthead?.dueDate, "dd MMM yyyy")}
+                    {format(singleOrderInAccountant?.dueDate, "dd MMM yyyy")}
                   </div>
                 </div>
               </div>
@@ -262,13 +273,13 @@ const OrdersForAccountant = () => {
                     <span className="text-gray-600 font-normal">
                       Order Status:
                     </span>{" "}
-                    {singleOrderFromPlanthead?.orderStatus === "Delivered" ? (
+                    {singleOrderInAccountant?.orderStatus === "Delivered" ? (
                       <span className="text-green-700 bg-green-100 p-1 px-3 rounded-full text-xs">
-                        {singleOrderFromPlanthead?.orderStatus}
+                        {singleOrderInAccountant?.orderStatus}
                       </span>
                     ) : (
                       <span className="text-gray-700 bg-gray-200 p-1 px-3 rounded-full text-xs">
-                        {singleOrderFromPlanthead?.orderStatus}
+                        {singleOrderInAccountant?.orderStatus}
                       </span>
                     )}
                   </div>
@@ -276,19 +287,19 @@ const OrdersForAccountant = () => {
                     <span className="text-gray-600 font-normal">
                       Payment Status:
                     </span>
-                    {singleOrderFromPlanthead?.paymentStatus === "Partial" && (
+                    {singleOrderInAccountant?.paymentStatus === "Partial" && (
                       <span className="text-yellow-700 bg-yellow-100 p-1 px-3 rounded-full text-xs">
-                        {singleOrderFromPlanthead?.paymentStatus}
+                        {singleOrderInAccountant?.paymentStatus}
                       </span>
                     )}
-                    {singleOrderFromPlanthead?.paymentStatus === "Paid" && (
+                    {singleOrderInAccountant?.paymentStatus === "Paid" && (
                       <span className="text-green-700 bg-green-100 p-1 px-3 rounded-full text-xs">
-                        {singleOrderFromPlanthead?.paymentStatus}
+                        {singleOrderInAccountant?.paymentStatus}
                       </span>
                     )}
-                    {singleOrderFromPlanthead?.paymentStatus === "Unpaid" && (
+                    {singleOrderInAccountant?.paymentStatus === "Unpaid" && (
                       <span className="text-red-700 bg-red-100 p-1 px-3 rounded-full text-xs">
-                        {singleOrderFromPlanthead?.paymentStatus}
+                        {singleOrderInAccountant?.paymentStatus}
                       </span>
                     )}
                   </div>
@@ -296,7 +307,7 @@ const OrdersForAccountant = () => {
                     <span className="text-gray-600 font-normal">
                       Invoice Generated:
                     </span>{" "}
-                    {singleOrderFromPlanthead?.invoiceGenerated === "true" ? (
+                    {singleOrderInAccountant?.invoiceGenerated === "true" ? (
                       <span className="text-green-700 bg-green-100 p-1 px-3 rounded-full text-xs">
                         Yes
                       </span>
@@ -313,7 +324,7 @@ const OrdersForAccountant = () => {
                     Notes
                   </h1>
                   <p className="bg-gray-100 rounded-lg p-3">
-                    {singleOrderFromPlanthead?.notes}
+                    {singleOrderInAccountant?.notes}
                   </p>
                 </div>
 
@@ -324,8 +335,8 @@ const OrdersForAccountant = () => {
                   <div className="flex items-center justify-between font-semibold">
                     <span className="text-gray-600 font-normal">
                       Order Placed On:
-                    </span>{" "}
-                    {format(singleOrderFromPlanthead?.createdAt, "dd MMM yyyy")}
+                    </span>
+                    {format(singleOrderInAccountant?.createdAt, "dd MMM yyyy")}
                   </div>
                 </div>
                 <div className="flex flex-col gap-2 text-sm">
@@ -336,15 +347,12 @@ const OrdersForAccountant = () => {
                     <span className="text-gray-600 font-normal">
                       Warehouse:
                     </span>
-                    {singleOrderFromPlanthead?.assignedWarehouse ? (
+                    {singleOrderInAccountant?.assignedWarehouse ? (
                       <div className="flex flex-col items-center">
-                        {singleOrderFromPlanthead?.assignedWarehouse?.name}
+                        {singleOrderInAccountant?.assignedWarehouse?.name}
                         <span className="text-xs font-normal text-gray-600">
                           (
-                          {
-                            singleOrderFromPlanthead?.assignedWarehouse
-                              ?.location
-                          }
+                          {singleOrderInAccountant?.assignedWarehouse?.location}
                           )
                         </span>
                       </div>

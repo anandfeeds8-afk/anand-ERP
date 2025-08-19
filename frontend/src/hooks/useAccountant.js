@@ -13,14 +13,13 @@ export const useAccountantOrder = (id) => {
       queryKey: ["ordersInAccountant"],
       queryFn: async () => {
         const response = await axios.get(
-          BASE_URL + API_PATHS.ACCOUNTANT.GET_DISPATCHED_ORDERS,
+          "http://localhost:5000/api/accountant/dispatched-orders",
           {
             headers: {
               Authorization: `Bearer ${token}`,
             },
           }
         );
-        console.log("accountant orders", response.data.data);
         return response.data.data;
       },
       onError: (error) => {
@@ -30,20 +29,21 @@ export const useAccountantOrder = (id) => {
 
   // GET single dispatched orders by id from accountant
   const {
-    data: singleOrdersInAccountant,
-    isPending: singleOrdersInAccountantLoading,
+    data: singleOrderInAccountant,
+    isPending: singleOrderInAccountantLoading,
   } = useQuery({
-    queryKey: ["ordersInAccountant"],
+    queryKey: ["singleOrderInAccountant", id],
     queryFn: async () => {
+      if (!id) return null;
       const response = await axios.get(
-        BASE_URL + API_PATHS.ACCOUNTANT.GET_DISPATCHED_ORDERS,
+        BASE_URL + API_PATHS.ACCOUNTANT.GET_ORDER(id),
         {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         }
       );
-      console.log("accountant orders", response.data.data);
+      console.log("accountant single order", response.data.data);
       return response.data.data;
     },
     onError: (error) => {
@@ -68,7 +68,7 @@ export const useAccountantOrder = (id) => {
       },
       onSuccess: (data) => {
         queryClient.invalidateQueries({ queryKey: ["order"] });
-        queryClient.invalidateQueries({ queryKey: ["ordersInPlanthead"] });
+        queryClient.invalidateQueries({ queryKey: ["ordersInAccountant"] });
         console.log(data);
         toast.success(data.message);
       },
@@ -101,11 +101,13 @@ export const useAccountantOrder = (id) => {
 
   return {
     ordersInAccountant,
+    singleOrderInAccountant,
     generateInvoice,
     getInvoice,
 
     //Loading
     ordersInAccountantLoading,
+    singleOrderInAccountantLoading,
     isGeneratingInvoice,
     isGettingInvoice,
   };

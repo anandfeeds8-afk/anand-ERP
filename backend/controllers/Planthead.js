@@ -94,7 +94,6 @@ const getAllOrders = async (req, res) => {
       .populate("placedBy", "name email")
       .populate("item", "name category");
 
-    console.log(orders, warehouse);
     res.status(200).json({ success: true, data: orders });
   } catch (err) {
     res.status(500).json({

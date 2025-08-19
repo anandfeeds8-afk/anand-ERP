@@ -55,7 +55,6 @@ export const usePlantheadOrder = (id) => {
       queryKey: ["singleOrder", id],
       queryFn: async () => {
         if (!id) return null;
-        console.log("id", id);
         const response = await axios.get(
           BASE_URL + API_PATHS.PLANT_HEAD.GET_ORDER(id),
           {
@@ -74,10 +73,10 @@ export const usePlantheadOrder = (id) => {
 
   // DISPATCH Order in Planthead
   const { mutate: dispatchOrder, isPending: isDispatchingOrder } = useMutation({
-    mutationFn: async (orderId) => {
+    mutationFn: async (data) => {
       const response = await axios.put(
-        BASE_URL + API_PATHS.PLANT_HEAD.DISPATCH_ORDER(orderId),
-        {},
+        BASE_URL + API_PATHS.PLANT_HEAD.DISPATCH_ORDER(data.orderId),
+        data,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -124,45 +123,18 @@ export const usePlantheadOrder = (id) => {
     },
   });
 
-  // DELETE Order in Planthead
-  const { mutate: deleteOrder, isPending: isDeletingOrder } = useMutation({
-    mutationFn: async (orderId) => {
-      const response = await axios.delete(
-        BASE_URL + API_PATHS.PLANT_HEAD.DELETE_ORDER(orderId),
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      return response.data;
-    },
-    onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ["order"] });
-      queryClient.invalidateQueries({ queryKey: ["ordersInPlanthead"] });
-      console.log(data);
-      toast.success(data.message);
-    },
-    onError: (error) => {
-      console.log(error);
-      toast.error(error.response.data.message);
-    },
-  });
-
   return {
     ordersInPlanthead,
     singleOrderFromPlanthead,
     productsInPlanthead,
     dispatchOrder,
     createOrder,
-    deleteOrder,
 
     //Loading
     ordersInPlantheadLoading,
     productsInPlantheadLoading,
     singleOrderLoading,
     isCreatingOrder,
-    isDeletingOrder,
     isDispatchingOrder,
   };
 };

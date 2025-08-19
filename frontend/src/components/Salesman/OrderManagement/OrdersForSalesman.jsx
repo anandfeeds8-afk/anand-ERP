@@ -171,7 +171,7 @@ const OrdersForSalesman = () => {
       {/* --- View Order Modal --- */}
       {openView && (
         <div className="transition-all bg-black/30 backdrop-blur-sm w-full z-50 h-screen absolute top-0 left-0 flex items-center justify-center">
-          <div className="bg-white relative p-7 rounded-lg w-[50%] h-[70%] overflow-auto">
+          <div className="bg-white relative p-7 rounded-lg w-[50%] overflow-auto">
             <div className="mb-5">
               <div className="flex items-center justify-between">
                 <p className="text-xl font-bold">Order Details</p>
@@ -293,8 +293,8 @@ const OrdersForSalesman = () => {
                     <span className="text-gray-600 font-normal">
                       Invoice Generated:
                     </span>{" "}
-                    {singleOrderFromSalesman?.invoiceGenerated === "true" ? (
-                      <span className="text-green-700 bg-green-100 p-1 px-3 rounded-full text-xs">
+                    {singleOrderFromSalesman?.invoiceGenerated ? (
+                      <span className="text-green-800 bg-green-100 p-1 px-3 rounded-full text-xs">
                         Yes
                       </span>
                     ) : (
@@ -309,7 +309,7 @@ const OrdersForSalesman = () => {
                   <h1 className="font-semibold text-base text-gray-800">
                     Notes
                   </h1>
-                  <p className="bg-gray-100 rounded-lg p-3">
+                  <p className="bg-green-50 rounded-lg p-3">
                     {singleOrderFromSalesman?.notes}
                   </p>
                 </div>
@@ -346,6 +346,63 @@ const OrdersForSalesman = () => {
                       <span className="text-red-700 bg-red-100 p-1 px-3 rounded-full text-xs">
                         Not Assigned
                       </span>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="flex flex-col gap-2 text-sm bg-green-50 p-5 rounded-lg mt-5">
+              <h1 className="font-semibold text-base text-gray-800">
+                Dispatch Info
+              </h1>
+              <div className="grid grid-cols-2 gap-5">
+                <div className="flex flex-col gap-2 text-sm">
+                  <div className="flex items-center justify-between font-semibold">
+                    <span className="text-gray-600 font-normal">
+                      Driver Name
+                    </span>
+                    {singleOrderFromSalesman?.dispatchInfo?.driverName}
+                  </div>
+                  <div className="flex items-center justify-between font-semibold">
+                    <span className="text-gray-600 font-normal">
+                      Driver Contact
+                    </span>
+                    {singleOrderFromSalesman?.dispatchInfo?.driverContact}
+                  </div>
+                  <div className="flex items-center justify-between font-semibold">
+                    <span className="text-gray-600 font-normal">
+                      Transport Company:
+                    </span>{" "}
+                    {singleOrderFromSalesman?.dispatchInfo?.transportCompany}
+                  </div>
+                  <div className="flex items-center justify-between font-semibold">
+                    <span className="text-gray-600 font-normal">
+                      Vehicle Number:
+                    </span>{" "}
+                    {singleOrderFromSalesman?.dispatchInfo?.vehicleNumber}
+                  </div>
+                </div>
+
+                <div className="flex flex-col gap-2 text-sm">
+                  <div className="flex items-center justify-between font-semibold">
+                    <span className="text-gray-600 font-normal">
+                      Dispatched By:
+                    </span>{" "}
+                    {singleOrderFromSalesman?.dispatchInfo?.dispatchedBy?.name}
+                  </div>
+                  <div className="flex items-center justify-between font-semibold">
+                    <span className="text-gray-600 font-normal">
+                      Plant Head Contact:
+                    </span>{" "}
+                    {singleOrderFromSalesman?.dispatchInfo?.dispatchedBy?.phone}
+                  </div>
+                  <div className="flex items-center justify-between font-semibold">
+                    <span className="text-gray-600 font-normal">
+                      Dispatched Date:
+                    </span>{" "}
+                    {format(
+                      singleOrderFromSalesman?.dispatchInfo?.dispatchDate,
+                      "dd MMM yyyy"
                     )}
                   </div>
                 </div>

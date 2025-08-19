@@ -131,6 +131,10 @@ const generateInvoice = async (req, res) => {
     const { orderId } = req.params;
     const { dueDate } = req.body;
 
+    console.log("accountantId", accountantId);
+    console.log("orderId", orderId);
+    console.log("dueDate", dueDate);
+
     const warehouse = await Warehouse.findOne({ accountant: accountantId });
     if (!warehouse) {
       return res.status(404).json({

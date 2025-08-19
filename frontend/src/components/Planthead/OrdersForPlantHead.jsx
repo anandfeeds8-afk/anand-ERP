@@ -1,24 +1,32 @@
 import { useState } from "react";
-import { Button, CircularProgress, IconButton } from "@mui/material";
+import { Button, CircularProgress, IconButton, TextField } from "@mui/material";
 import { Eye, SquarePen, Trash2 } from "lucide-react";
 import { format } from "date-fns";
 import { DataGrid } from "@mui/x-data-grid";
 import CloseIcon from "@mui/icons-material/Close";
 import { formatRupee } from "../../utils/formatRupee.js";
 import { usePlantheadOrder } from "../../hooks/usePlanthead.js";
+import { useForm } from "react-hook-form";
 
 const OrdersForPlantHead = () => {
   const [singleOrderId, setSingleOrderId] = useState(null);
   const [openView, setOpenView] = useState(false);
+  const [openDispatch, setOpenDispatch] = useState(false);
 
   const {
-    deleteOrder,
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm();
+
+  const {
     dispatchOrder,
     singleOrderFromPlanthead,
     singleOrderLoading,
     ordersInPlanthead,
     isDeletingOrder,
     ordersInPlantheadLoading,
+    isDispatchingOrder,
   } = usePlantheadOrder(singleOrderId);
 
   const [paginationModel, setPaginationModel] = useState({
@@ -29,23 +37,15 @@ const OrdersForPlantHead = () => {
   console.log(singleOrderFromPlanthead);
 
   const handleView = (id) => {
-    console.log(id);
     setSingleOrderId(id);
     setOpenView(true);
   };
 
-  const handleUpdate = (id) => {
-    console.log(id);
-  };
-
-  const handleDelete = (id) => {
-    console.log(id);
-    deleteOrder(id);
-  };
-
-  const handleOrderDispatch = () => {
-    console.log(singleOrderId);
-    dispatchOrder(singleOrderId);
+  const handleOrderDispatch = (data) => {
+    data.orderId = singleOrderId;
+    console.log("dispatch data", data);
+    dispatchOrder(data);
+    setOpenDispatch(false);
   };
 
   const columns = [
@@ -104,13 +104,10 @@ const OrdersForPlantHead = () => {
             color="green"
             className="hover:bg-green-100 active:scale-95 transition-all p-1.5 rounded-lg"
             size={30}
-            onClick={() => handleUpdate(params.row.id)}
-          />
-          <Trash2
-            color="red"
-            className="hover:bg-red-100 active:scale-95 transition-all p-1.5 rounded-lg"
-            size={30}
-            onClick={() => handleDelete(params.row.id)}
+            onClick={() => {
+              setOpenDispatch(true);
+              setSingleOrderId(params.row.id);
+            }}
           />
         </div>
       ),
@@ -182,12 +179,6 @@ const OrdersForPlantHead = () => {
             <div className="mb-5">
               <div className="flex items-center justify-between">
                 <p className="text-xl font-bold">Order Details</p>
-                <Button
-                  className="text-xl font-bold"
-                  onClick={handleOrderDispatch}
-                >
-                  Dispatch order
-                </Button>
                 <IconButton size="small" onClick={() => setOpenView(false)}>
                   <CloseIcon />
                 </IconButton>
@@ -366,6 +357,127 @@ const OrdersForPlantHead = () => {
                   </div>
                 </div>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* --- Dispatch Order Modal --- */}
+      {openDispatch && (
+        <div className="transition-all bg-black/30 backdrop-blur-sm w-full z-50 h-screen absolute top-0 left-0 flex items-center justify-center">
+          <div className="bg-white relative p-7 rounded-lg w-[30%] overflow-auto">
+            <div className="flex items-center justify-between">
+              <p className="text-xl font-bold">Dispatch Order</p>
+              <IconButton size="small" onClick={() => setOpenDispatch(false)}>
+                <CloseIcon />
+              </IconButton>
+            </div>
+            <div className="mt-5">
+              <form
+                className="space-y-5"
+                onSubmit={handleSubmit(handleOrderDispatch)}
+              >
+                <div>
+                  <TextField
+                    fullWidth
+                    error={!!errors?.driverName}
+                    size="small"
+                    label="Driver Name"
+                    variant="outlined"
+                    {...register("driverName", {
+                      required: {
+                        value: true,
+                        message: "Driver Name is required",
+                      },
+                    })}
+                  />
+                  {errors?.driverName && (
+                    <p className="text-red-500 text-xs mt-1">
+                      {errors?.driverName?.message}
+                    </p>
+                  )}
+                </div>
+                <div>
+                  <TextField
+                    fullWidth
+                    error={!!errors?.driverContact}
+                    size="small"
+                    label="Driver Contact"
+                    variant="outlined"
+                    {...register("driverContact", {
+                      required: {
+                        value: true,
+                        message: "Driver Contact is required",
+                      },
+                    })}
+                  />
+                  {errors?.driverContact && (
+                    <p className="text-red-500 text-xs mt-1">
+                      {errors?.driverContact?.message}
+                    </p>
+                  )}
+                </div>
+                <div>
+                  <TextField
+                    fullWidth
+                    error={!!errors?.vehicleNumber}
+                    size="small"
+                    label="Vehicle Number"
+                    variant="outlined"
+                    {...register("vehicleNumber", {
+                      required: {
+                        value: true,
+                        message: "Vehicle Number is required",
+                      },
+                    })}
+                  />
+                  {errors?.vehicleNumber && (
+                    <p className="text-red-500 text-xs mt-1">
+                      {errors?.vehicleNumber?.message}
+                    </p>
+                  )}
+                </div>
+                <div>
+                  <TextField
+                    fullWidth
+                    error={!!errors?.transportCompany}
+                    size="small"
+                    label="Transport Company"
+                    variant="outlined"
+                    {...register("transportCompany", {
+                      required: {
+                        value: true,
+                        message: "Transport Company is required",
+                      },
+                    })}
+                  />
+                  {errors?.transportCompany && (
+                    <p className="text-red-500 text-xs mt-1">
+                      {errors?.transportCompany?.message}
+                    </p>
+                  )}
+                </div>
+                <div className="flex items-center justify-end gap-3 mt-5">
+                  <Button
+                    variant="outlined"
+                    disableElevation
+                    sx={{ textTransform: "none" }}
+                    onClick={() => setOpenDispatch(false)}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    loading={isDispatchingOrder}
+                    loadingPosition="start"
+                    variant="contained"
+                    disableElevation
+                    sx={{ textTransform: "none" }}
+                    type="submit"
+                  >
+                    Dispatch
+                  </Button>
+                </div>
+              </form>
             </div>
           </div>
         </div>

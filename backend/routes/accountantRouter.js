@@ -28,6 +28,7 @@ accountantRouter.post(
   verifyAccountant,
   generateInvoice
 );
+
 accountantRouter.get("/invoice/:orderId", verifyAccountant, getInvoiceDetails);
 
 accountantRouter.put(
