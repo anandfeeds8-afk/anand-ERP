@@ -2,85 +2,51 @@ import { useState } from "react";
 import {
   Button,
   CircularProgress,
-  FormControl,
   IconButton,
-  InputLabel,
-  MenuItem,
-  Select,
   TextField,
   Tooltip,
 } from "@mui/material";
-import { Eye, SquarePen } from "lucide-react";
+import { Eye, SquarePen, Trash2 } from "lucide-react";
 import { format } from "date-fns";
 import { DataGrid } from "@mui/x-data-grid";
 import CloseIcon from "@mui/icons-material/Close";
-import { MdDoneAll, MdOutlineCancel } from "react-icons/md";
-import { formatRupee } from "../../../utils/formatRupee.js";
-import { Controller, useForm } from "react-hook-form";
-import { useSalesAuthorizerOrder } from "../../../hooks/useSalesAuthorizerOrder.js";
+import { formatRupee } from "../../utils/formatRupee.js";
+import { usePlantheadOrder } from "../../hooks/usePlanthead.js";
+import { useForm } from "react-hook-form";
+import { MdOutlineCancel } from "react-icons/md";
+import { LuTruck } from "react-icons/lu";
 
-const OrdersForAuthorizer = () => {
+const DispatchedOrders = () => {
   const [singleOrderId, setSingleOrderId] = useState(null);
   const [openView, setOpenView] = useState(false);
+  const [openDispatch, setOpenDispatch] = useState(false);
   const [openCancel, setOpenCancel] = useState(false);
 
   const {
-    control,
     register,
-    formState: { errors },
-    handleSubmit,
     watch,
+    handleSubmit,
+    formState: { errors },
   } = useForm();
 
-  const reason = watch("reason");
-
   const {
-    allWarehouses,
-    assignWarehouseToOrder,
-    warehousesLoading,
-    ordersInSalesAuthorizer,
-    ordersInSalesAuthorizerLoading,
-    singleOrderFromSalesauthorizer,
+    singleOrderFromPlanthead,
     singleOrderLoading,
-    cancelOrder,
-    isCancelingOrder,
-  } = useSalesAuthorizerOrder(singleOrderId);
+    dispatchedOrdersInPlanthead,
+    dispatchedOrdersInPlantheadLoading,
+  } = usePlantheadOrder(singleOrderId);
+
+  const reason = watch("reason");
 
   const [paginationModel, setPaginationModel] = useState({
     page: 0,
     pageSize: 5,
   });
 
-  const handleAssignWarehouse = (data) => {
-    data.orderId = singleOrderId;
-    assignWarehouseToOrder(data);
-    setOpenView(false);
-  };
-
   const handleView = (id) => {
-    console.log(id);
     setSingleOrderId(id);
     setOpenView(true);
   };
-
-  const handleCancelOrder = (data) => {
-    data.orderId = singleOrderId;
-    console.log(data);
-    cancelOrder(data);
-    setOpenCancel(false);
-  };
-
-  if (
-    singleOrderLoading ||
-    ordersInSalesAuthorizerLoading ||
-    warehousesLoading ||
-    isCancelingOrder
-  )
-    return (
-      <div className="flex-1 flex items-center justify-center h-full w-full">
-        <CircularProgress />
-      </div>
-    );
 
   const columns = [
     { field: "product", headerName: "Product", flex: 1, maxWidth: 150 },
@@ -151,31 +117,12 @@ const OrdersForAuthorizer = () => {
               onClick={() => handleView(params.row.id)}
             />
           </Tooltip>
-          <Tooltip title="Update order" enterDelay={500} placement="top">
-            <SquarePen
-              color="green"
-              className="hover:bg-green-100 active:scale-95 transition-all p-1.5 rounded-lg"
-              size={30}
-              onClick={() => handleUpdate(params.row.id)}
-            />
-          </Tooltip>
-          <Tooltip title="Cancel order" enterDelay={500} placement="top">
-            <MdOutlineCancel
-              color="red"
-              className="hover:bg-red-100 active:scale-95 transition-all p-1.5 rounded-lg"
-              size={30}
-              onClick={() => {
-                setSingleOrderId(params.row.id);
-                setOpenCancel(true);
-              }}
-            />
-          </Tooltip>
         </div>
       ),
     },
   ];
 
-  const rows = ordersInSalesAuthorizer?.map((order) => ({
+  const rows = dispatchedOrdersInPlanthead?.map((order) => ({
     id: order._id,
     party: order?.party?.companyName,
     date: format(order?.createdAt, "dd MMM yyyy"),
@@ -186,6 +133,13 @@ const OrdersForAuthorizer = () => {
     dueAmount: formatRupee(order.dueAmount),
     orderStatus: order.orderStatus,
   }));
+
+  if (dispatchedOrdersInPlantheadLoading || singleOrderLoading)
+    return (
+      <div className="flex items-center justify-center h-full w-full">
+        <CircularProgress />
+      </div>
+    );
 
   return (
     <div className="transition-all rounded-lg mt-5 max-w-full">
@@ -233,59 +187,6 @@ const OrdersForAuthorizer = () => {
             <div className="mb-5">
               <div className="flex items-center justify-between">
                 <p className="text-xl font-bold">Order Details</p>
-                <div className="w-64">
-                  {singleOrderFromSalesauthorizer?.orderStatus ===
-                    "ForwardedToAuthorizer" && (
-                    <form
-                      className="flex items-center gap-2"
-                      onSubmit={handleSubmit(handleAssignWarehouse)}
-                    >
-                      <FormControl fullWidth size="small">
-                        <InputLabel id="item-label">
-                          Assign Warehouse
-                        </InputLabel>
-                        <Controller
-                          name="warehouseId"
-                          control={control}
-                          rules={{ required: "Warehouse is required" }}
-                          render={({ field }) => (
-                            <Select
-                              {...field}
-                              labelId="warehouse-label"
-                              id="warehouseId"
-                              label="Assign Warehouse"
-                            >
-                              <MenuItem>Select Warehouse</MenuItem>
-                              {allWarehouses?.map((warehouse) => (
-                                <MenuItem
-                                  key={warehouse._id}
-                                  value={warehouse._id}
-                                >
-                                  {warehouse.name}
-                                </MenuItem>
-                              ))}
-                            </Select>
-                          )}
-                        />
-                        {errors?.warehouse && (
-                          <span className="text-red-600 text-xs mt-1">
-                            {errors.warehouse?.message}
-                          </span>
-                        )}
-                      </FormControl>
-                      <Button size="small" variant="outlined" type="submit">
-                        Assign
-                      </Button>
-                    </form>
-                  )}
-                </div>
-                {singleOrderFromSalesauthorizer?.orderStatus ===
-                  "AssignedToWarehouse" && (
-                  <div className="flex items-center gap-2 bg-blue-100 p-1 px-2 rounded-full text-blue-700">
-                    <MdDoneAll /> Warehouse Assigned
-                  </div>
-                )}
-
                 <IconButton size="small" onClick={() => setOpenView(false)}>
                   <CloseIcon />
                 </IconButton>
@@ -301,32 +202,29 @@ const OrdersForAuthorizer = () => {
                     <span className="text-gray-600 font-normal">
                       Product Category:
                     </span>{" "}
-                    {singleOrderFromSalesauthorizer?.item?.category}
+                    {singleOrderFromPlanthead?.item?.category}
                   </div>
                   <div className="flex items-center justify-between font-semibold">
                     <span className="text-gray-600 font-normal">
                       Product Name:
                     </span>{" "}
-                    {singleOrderFromSalesauthorizer?.item?.name}
+                    {singleOrderFromPlanthead?.item?.name}
                   </div>
                   <div className="flex items-center justify-between font-semibold">
                     <span className="text-gray-600 font-normal">Quantity:</span>{" "}
-                    {singleOrderFromSalesauthorizer?.quantity} kg
+                    {singleOrderFromPlanthead?.quantity} kg
                   </div>
                   <div className="flex items-center justify-between font-semibold">
                     <span className="text-gray-600 font-normal">
                       Placed By:
-                    </span>{" "}
-                    {singleOrderFromSalesauthorizer?.placedBy?.name}
+                    </span>
+                    {singleOrderFromPlanthead?.placedBy?.name}
                   </div>
                   <div className="flex items-center justify-between font-semibold">
                     <span className="text-gray-600 font-normal">
                       Placed Date:
-                    </span>{" "}
-                    {format(
-                      singleOrderFromSalesauthorizer?.createdAt,
-                      "dd MMM yyyy"
-                    )}
+                    </span>
+                    {format(singleOrderFromPlanthead?.createdAt, "dd MMM yyyy")}
                   </div>
                 </div>
                 <div className="flex flex-col gap-2 text-sm">
@@ -337,32 +235,29 @@ const OrdersForAuthorizer = () => {
                     <span className="text-gray-600 font-normal">
                       Total Amount:
                     </span>
-                    {formatRupee(singleOrderFromSalesauthorizer?.totalAmount)}
+                    {formatRupee(singleOrderFromPlanthead?.totalAmount)}
                   </div>
                   <div className="flex items-center justify-between font-semibold text-green-700">
                     <span className="text-gray-600 font-normal">
                       Advance Amount:
                     </span>{" "}
-                    {formatRupee(singleOrderFromSalesauthorizer?.advanceAmount)}
+                    {formatRupee(singleOrderFromPlanthead?.advanceAmount)}
                   </div>
                   <div className="flex items-center justify-between font-semibold text-red-700">
                     <span className="text-gray-600 font-normal">
                       Due Amount:
                     </span>{" "}
-                    {formatRupee(singleOrderFromSalesauthorizer?.dueAmount)}
+                    {formatRupee(singleOrderFromPlanthead?.dueAmount)}
                   </div>
                   <div className="flex items-center justify-between font-semibold">
                     <span className="text-gray-600 font-normal">
                       Payment Mode:
                     </span>{" "}
-                    {singleOrderFromSalesauthorizer?.paymentMode}
+                    {singleOrderFromPlanthead?.paymentMode}
                   </div>
                   <div className="flex items-center justify-between font-semibold">
                     <span className="text-gray-600 font-normal">Due Date:</span>{" "}
-                    {format(
-                      singleOrderFromSalesauthorizer?.dueDate,
-                      "dd MMM yyyy"
-                    )}
+                    {format(singleOrderFromPlanthead?.dueDate, "dd MMM yyyy")}
                   </div>
                 </div>
               </div>
@@ -376,14 +271,13 @@ const OrdersForAuthorizer = () => {
                     <span className="text-gray-600 font-normal">
                       Order Status:
                     </span>{" "}
-                    {singleOrderFromSalesauthorizer?.orderStatus ===
-                    "Delivered" ? (
+                    {singleOrderFromPlanthead?.orderStatus === "Delivered" ? (
                       <span className="text-green-700 bg-green-100 p-1 px-3 rounded-full text-xs">
-                        {singleOrderFromSalesauthorizer?.orderStatus}
+                        {singleOrderFromPlanthead?.orderStatus}
                       </span>
                     ) : (
                       <span className="text-gray-700 bg-gray-200 p-1 px-3 rounded-full text-xs">
-                        {singleOrderFromSalesauthorizer?.orderStatus}
+                        {singleOrderFromPlanthead?.orderStatus}
                       </span>
                     )}
                   </div>
@@ -391,22 +285,19 @@ const OrdersForAuthorizer = () => {
                     <span className="text-gray-600 font-normal">
                       Payment Status:
                     </span>
-                    {singleOrderFromSalesauthorizer?.paymentStatus ===
-                      "Partial" && (
+                    {singleOrderFromPlanthead?.paymentStatus === "Partial" && (
                       <span className="text-yellow-700 bg-yellow-100 p-1 px-3 rounded-full text-xs">
-                        {singleOrderFromSalesauthorizer?.paymentStatus}
+                        {singleOrderFromPlanthead?.paymentStatus}
                       </span>
                     )}
-                    {singleOrderFromSalesauthorizer?.paymentStatus ===
-                      "Paid" && (
+                    {singleOrderFromPlanthead?.paymentStatus === "Paid" && (
                       <span className="text-green-700 bg-green-100 p-1 px-3 rounded-full text-xs">
-                        {singleOrderFromSalesauthorizer?.paymentStatus}
+                        {singleOrderFromPlanthead?.paymentStatus}
                       </span>
                     )}
-                    {singleOrderFromSalesauthorizer?.paymentStatus ===
-                      "Unpaid" && (
+                    {singleOrderFromPlanthead?.paymentStatus === "Unpaid" && (
                       <span className="text-red-700 bg-red-100 p-1 px-3 rounded-full text-xs">
-                        {singleOrderFromSalesauthorizer?.paymentStatus}
+                        {singleOrderFromPlanthead?.paymentStatus}
                       </span>
                     )}
                   </div>
@@ -414,8 +305,7 @@ const OrdersForAuthorizer = () => {
                     <span className="text-gray-600 font-normal">
                       Invoice Generated:
                     </span>{" "}
-                    {singleOrderFromSalesauthorizer?.invoiceGenerated ===
-                    "true" ? (
+                    {singleOrderFromPlanthead?.invoiceGenerated === "true" ? (
                       <span className="text-green-700 bg-green-100 p-1 px-3 rounded-full text-xs">
                         Yes
                       </span>
@@ -432,7 +322,7 @@ const OrdersForAuthorizer = () => {
                     Notes
                   </h1>
                   <p className="bg-gray-100 rounded-lg p-3">
-                    {singleOrderFromSalesauthorizer?.notes}
+                    {singleOrderFromPlanthead?.notes}
                   </p>
                 </div>
 
@@ -444,10 +334,7 @@ const OrdersForAuthorizer = () => {
                     <span className="text-gray-600 font-normal">
                       Order Placed On:
                     </span>{" "}
-                    {format(
-                      singleOrderFromSalesauthorizer?.createdAt,
-                      "dd MMM yyyy"
-                    )}
+                    {format(singleOrderFromPlanthead?.createdAt, "dd MMM yyyy")}
                   </div>
                 </div>
                 <div className="flex flex-col gap-2 text-sm">
@@ -458,16 +345,13 @@ const OrdersForAuthorizer = () => {
                     <span className="text-gray-600 font-normal">
                       Warehouse:
                     </span>
-                    {singleOrderFromSalesauthorizer?.assignedWarehouse ? (
+                    {singleOrderFromPlanthead?.assignedWarehouse ? (
                       <div className="flex flex-col items-center">
-                        {
-                          singleOrderFromSalesauthorizer?.assignedWarehouse
-                            ?.name
-                        }
+                        {singleOrderFromPlanthead?.assignedWarehouse?.name}
                         <span className="text-xs font-normal text-gray-600">
                           (
                           {
-                            singleOrderFromSalesauthorizer?.assignedWarehouse
+                            singleOrderFromPlanthead?.assignedWarehouse
                               ?.location
                           }
                           )
@@ -486,13 +370,134 @@ const OrdersForAuthorizer = () => {
         </div>
       )}
 
+      {/* --- Dispatch Order Modal --- */}
+      {openDispatch && (
+        <div className="transition-all bg-black/30 backdrop-blur-sm w-full z-50 h-screen absolute top-0 left-0 flex items-center justify-center">
+          <div className="bg-white relative p-7 rounded-lg w-[30%] overflow-auto">
+            <div className="flex items-center justify-between">
+              <p className="text-xl font-bold">Dispatch Order</p>
+              <IconButton size="small" onClick={() => setOpenDispatch(false)}>
+                <CloseIcon />
+              </IconButton>
+            </div>
+            <div className="mt-5">
+              <form
+                className="space-y-5"
+                onSubmit={handleSubmit(handleOrderDispatch)}
+              >
+                <div>
+                  <TextField
+                    fullWidth
+                    error={!!errors?.driverName}
+                    size="small"
+                    label="Driver Name"
+                    variant="outlined"
+                    {...register("driverName", {
+                      required: {
+                        value: true,
+                        message: "Driver Name is required",
+                      },
+                    })}
+                  />
+                  {errors?.driverName && (
+                    <p className="text-red-500 text-xs mt-1">
+                      {errors?.driverName?.message}
+                    </p>
+                  )}
+                </div>
+                <div>
+                  <TextField
+                    fullWidth
+                    error={!!errors?.driverContact}
+                    size="small"
+                    label="Driver Contact"
+                    variant="outlined"
+                    {...register("driverContact", {
+                      required: {
+                        value: true,
+                        message: "Driver Contact is required",
+                      },
+                    })}
+                  />
+                  {errors?.driverContact && (
+                    <p className="text-red-500 text-xs mt-1">
+                      {errors?.driverContact?.message}
+                    </p>
+                  )}
+                </div>
+                <div>
+                  <TextField
+                    fullWidth
+                    error={!!errors?.vehicleNumber}
+                    size="small"
+                    label="Vehicle Number"
+                    variant="outlined"
+                    {...register("vehicleNumber", {
+                      required: {
+                        value: true,
+                        message: "Vehicle Number is required",
+                      },
+                    })}
+                  />
+                  {errors?.vehicleNumber && (
+                    <p className="text-red-500 text-xs mt-1">
+                      {errors?.vehicleNumber?.message}
+                    </p>
+                  )}
+                </div>
+                <div>
+                  <TextField
+                    fullWidth
+                    error={!!errors?.transportCompany}
+                    size="small"
+                    label="Transport Company"
+                    variant="outlined"
+                    {...register("transportCompany", {
+                      required: {
+                        value: true,
+                        message: "Transport Company is required",
+                      },
+                    })}
+                  />
+                  {errors?.transportCompany && (
+                    <p className="text-red-500 text-xs mt-1">
+                      {errors?.transportCompany?.message}
+                    </p>
+                  )}
+                </div>
+                <div className="flex items-center justify-end gap-3 mt-5">
+                  <Button
+                    variant="outlined"
+                    disableElevation
+                    sx={{ textTransform: "none" }}
+                    onClick={() => setOpenDispatch(false)}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    loading={isDispatchingOrder}
+                    loadingPosition="start"
+                    variant="contained"
+                    disableElevation
+                    sx={{ textTransform: "none" }}
+                    type="submit"
+                  >
+                    Dispatch
+                  </Button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Cancel Order Modal */}
       {openCancel && (
         <div className="transition-all bg-black/30 backdrop-blur-sm w-full z-50 h-screen absolute top-0 left-0 flex items-center justify-center">
           <div className="bg-white p-7 rounded-lg w-[29rem]">
             <p className="text-lg font-semibold">
               Are you sure you want to cancel "
-              {singleOrderFromSalesauthorizer?.item?.name}"?
+              {singleOrderFromPlanthead?.item?.name}"?
             </p>
             <p className="text-gray-800 my-2">
               Tell us why you are cancelling this order:
@@ -544,4 +549,4 @@ const OrdersForAuthorizer = () => {
   );
 };
 
-export default OrdersForAuthorizer;
+export default DispatchedOrders;

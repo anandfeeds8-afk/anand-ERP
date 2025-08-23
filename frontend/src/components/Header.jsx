@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import NotificationsIcon from "@mui/icons-material/Notifications";
-import { Button, IconButton } from "@mui/material";
+import { Button, IconButton, Tooltip } from "@mui/material";
 import { useUser } from "../hooks/useUser";
 import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
@@ -26,9 +26,11 @@ const Header = () => {
         <div>
           <p>{user?.role}</p>
         </div>
-        <IconButton>
-          <NotificationsIcon />
-        </IconButton>
+        <Tooltip title="Notifications" enterDelay={500}>
+          <IconButton>
+            <NotificationsIcon />
+          </IconButton>
+        </Tooltip>
 
         <div className="flex items-center gap-2">
           <Avatar

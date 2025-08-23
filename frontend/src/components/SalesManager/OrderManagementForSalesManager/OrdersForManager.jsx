@@ -88,8 +88,23 @@ const OrdersForManager = () => {
       headerName: "Advance Amount",
       flex: 1,
       maxWidth: 150,
+      renderCell: (params) => (
+        <span className={`${params.value !== "₹0" && "text-green-700"}`}>
+          {params.value}
+        </span>
+      ),
     },
-    { field: "dueAmount", headerName: "Due Amount", flex: 1, maxWidth: 150 },
+    {
+      field: "dueAmount",
+      headerName: "Due Amount",
+      flex: 1,
+      maxWidth: 150,
+      renderCell: (params) => (
+        <span className={`${params.value !== "₹0" && "text-red-600"}`}>
+          {params.value}
+        </span>
+      ),
+    },
     {
       field: "orderStatus",
       headerName: "Status",

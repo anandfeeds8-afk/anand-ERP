@@ -28,6 +28,29 @@ export const useSalesManagerOrder = (id) => {
       },
     });
 
+  // GET all forwarded orders
+  const {
+    data: ForwardedOrdersInSalesManager,
+    isPending: ForwardedOrdersInSalesManagerLoading,
+  } = useQuery({
+    queryKey: ["ordersInForwarded"],
+    queryFn: async () => {
+      const response = await axios.get(
+        BASE_URL + API_PATHS.MANAGER.GET_FORWARDED_ORDERS,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      console.log("forwarded orders", response.data.data);
+      return response.data.data;
+    },
+    onError: (error) => {
+      console.log(error);
+    },
+  });
+
   //GET single order using order id
   const { data: singleOrderFromSalesManager, isPending: singleOrderLoading } =
     useQuery({
@@ -109,9 +132,11 @@ export const useSalesManagerOrder = (id) => {
     singleOrderFromSalesManager,
     forwardOrder,
     cancelOrder,
+    ForwardedOrdersInSalesManager,
 
     //Loading
     ordersInSalesManagerLoading,
+    ForwardedOrdersInSalesManagerLoading,
     singleOrderLoading,
     isForwardingOrder,
     isCancelingOrder,

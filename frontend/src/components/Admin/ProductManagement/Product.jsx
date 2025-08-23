@@ -1,15 +1,8 @@
 import React, { useState } from "react";
 import { Eye, SquarePen, Trash2 } from "lucide-react";
 import { format } from "date-fns";
-import {
-  Button,
-  FormControl,
-  InputLabel,
-  MenuItem,
-  Select,
-  TextField,
-} from "@mui/material";
-import { Controller, useForm } from "react-hook-form";
+import { Button, TextField } from "@mui/material";
+import { useForm } from "react-hook-form";
 import { useProduct } from "../../../hooks/useProduct";
 
 const Product = ({ product }) => {
@@ -20,7 +13,6 @@ const Product = ({ product }) => {
     register,
     handleSubmit,
     formState: { errors },
-    control,
   } = useForm();
 
   const onEdit = (data) => {

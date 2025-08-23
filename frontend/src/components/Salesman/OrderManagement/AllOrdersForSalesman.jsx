@@ -192,8 +192,23 @@ const AllOrdersForSalesman = () => {
       headerName: "Advance Amount",
       flex: 1,
       maxWidth: 150,
+      renderCell: (params) => (
+        <span className={`${params.value !== "₹0" && "text-green-700"}`}>
+          {params.value}
+        </span>
+      ),
     },
-    { field: "dueAmount", headerName: "Due Amount", flex: 1, maxWidth: 150 },
+    {
+      field: "dueAmount",
+      headerName: "Due Amount",
+      flex: 1,
+      maxWidth: 150,
+      renderCell: (params) => (
+        <span className={`${params.value !== "₹0" && "text-red-600"}`}>
+          {params.value}
+        </span>
+      ),
+    },
     {
       field: "orderStatus",
       headerName: "Status",
@@ -424,6 +439,10 @@ const AllOrdersForSalesman = () => {
                     </span>
                     {singleOrderFromSalesman?.orderStatus === "Delivered" ? (
                       <span className="text-green-700 bg-green-100 p-1 px-3 rounded-full text-xs">
+                        {singleOrderFromSalesman?.orderStatus}
+                      </span>
+                    ) : singleOrderFromSalesman?.orderStatus === "Cancelled" ? (
+                      <span className="text-red-700 bg-red-100 p-1 px-3 rounded-full text-xs">
                         {singleOrderFromSalesman?.orderStatus}
                       </span>
                     ) : (

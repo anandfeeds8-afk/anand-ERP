@@ -30,6 +30,52 @@ export const useSalesAuthorizerOrder = (id) => {
     },
   });
 
+  // GET all forwarded orders
+  const {
+    data: AuthorizerAssignmentHistory,
+    isPending: AuthorizerAssignmentHistoryLoading,
+  } = useQuery({
+    queryKey: ["AuthorizerAssignmentHistory"],
+    queryFn: async () => {
+      const response = await axios.get(
+        BASE_URL + API_PATHS.AUTHORIZER.GET_ASSIGNMENT_HISTORY,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      console.log("Authorizer Assignment History", response.data.data);
+      return response.data.data;
+    },
+    onError: (error) => {
+      console.log(error);
+    },
+  });
+
+  // GET all approved warehouse using order id
+  const {
+    data: ApprovedOrderForWarehouse,
+    isPending: ApprovedOrderForWarehouseLoading,
+  } = useQuery({
+    queryKey: ["ApprovedOrderForWarehouse", id],
+    queryFn: async () => {
+      const response = await axios.get(
+        BASE_URL + API_PATHS.AUTHORIZER.CHECK_WAREHOUSE_STATUS(id),
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      console.log("Approved Order For Warehouse", response.data.data);
+      return response.data.data;
+    },
+    onError: (error) => {
+      console.log(error);
+    },
+  });
+
   //GET all warehouses
   const { data: allWarehouses, isPending: warehousesLoading } = useQuery({
     queryKey: ["allWarehousesFromAuthorizer"],
@@ -139,9 +185,13 @@ export const useSalesAuthorizerOrder = (id) => {
     allWarehouses,
     assignWarehouseToOrder,
     cancelOrder,
+    AuthorizerAssignmentHistory,
+    ApprovedOrderForWarehouse,
 
     //Loading
     ordersInSalesAuthorizerLoading,
+    AuthorizerAssignmentHistoryLoading,
+    ApprovedOrderForWarehouseLoading,
     singleOrderLoading,
     warehousesLoading,
     assignWarehouseLoading,

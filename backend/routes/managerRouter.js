@@ -18,6 +18,9 @@ managerRouter.post("/login", loginSalesManager);
 // View all orders assigned to this Sales Manager (not yet forwarded)
 managerRouter.get("/orders/getAll", verifySalesmanager, getAssignedOrders);
 
+// Get all forwarded orders
+managerRouter.get("/orders/forwarded", verifySalesmanager, getForwardedOrders);
+
 managerRouter.get("/orders/:orderId", verifySalesmanager, getOrderDetails);
 
 // Forward order to Authorizer
@@ -28,9 +31,6 @@ managerRouter.put(
 );
 
 managerRouter.post("/cancel_order/:orderId", verifySalesmanager, cancelOrder);
-
-// Get all forwarded orders
-managerRouter.get("/orders/forwarded", verifySalesmanager, getForwardedOrders);
 
 managerRouter.put(
   "/change-activity-status",

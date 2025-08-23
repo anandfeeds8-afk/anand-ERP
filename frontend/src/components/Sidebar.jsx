@@ -328,6 +328,69 @@ const Sidebar = () => {
           </NavLink>
         </div>
       )}
+
+      {user?.role === "PlantHead" && (
+        <div className="mt-10 flex flex-col items-center justify-center m-2 gap-3">
+          <NavLink
+            to="/planthead/dashboard"
+            className={({ isActive }) =>
+              isActive
+                ? "transition-all bg-blue-100 border-e-4 border-blue-500 p-2 w-full text-left rounded-lg"
+                : "transition-all hover:bg-blue-50 p-2 w-full text-gray-800 rounded-lg text-left"
+            }
+          >
+            {({ isActive }) => (
+              <div className="flex items-center gap-2 font-semibold w-56 h-6">
+                <div className="w-6 flex items-center justify-center">
+                  {isActive ? (
+                    <IoCart className="text-blue-600 text-xl" />
+                  ) : (
+                    <IoCartOutline className="text-blue-600 text-xl" />
+                  )}
+                </div>
+                <span
+                  className={`${
+                    isCollapsed
+                      ? "hidden"
+                      : "block line-clamp-1 truncate w-full text-gray-800"
+                  }`}
+                >
+                  Order Management
+                </span>
+              </div>
+            )}
+          </NavLink>
+          <NavLink
+            to="/planthead/product-management"
+            className={({ isActive }) =>
+              isActive
+                ? "transition-all bg-blue-100 border-e-4 border-blue-500 p-2 w-full text-left rounded-lg"
+                : "transition-all hover:bg-blue-50 p-2 w-full text-gray-800 rounded-lg text-left"
+            }
+          >
+            {({ isActive }) => (
+              <div className="flex items-center gap-2 font-semibold w-56 h-6">
+                <div className="w-6 flex items-center justify-center">
+                  {isActive ? (
+                    <RiBox3Fill className="text-blue-600 text-lg" />
+                  ) : (
+                    <RiBox3Line className="text-blue-600 text-lg" />
+                  )}
+                </div>
+                <span
+                  className={`${
+                    isCollapsed
+                      ? "hidden"
+                      : "block line-clamp-1 truncate w-full text-gray-800"
+                  }`}
+                >
+                  Product Management
+                </span>
+              </div>
+            )}
+          </NavLink>
+        </div>
+      )}
     </div>
   );
 };

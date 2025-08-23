@@ -17,6 +17,7 @@ import SalesManagerDashboardPage from "./pages/SalesManager/SalesManagerDashboar
 import PlantheadDashboardPage from "./pages/Planthead/PlantheadDashboardPage";
 import AccoutantDashboardPage from "./pages/Accountant/AccoutantDashboardPage";
 import ReportsPage from "./pages/Admin/ReportsPage";
+import ProductsManagementPage from "./pages/Planthead/ProductsManagementPage";
 
 const App = () => {
   const queryClient = new QueryClient();
@@ -85,6 +86,10 @@ const App = () => {
             <Route path="planthead">
               <Route index element={<Navigate to="dashboard" replace />} />
               <Route path="dashboard" element={<PlantheadDashboardPage />} />
+              <Route
+                path="product-management"
+                element={<ProductsManagementPage />}
+              />
             </Route>
 
             {/* Accountant routes */}

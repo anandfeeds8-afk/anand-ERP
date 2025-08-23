@@ -168,8 +168,9 @@ const forwardOrderToAuthorizer = async (req, res) => {
 // Get all forwarded orders by Sales this particular Manager
 const getForwardedOrders = async (req, res) => {
   try {
-    const orders = await Order.find({ forwardedByManager: req.user.id })
+    const salesManagerId = req.user.id;
 
+    const orders = await Order.find({ forwardedByManager: salesManagerId })
       .populate("party", "name contact")
       .populate("placedBy", "name email phone")
       .populate("item", "name category");

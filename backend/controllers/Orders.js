@@ -237,7 +237,8 @@ const getOrdersToApprove = async (req, res) => {
 const approveOrderToWarehouse = async (req, res) => {
   try {
     const { orderId } = req.body;
-    const adminId = req.user.adminId; // Make sure your middleware sets req.user correctly
+    const adminId = req.user.id; // Make sure your middleware sets req.user correctly
+    console.log(adminId);
 
     // Validate input
     if (!orderId) {

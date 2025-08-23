@@ -183,19 +183,28 @@ const checkWarehouseApproval = async (req, res) => {
   try {
     const orderId = req.params.orderId;
 
-    const order = await Order.findById(orderId).select(
-      "orderStatus approvedBy assignedWarehouse"
-    );
+    const order = await Order.findById(orderId)
+      .select("orderStatus approvedBy assignedWarehouse")
+      .populate("approvedBy", "name email")
+      .populate("assignedWarehouse", "name location");
 
     if (!order)
       return res
         .status(404)
         .json({ success: false, message: "Order not found" });
 
-    const approved = order.orderStatus === "Approved" && order.approvedBy;
+    const approvedBy = order.orderStatus === "Approved" && order.approvedBy;
+    const approved = Boolean(
+      order.orderStatus === "Approved" && order.approvedBy
+    );
     res.status(200).json({
       success: true,
-      data: { approved, orderStatus: order.orderStatus },
+      data: {
+        approvedBy: approvedBy,
+        warehouseApproved: approved,
+        orderStatus: order.orderStatus,
+        assignedWarehouse: order.assignedWarehouse,
+      },
     });
   } catch (err) {
     res

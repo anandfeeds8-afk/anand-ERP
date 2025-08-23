@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { SiDecentraland } from "react-icons/si";
 import { IoLocationOutline } from "react-icons/io5";
 import { BadgeCheck, Phone } from "lucide-react";
@@ -6,15 +6,7 @@ import {
   MdOutlineAccountBalance,
   MdOutlineManageAccounts,
 } from "react-icons/md";
-import {
-  Box,
-  EditIcon,
-  Eye,
-  Mail,
-  SquarePen,
-  Trash2,
-  User,
-} from "lucide-react";
+import { Box, Eye, Mail, SquarePen, Trash2, User } from "lucide-react";
 import CloseIcon from "@mui/icons-material/Close";
 import useWarehouse from "../../../hooks/useWarehouse";
 import {
@@ -49,7 +41,6 @@ const Warehouse = ({ warehouse }) => {
     register,
     handleSubmit,
     control,
-    reset,
     formState: { errors },
   } = useForm();
   const [openEdit, setOpenEdit] = useState(false);
@@ -83,7 +74,7 @@ const Warehouse = ({ warehouse }) => {
     addProductToWarehouse(data);
   };
 
-  if (singleWarehouseLoading) return <CircularProgress />;
+  if (singleWarehouseLoading || isPending) return <CircularProgress />;
 
   return (
     <div className="bg-white rounded-lg p-5 shadow hover:shadow-md transition-all">

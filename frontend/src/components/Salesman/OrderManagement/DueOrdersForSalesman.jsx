@@ -60,8 +60,23 @@ const DueOrdersForSalesman = () => {
       headerName: "Advance Amount",
       flex: 1,
       maxWidth: 150,
+      renderCell: (params) => (
+        <span className={`${params.value !== "₹0" && "text-green-700"}`}>
+          {params.value}
+        </span>
+      ),
     },
-    { field: "dueAmount", headerName: "Due Amount", flex: 1, maxWidth: 150 },
+    {
+      field: "dueAmount",
+      headerName: "Due Amount",
+      flex: 1,
+      maxWidth: 150,
+      renderCell: (params) => (
+        <span className={`${params.value !== "₹0" && "text-red-600"}`}>
+          {params.value}
+        </span>
+      ),
+    },
     {
       field: "orderStatus",
       headerName: "Status",
@@ -372,63 +387,71 @@ const DueOrdersForSalesman = () => {
                 </div>
               </div>
             </div>
-            <div className="flex flex-col gap-2 text-sm bg-green-50 p-3 rounded-lg mt-5">
-              <h1 className="font-semibold text-base text-gray-800">
-                Dispatch Info
-              </h1>
-              <div className="grid grid-cols-2 gap-5">
-                <div className="flex flex-col gap-2 text-sm">
-                  <div className="flex items-center justify-between font-semibold">
-                    <span className="text-gray-600 font-normal">
-                      Driver Name
-                    </span>
-                    {singleOrderFromSalesman?.dispatchInfo?.driverName}
+            {singleOrderFromSalesman?.dispatchInfo && (
+              <div className="flex flex-col gap-2 text-sm bg-green-50 p-3 rounded-lg mt-5">
+                <h1 className="font-semibold text-base text-gray-800">
+                  Dispatch Info
+                </h1>
+                <div className="grid grid-cols-2 gap-5">
+                  <div className="flex flex-col gap-2 text-sm">
+                    <div className="flex items-center justify-between font-semibold">
+                      <span className="text-gray-600 font-normal">
+                        Driver Name
+                      </span>
+                      {singleOrderFromSalesman?.dispatchInfo?.driverName}
+                    </div>
+                    <div className="flex items-center justify-between font-semibold">
+                      <span className="text-gray-600 font-normal">
+                        Driver Contact
+                      </span>
+                      {singleOrderFromSalesman?.dispatchInfo?.driverContact}
+                    </div>
+                    <div className="flex items-center justify-between font-semibold">
+                      <span className="text-gray-600 font-normal">
+                        Transport Company:
+                      </span>{" "}
+                      {singleOrderFromSalesman?.dispatchInfo?.transportCompany}
+                    </div>
+                    <div className="flex items-center justify-between font-semibold">
+                      <span className="text-gray-600 font-normal">
+                        Vehicle Number:
+                      </span>{" "}
+                      {singleOrderFromSalesman?.dispatchInfo?.vehicleNumber}
+                    </div>
                   </div>
-                  <div className="flex items-center justify-between font-semibold">
-                    <span className="text-gray-600 font-normal">
-                      Driver Contact
-                    </span>
-                    {singleOrderFromSalesman?.dispatchInfo?.driverContact}
-                  </div>
-                  <div className="flex items-center justify-between font-semibold">
-                    <span className="text-gray-600 font-normal">
-                      Transport Company:
-                    </span>{" "}
-                    {singleOrderFromSalesman?.dispatchInfo?.transportCompany}
-                  </div>
-                  <div className="flex items-center justify-between font-semibold">
-                    <span className="text-gray-600 font-normal">
-                      Vehicle Number:
-                    </span>{" "}
-                    {singleOrderFromSalesman?.dispatchInfo?.vehicleNumber}
-                  </div>
-                </div>
 
-                <div className="flex flex-col gap-2 text-sm">
-                  <div className="flex items-center justify-between font-semibold">
-                    <span className="text-gray-600 font-normal">
-                      Dispatched By:
-                    </span>{" "}
-                    {singleOrderFromSalesman?.dispatchInfo?.dispatchedBy?.name}
-                  </div>
-                  <div className="flex items-center justify-between font-semibold">
-                    <span className="text-gray-600 font-normal">
-                      Plant Head Contact:
-                    </span>{" "}
-                    {singleOrderFromSalesman?.dispatchInfo?.dispatchedBy?.phone}
-                  </div>
-                  <div className="flex items-center justify-between font-semibold">
-                    <span className="text-gray-600 font-normal">
-                      Dispatched Date:
-                    </span>{" "}
-                    {format(
-                      singleOrderFromSalesman?.dispatchInfo?.dispatchDate,
-                      "dd MMM yyyy"
-                    )}
+                  <div className="flex flex-col gap-2 text-sm">
+                    <div className="flex items-center justify-between font-semibold">
+                      <span className="text-gray-600 font-normal">
+                        Dispatched By:
+                      </span>{" "}
+                      {
+                        singleOrderFromSalesman?.dispatchInfo?.dispatchedBy
+                          ?.name
+                      }
+                    </div>
+                    <div className="flex items-center justify-between font-semibold">
+                      <span className="text-gray-600 font-normal">
+                        Plant Head Contact:
+                      </span>{" "}
+                      {
+                        singleOrderFromSalesman?.dispatchInfo?.dispatchedBy
+                          ?.phone
+                      }
+                    </div>
+                    <div className="flex items-center justify-between font-semibold">
+                      <span className="text-gray-600 font-normal">
+                        Dispatched Date:
+                      </span>
+                      {format(
+                        singleOrderFromSalesman?.dispatchInfo?.dispatchDate,
+                        "dd MMM yyyy"
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
+            )}
           </div>
         </div>
       )}

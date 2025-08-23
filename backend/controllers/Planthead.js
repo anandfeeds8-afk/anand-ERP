@@ -143,7 +143,7 @@ const updateProductStock = async (req, res) => {
         .json({ success: false, message: "Quantity must be non-negative" });
     }
 
-    const warehouse = await Warehouse.findOne({ plantHead: plantHeadId });
+    const warehouse = await WareHouse.findOne({ plantHead: plantHeadId });
     if (!warehouse) {
       return res
         .status(404)
@@ -160,7 +160,7 @@ const updateProductStock = async (req, res) => {
       });
     }
 
-    stockItem.quantity += quantity;
+    stockItem.quantity = quantity;
     stockItem.lastUpdated = new Date();
 
     await warehouse.save();
@@ -182,7 +182,7 @@ const getAllProductsInWarehouse = async (req, res) => {
   try {
     const plantHeadId = req.user.id;
 
-    const warehouse = await Warehouse.findOne({
+    const warehouse = await WareHouse.findOne({
       plantHead: plantHeadId,
     }).populate("stock.product");
     if (!warehouse) {

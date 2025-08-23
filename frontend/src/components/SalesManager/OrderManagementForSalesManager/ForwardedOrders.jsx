@@ -1,66 +1,56 @@
 import { useState } from "react";
-import {
-  Button,
-  CircularProgress,
-  FormControl,
-  IconButton,
-  InputLabel,
-  MenuItem,
-  Select,
-  TextField,
-  Tooltip,
-} from "@mui/material";
-import { Eye, SquarePen } from "lucide-react";
+import { Button, CircularProgress, IconButton, TextField } from "@mui/material";
+import { Eye, SquarePen, Trash2 } from "lucide-react";
 import { format } from "date-fns";
 import { DataGrid } from "@mui/x-data-grid";
 import CloseIcon from "@mui/icons-material/Close";
-import { MdDoneAll, MdOutlineCancel } from "react-icons/md";
+import { MdDoneAll } from "react-icons/md";
 import { formatRupee } from "../../../utils/formatRupee.js";
-import { Controller, useForm } from "react-hook-form";
-import { useSalesAuthorizerOrder } from "../../../hooks/useSalesAuthorizerOrder.js";
+import { useSalesManagerOrder } from "../../../hooks/useSalesManagerOrder.js";
+import { MdOutlineCancel } from "react-icons/md";
+import { useForm } from "react-hook-form";
 
-const OrdersForAuthorizer = () => {
+const ForwardedOrders = () => {
   const [singleOrderId, setSingleOrderId] = useState(null);
   const [openView, setOpenView] = useState(false);
   const [openCancel, setOpenCancel] = useState(false);
+  const {
+    ForwardedOrdersInSalesManager,
+    singleOrderFromSalesManager,
+    forwardOrder,
+    cancelOrder,
+    singleOrderLoading,
+    ForwardedOrdersInSalesManagerLoading,
+    isForwardingOrder,
+    isCancelingOrder,
+  } = useSalesManagerOrder(singleOrderId);
 
   const {
-    control,
     register,
-    formState: { errors },
     handleSubmit,
     watch,
+    formState: { errors },
   } = useForm();
 
   const reason = watch("reason");
-
-  const {
-    allWarehouses,
-    assignWarehouseToOrder,
-    warehousesLoading,
-    ordersInSalesAuthorizer,
-    ordersInSalesAuthorizerLoading,
-    singleOrderFromSalesauthorizer,
-    singleOrderLoading,
-    cancelOrder,
-    isCancelingOrder,
-  } = useSalesAuthorizerOrder(singleOrderId);
 
   const [paginationModel, setPaginationModel] = useState({
     page: 0,
     pageSize: 5,
   });
 
-  const handleAssignWarehouse = (data) => {
-    data.orderId = singleOrderId;
-    assignWarehouseToOrder(data);
-    setOpenView(false);
+  const handleForwardOrder = (orderId) => {
+    forwardOrder(orderId);
   };
 
   const handleView = (id) => {
     console.log(id);
     setSingleOrderId(id);
     setOpenView(true);
+  };
+
+  const handleUpdate = (id) => {
+    console.log(id);
   };
 
   const handleCancelOrder = (data) => {
@@ -72,8 +62,8 @@ const OrdersForAuthorizer = () => {
 
   if (
     singleOrderLoading ||
-    ordersInSalesAuthorizerLoading ||
-    warehousesLoading ||
+    ForwardedOrdersInSalesManagerLoading ||
+    isForwardingOrder ||
     isCancelingOrder
   )
     return (
@@ -143,39 +133,33 @@ const OrdersForAuthorizer = () => {
       filterable: false,
       renderCell: (params) => (
         <div className="flex items-center h-full gap-1">
-          <Tooltip title="View order details" enterDelay={500} placement="top">
-            <Eye
-              color="blue"
-              className="hover:bg-blue-100 active:scale-95 transition-all p-1.5 rounded-lg"
-              size={30}
-              onClick={() => handleView(params.row.id)}
-            />
-          </Tooltip>
-          <Tooltip title="Update order" enterDelay={500} placement="top">
-            <SquarePen
-              color="green"
-              className="hover:bg-green-100 active:scale-95 transition-all p-1.5 rounded-lg"
-              size={30}
-              onClick={() => handleUpdate(params.row.id)}
-            />
-          </Tooltip>
-          <Tooltip title="Cancel order" enterDelay={500} placement="top">
-            <MdOutlineCancel
-              color="red"
-              className="hover:bg-red-100 active:scale-95 transition-all p-1.5 rounded-lg"
-              size={30}
-              onClick={() => {
-                setSingleOrderId(params.row.id);
-                setOpenCancel(true);
-              }}
-            />
-          </Tooltip>
+          <Eye
+            color="blue"
+            className="hover:bg-blue-100 active:scale-95 transition-all p-1.5 rounded-lg"
+            size={30}
+            onClick={() => handleView(params.row.id)}
+          />
+          <SquarePen
+            color="green"
+            className="hover:bg-green-100 active:scale-95 transition-all p-1.5 rounded-lg"
+            size={30}
+            onClick={() => handleUpdate(params.row.id)}
+          />
+          <MdOutlineCancel
+            color="red"
+            className="hover:bg-red-100 active:scale-95 transition-all p-1.5 rounded-lg"
+            size={30}
+            onClick={() => {
+              setSingleOrderId(params.row.id);
+              setOpenCancel(true);
+            }}
+          />
         </div>
       ),
     },
   ];
 
-  const rows = ordersInSalesAuthorizer?.map((order) => ({
+  const rows = ForwardedOrdersInSalesManager?.map((order) => ({
     id: order._id,
     party: order?.party?.companyName,
     date: format(order?.createdAt, "dd MMM yyyy"),
@@ -229,60 +213,31 @@ const OrdersForAuthorizer = () => {
       {/* --- View Order Modal --- */}
       {openView && (
         <div className="transition-all bg-black/30 backdrop-blur-sm w-full z-50 h-screen absolute top-0 left-0 flex items-center justify-center">
-          <div className="bg-white relative p-7 rounded-lg w-[50%] h-[70%] overflow-auto">
+          <div className="bg-white relative p-7 rounded-lg w-[50%] h-[75%] overflow-auto">
             <div className="mb-5">
               <div className="flex items-center justify-between">
                 <p className="text-xl font-bold">Order Details</p>
-                <div className="w-64">
-                  {singleOrderFromSalesauthorizer?.orderStatus ===
-                    "ForwardedToAuthorizer" && (
-                    <form
-                      className="flex items-center gap-2"
-                      onSubmit={handleSubmit(handleAssignWarehouse)}
-                    >
-                      <FormControl fullWidth size="small">
-                        <InputLabel id="item-label">
-                          Assign Warehouse
-                        </InputLabel>
-                        <Controller
-                          name="warehouseId"
-                          control={control}
-                          rules={{ required: "Warehouse is required" }}
-                          render={({ field }) => (
-                            <Select
-                              {...field}
-                              labelId="warehouse-label"
-                              id="warehouseId"
-                              label="Assign Warehouse"
-                            >
-                              <MenuItem>Select Warehouse</MenuItem>
-                              {allWarehouses?.map((warehouse) => (
-                                <MenuItem
-                                  key={warehouse._id}
-                                  value={warehouse._id}
-                                >
-                                  {warehouse.name}
-                                </MenuItem>
-                              ))}
-                            </Select>
-                          )}
-                        />
-                        {errors?.warehouse && (
-                          <span className="text-red-600 text-xs mt-1">
-                            {errors.warehouse?.message}
-                          </span>
-                        )}
-                      </FormControl>
-                      <Button size="small" variant="outlined" type="submit">
-                        Assign
-                      </Button>
-                    </form>
-                  )}
-                </div>
-                {singleOrderFromSalesauthorizer?.orderStatus ===
-                  "AssignedToWarehouse" && (
+                {singleOrderFromSalesManager?.orderStatus === "Placed" && (
+                  <Button
+                    onClick={() =>
+                      handleForwardOrder(singleOrderFromSalesManager?._id)
+                    }
+                    variant="outlined"
+                    size="small"
+                    disableElevation
+                    sx={{
+                      borderRadius: "999px",
+                      textTransform: "none",
+                      fontSize: "14px",
+                    }}
+                  >
+                    Forward to Authorizer
+                  </Button>
+                )}
+                {singleOrderFromSalesManager?.orderStatus ===
+                  "ForwardedToAuthorizer" && (
                   <div className="flex items-center gap-2 bg-blue-100 p-1 px-2 rounded-full text-blue-700">
-                    <MdDoneAll /> Warehouse Assigned
+                    <MdDoneAll /> Forwarded to Authorizer
                   </div>
                 )}
 
@@ -301,30 +256,30 @@ const OrdersForAuthorizer = () => {
                     <span className="text-gray-600 font-normal">
                       Product Category:
                     </span>{" "}
-                    {singleOrderFromSalesauthorizer?.item?.category}
+                    {singleOrderFromSalesManager?.item?.category}
                   </div>
                   <div className="flex items-center justify-between font-semibold">
                     <span className="text-gray-600 font-normal">
                       Product Name:
                     </span>{" "}
-                    {singleOrderFromSalesauthorizer?.item?.name}
+                    {singleOrderFromSalesManager?.item?.name}
                   </div>
                   <div className="flex items-center justify-between font-semibold">
                     <span className="text-gray-600 font-normal">Quantity:</span>{" "}
-                    {singleOrderFromSalesauthorizer?.quantity} kg
+                    {singleOrderFromSalesManager?.quantity} kg
                   </div>
                   <div className="flex items-center justify-between font-semibold">
                     <span className="text-gray-600 font-normal">
                       Placed By:
                     </span>{" "}
-                    {singleOrderFromSalesauthorizer?.placedBy?.name}
+                    {singleOrderFromSalesManager?.placedBy?.name}
                   </div>
                   <div className="flex items-center justify-between font-semibold">
                     <span className="text-gray-600 font-normal">
                       Placed Date:
                     </span>{" "}
                     {format(
-                      singleOrderFromSalesauthorizer?.createdAt,
+                      singleOrderFromSalesManager?.createdAt,
                       "dd MMM yyyy"
                     )}
                   </div>
@@ -337,30 +292,30 @@ const OrdersForAuthorizer = () => {
                     <span className="text-gray-600 font-normal">
                       Total Amount:
                     </span>
-                    {formatRupee(singleOrderFromSalesauthorizer?.totalAmount)}
+                    {formatRupee(singleOrderFromSalesManager?.totalAmount)}
                   </div>
                   <div className="flex items-center justify-between font-semibold text-green-700">
                     <span className="text-gray-600 font-normal">
                       Advance Amount:
                     </span>{" "}
-                    {formatRupee(singleOrderFromSalesauthorizer?.advanceAmount)}
+                    {formatRupee(singleOrderFromSalesManager?.advanceAmount)}
                   </div>
                   <div className="flex items-center justify-between font-semibold text-red-700">
                     <span className="text-gray-600 font-normal">
                       Due Amount:
                     </span>{" "}
-                    {formatRupee(singleOrderFromSalesauthorizer?.dueAmount)}
+                    {formatRupee(singleOrderFromSalesManager?.dueAmount)}
                   </div>
                   <div className="flex items-center justify-between font-semibold">
                     <span className="text-gray-600 font-normal">
                       Payment Mode:
                     </span>{" "}
-                    {singleOrderFromSalesauthorizer?.paymentMode}
+                    {singleOrderFromSalesManager?.paymentMode}
                   </div>
                   <div className="flex items-center justify-between font-semibold">
                     <span className="text-gray-600 font-normal">Due Date:</span>{" "}
                     {format(
-                      singleOrderFromSalesauthorizer?.dueDate,
+                      singleOrderFromSalesManager?.dueDate,
                       "dd MMM yyyy"
                     )}
                   </div>
@@ -376,14 +331,14 @@ const OrdersForAuthorizer = () => {
                     <span className="text-gray-600 font-normal">
                       Order Status:
                     </span>{" "}
-                    {singleOrderFromSalesauthorizer?.orderStatus ===
+                    {singleOrderFromSalesManager?.orderStatus ===
                     "Delivered" ? (
                       <span className="text-green-700 bg-green-100 p-1 px-3 rounded-full text-xs">
-                        {singleOrderFromSalesauthorizer?.orderStatus}
+                        {singleOrderFromSalesManager?.orderStatus}
                       </span>
                     ) : (
                       <span className="text-gray-700 bg-gray-200 p-1 px-3 rounded-full text-xs">
-                        {singleOrderFromSalesauthorizer?.orderStatus}
+                        {singleOrderFromSalesManager?.orderStatus}
                       </span>
                     )}
                   </div>
@@ -391,22 +346,21 @@ const OrdersForAuthorizer = () => {
                     <span className="text-gray-600 font-normal">
                       Payment Status:
                     </span>
-                    {singleOrderFromSalesauthorizer?.paymentStatus ===
+                    {singleOrderFromSalesManager?.paymentStatus ===
                       "Partial" && (
                       <span className="text-yellow-700 bg-yellow-100 p-1 px-3 rounded-full text-xs">
-                        {singleOrderFromSalesauthorizer?.paymentStatus}
+                        {singleOrderFromSalesManager?.paymentStatus}
                       </span>
                     )}
-                    {singleOrderFromSalesauthorizer?.paymentStatus ===
-                      "Paid" && (
+                    {singleOrderFromSalesManager?.paymentStatus === "Paid" && (
                       <span className="text-green-700 bg-green-100 p-1 px-3 rounded-full text-xs">
-                        {singleOrderFromSalesauthorizer?.paymentStatus}
+                        {singleOrderFromSalesManager?.paymentStatus}
                       </span>
                     )}
-                    {singleOrderFromSalesauthorizer?.paymentStatus ===
+                    {singleOrderFromSalesManager?.paymentStatus ===
                       "Unpaid" && (
                       <span className="text-red-700 bg-red-100 p-1 px-3 rounded-full text-xs">
-                        {singleOrderFromSalesauthorizer?.paymentStatus}
+                        {singleOrderFromSalesManager?.paymentStatus}
                       </span>
                     )}
                   </div>
@@ -414,7 +368,7 @@ const OrdersForAuthorizer = () => {
                     <span className="text-gray-600 font-normal">
                       Invoice Generated:
                     </span>{" "}
-                    {singleOrderFromSalesauthorizer?.invoiceGenerated ===
+                    {singleOrderFromSalesManager?.invoiceGenerated ===
                     "true" ? (
                       <span className="text-green-700 bg-green-100 p-1 px-3 rounded-full text-xs">
                         Yes
@@ -432,7 +386,7 @@ const OrdersForAuthorizer = () => {
                     Notes
                   </h1>
                   <p className="bg-gray-100 rounded-lg p-3">
-                    {singleOrderFromSalesauthorizer?.notes}
+                    {singleOrderFromSalesManager?.notes}
                   </p>
                 </div>
 
@@ -445,7 +399,7 @@ const OrdersForAuthorizer = () => {
                       Order Placed On:
                     </span>{" "}
                     {format(
-                      singleOrderFromSalesauthorizer?.createdAt,
+                      singleOrderFromSalesManager?.createdAt,
                       "dd MMM yyyy"
                     )}
                   </div>
@@ -458,16 +412,13 @@ const OrdersForAuthorizer = () => {
                     <span className="text-gray-600 font-normal">
                       Warehouse:
                     </span>
-                    {singleOrderFromSalesauthorizer?.assignedWarehouse ? (
+                    {singleOrderFromSalesManager?.assignedWarehouse ? (
                       <div className="flex flex-col items-center">
-                        {
-                          singleOrderFromSalesauthorizer?.assignedWarehouse
-                            ?.name
-                        }
+                        {singleOrderFromSalesManager?.assignedWarehouse?.name}
                         <span className="text-xs font-normal text-gray-600">
                           (
                           {
-                            singleOrderFromSalesauthorizer?.assignedWarehouse
+                            singleOrderFromSalesManager?.assignedWarehouse
                               ?.location
                           }
                           )
@@ -492,7 +443,7 @@ const OrdersForAuthorizer = () => {
           <div className="bg-white p-7 rounded-lg w-[29rem]">
             <p className="text-lg font-semibold">
               Are you sure you want to cancel "
-              {singleOrderFromSalesauthorizer?.item?.name}"?
+              {singleOrderFromSalesManager?.item?.name}"?
             </p>
             <p className="text-gray-800 my-2">
               Tell us why you are cancelling this order:
@@ -544,4 +495,4 @@ const OrdersForAuthorizer = () => {
   );
 };
 
-export default OrdersForAuthorizer;
+export default ForwardedOrders;

@@ -28,6 +28,29 @@ export const usePlantheadOrder = (id) => {
       },
     });
 
+  // GET dispatched orders from Planthead
+  const {
+    data: dispatchedOrdersInPlanthead,
+    isPending: dispatchedOrdersInPlantheadLoading,
+  } = useQuery({
+    queryKey: ["dispatchedOrdersInPlanthead"],
+    queryFn: async () => {
+      const response = await axios.get(
+        BASE_URL + API_PATHS.PLANT_HEAD.GET_DISPATCHED_ORDERS,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      console.log("planthead dispatched orders", response.data.data);
+      return response.data.data;
+    },
+    onError: (error) => {
+      console.log(error);
+    },
+  });
+
   // GET all products from Planthead
   const { data: productsInPlanthead, isPending: productsInPlantheadLoading } =
     useQuery({
@@ -48,6 +71,35 @@ export const usePlantheadOrder = (id) => {
         console.log(error);
       },
     });
+
+  // DISPATCH Order in Planthead
+  const {
+    mutate: updateProductQuantity,
+    isPending: isUpdatingProductQuantity,
+  } = useMutation({
+    mutationFn: async (data) => {
+      const response = await axios.put(
+        BASE_URL + API_PATHS.PLANT_HEAD.UPDATE_PRODUCT_STOCK(data.productId),
+        { quantity: Number(data.quantity) },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      return response.data;
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["allProducts"] });
+      queryClient.invalidateQueries({ queryKey: ["productsInPlanthead"] });
+      console.log(data);
+      toast.success(data.message);
+    },
+    onError: (error) => {
+      console.log(error);
+      toast.error(error.response.data.message);
+    },
+  });
 
   //GET single order using order id
   const { data: singleOrderFromPlanthead, isPending: singleOrderLoading } =
@@ -123,18 +175,50 @@ export const usePlantheadOrder = (id) => {
     },
   });
 
+  // CANCEL Order
+  const { mutate: cancelOrder, isPending: isCancelingOrder } = useMutation({
+    mutationFn: async (data) => {
+      const response = await axios.post(
+        BASE_URL + API_PATHS.PLANT_HEAD.CANCEL_ORDER(data.orderId),
+        { reason: data.reason },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      return response.data;
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["order"] });
+      queryClient.invalidateQueries({ queryKey: ["ordersInPlanthead"] });
+      console.log(data);
+      toast.success(data.message);
+    },
+    onError: (error) => {
+      console.log(error);
+      toast.error(error.response.data.message);
+    },
+  });
+
   return {
     ordersInPlanthead,
     singleOrderFromPlanthead,
     productsInPlanthead,
     dispatchOrder,
     createOrder,
+    cancelOrder,
+    dispatchedOrdersInPlanthead,
+    updateProductQuantity,
 
     //Loading
     ordersInPlantheadLoading,
     productsInPlantheadLoading,
+    dispatchedOrdersInPlantheadLoading,
+    isUpdatingProductQuantity,
     singleOrderLoading,
     isCreatingOrder,
     isDispatchingOrder,
+    isCancelingOrder,
   };
 };
