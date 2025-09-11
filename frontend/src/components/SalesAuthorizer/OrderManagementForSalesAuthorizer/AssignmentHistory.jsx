@@ -58,6 +58,7 @@ const AssignmentHistory = () => {
       field: "actions",
       headerName: "Actions",
       flex: 1,
+      minWidth: 150,
       sortable: false,
       filterable: false,
       renderCell: (params) => (
@@ -143,7 +144,7 @@ const AssignmentHistory = () => {
             overflowY: "auto",
           },
           "& .MuiDataGrid-main": {
-            maxWidth: "1210px",
+            maxWidth: "100%",
           },
         }}
         disableColumnResize={false}
@@ -457,7 +458,7 @@ const AssignmentHistory = () => {
                     <span className="text-gray-600 font-normal">
                       Warehouse Status:
                     </span>
-                    {ApprovedOrderForWarehouse?.warehouseApproved ? (
+                    {ApprovedOrderForWarehouse?.approvedBy !== null ? (
                       <span className="text-green-600 text-xs bg-green-100 p-1 px-2 rounded-full">
                         Approved
                       </span>

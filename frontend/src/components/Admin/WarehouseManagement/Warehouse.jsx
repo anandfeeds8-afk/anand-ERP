@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { SiDecentraland } from "react-icons/si";
 import { IoLocationOutline } from "react-icons/io5";
-import { BadgeCheck, CircleMinus, Cross, Phone } from "lucide-react";
+import { CircleMinus, Phone } from "lucide-react";
 import {
   MdOutlineAccountBalance,
   MdOutlineManageAccounts,
@@ -26,11 +26,11 @@ import { useSingleWarehouse } from "../../../hooks/useSingleWarehouse";
 import { CgDollar } from "react-icons/cg";
 import { useProduct } from "../../../hooks/useProduct";
 import useFilteredProducts from "../../../hooks/useFilteredProducts";
+import { formatRupee } from "../../../utils/formatRupee.js";
 
 const Warehouse = ({ warehouse }) => {
   const { planthead, accountant } = useEmployees();
-  const { updateWarehouse, deleteWarehouse, isLoading, approveWarehouse } =
-    useWarehouse();
+  const { updateWarehouse, deleteWarehouse, isLoading } = useWarehouse();
   const { singleWarehouse, singleWarehouseLoading } = useSingleWarehouse(
     warehouse._id
   );
@@ -90,19 +90,6 @@ const Warehouse = ({ warehouse }) => {
               <IoLocationOutline className="text-gray-600" />
               <p className="text-sm text-gray-600">{warehouse.location}</p>
             </div>
-          </div>
-        </div>
-        <div>
-          <div>
-            {warehouse.approved ? (
-              <p className="bg-green-100 p-1 px-3 rounded-full text-green-800 text-sm">
-                Approved
-              </p>
-            ) : (
-              <p className="bg-gray-100 p-1 px-3 rounded-full text-gray-800 text-sm">
-                Pending
-              </p>
-            )}
           </div>
         </div>
       </div>
@@ -350,33 +337,6 @@ const Warehouse = ({ warehouse }) => {
                         </div>
                       </div>
                     </div>
-                    <div>
-                      {warehouse.approved ? (
-                        <p className="bg-green-100 p-1 px-3 rounded-full text-green-800 text-sm">
-                          Approved
-                        </p>
-                      ) : (
-                        <div className="flex items-center gap-3">
-                          <p className="bg-gray-100 p-1 px-3 rounded-full text-gray-800 text-sm">
-                            Pending
-                          </p>
-                          <Button
-                            onClick={() => approveWarehouse(warehouse._id)}
-                            color="success"
-                            variant="contained"
-                            size="small"
-                            startIcon={<BadgeCheck size={18} />}
-                            disableElevation
-                            sx={{
-                              textTransform: "none",
-                              borderRadius: "999px",
-                            }}
-                          >
-                            Approve
-                          </Button>
-                        </div>
-                      )}
-                    </div>
                   </div>
 
                   {/* Total Earnings */}
@@ -384,7 +344,7 @@ const Warehouse = ({ warehouse }) => {
                     <div>
                       <p className="font-semibold mb-1">Total Earnings</p>
                       <p className="text-2xl font-semibold">
-                        {singleWarehouse?.totalEarnings}
+                        {formatRupee(singleWarehouse?.totalEarnings)}
                       </p>
                     </div>
                     <div className="w-12 h-12 flex items-center justify-center bg-green-100 rounded-full">
@@ -480,10 +440,10 @@ const Warehouse = ({ warehouse }) => {
                                   {item.product.description}
                                 </td>
                                 <td className="p-3 border-b">
-                                  {item.quantity}
+                                  {item.quantity} bags
                                 </td>
                                 <td className="p-3 border-b">
-                                  {item.product.price}
+                                  {formatRupee(item.product.price)}
                                 </td>
                               </tr>
                             ))
@@ -522,17 +482,19 @@ const Warehouse = ({ warehouse }) => {
                     </thead>
                     <tbody>
                       {singleWarehouse?.assignedOrders?.length > 0 ? (
-                        singleWarehouse?.assignedOrders?.map((item, index) => (
+                        singleWarehouse?.assignedOrders?.map((order, index) => (
                           <tr key={index} className="hover:bg-gray-50 text-sm">
                             <td className="p-3 border-b">
-                              {item.product.name}
+                              {order?.item?.name}
                             </td>
                             <td className="p-3 border-b">
-                              {item.product.description}
+                              {order?.item?.description}
                             </td>
-                            <td className="p-3 border-b">{item.quantity}</td>
                             <td className="p-3 border-b">
-                              {item.product.price}
+                              {order?.quantity} bags
+                            </td>
+                            <td className="p-3 border-b">
+                              {formatRupee(order?.item?.price)}
                             </td>
                           </tr>
                         ))
@@ -570,20 +532,22 @@ const Warehouse = ({ warehouse }) => {
                     <tbody>
                       {singleWarehouse?.dispatchedOrders?.length > 0 ? (
                         singleWarehouse?.dispatchedOrders?.map(
-                          (item, index) => (
+                          (order, index) => (
                             <tr
                               key={index}
                               className="hover:bg-gray-50 text-sm"
                             >
                               <td className="p-3 border-b">
-                                {item.product.name}
+                                {order?.item?.name}
                               </td>
                               <td className="p-3 border-b">
-                                {item.product.description}
+                                {order?.item?.description}
                               </td>
-                              <td className="p-3 border-b">{item.quantity}</td>
                               <td className="p-3 border-b">
-                                {item.product.price}
+                                {order?.quantity} bags
+                              </td>
+                              <td className="p-3 border-b">
+                                {formatRupee(order?.item?.price)}
                               </td>
                             </tr>
                           )

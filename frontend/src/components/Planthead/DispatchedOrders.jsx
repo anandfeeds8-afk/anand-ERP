@@ -6,7 +6,7 @@ import {
   TextField,
   Tooltip,
 } from "@mui/material";
-import { Eye, SquarePen, Trash2 } from "lucide-react";
+import { Download, Eye, FileBox, SquarePen, Trash2 } from "lucide-react";
 import { format } from "date-fns";
 import { DataGrid } from "@mui/x-data-grid";
 import CloseIcon from "@mui/icons-material/Close";
@@ -15,19 +15,13 @@ import { usePlantheadOrder } from "../../hooks/usePlanthead.js";
 import { useForm } from "react-hook-form";
 import { MdOutlineCancel } from "react-icons/md";
 import { LuTruck } from "react-icons/lu";
+import { TbFileInvoice } from "react-icons/tb";
+import { downloadFile } from "../../utils/downloadFile.js";
 
 const DispatchedOrders = () => {
   const [singleOrderId, setSingleOrderId] = useState(null);
   const [openView, setOpenView] = useState(false);
-  const [openDispatch, setOpenDispatch] = useState(false);
-  const [openCancel, setOpenCancel] = useState(false);
-
-  const {
-    register,
-    watch,
-    handleSubmit,
-    formState: { errors },
-  } = useForm();
+  const [openInvoice, setOpenInvoice] = useState(false);
 
   const {
     singleOrderFromPlanthead,
@@ -36,7 +30,7 @@ const DispatchedOrders = () => {
     dispatchedOrdersInPlantheadLoading,
   } = usePlantheadOrder(singleOrderId);
 
-  const reason = watch("reason");
+  console.log(singleOrderFromPlanthead);
 
   const [paginationModel, setPaginationModel] = useState({
     page: 0,
@@ -49,21 +43,19 @@ const DispatchedOrders = () => {
   };
 
   const columns = [
-    { field: "product", headerName: "Product", flex: 1, maxWidth: 150 },
-    { field: "party", headerName: "Party", flex: 1, maxWidth: 150 },
-    { field: "date", headerName: "Date", flex: 1, maxWidth: 150 },
-    { field: "quantity", headerName: "Quantity", flex: 1, maxWidth: 150 },
+    { field: "product", headerName: "Product", flex: 1 },
+    { field: "party", headerName: "Party", flex: 1 },
+    { field: "date", headerName: "Date", flex: 1 },
+    { field: "quantity", headerName: "Quantity", flex: 1 },
     {
       field: "totalAmount",
       headerName: "Total Amount",
       flex: 1,
-      maxWidth: 150,
     },
     {
       field: "advanceAmount",
       headerName: "Advance Amount",
       flex: 1,
-      maxWidth: 150,
       renderCell: (params) => (
         <span className={`${params.value !== "₹0" && "text-green-700"}`}>
           {params.value}
@@ -74,7 +66,6 @@ const DispatchedOrders = () => {
       field: "dueAmount",
       headerName: "Due Amount",
       flex: 1,
-      maxWidth: 150,
       renderCell: (params) => (
         <span className={`${params.value !== "₹0" && "text-red-600"}`}>
           {params.value}
@@ -85,7 +76,6 @@ const DispatchedOrders = () => {
       field: "orderStatus",
       headerName: "Status",
       flex: 1,
-      maxWidth: 150,
       renderCell: (params) => (
         <span
           className={`${
@@ -117,6 +107,22 @@ const DispatchedOrders = () => {
               onClick={() => handleView(params.row.id)}
             />
           </Tooltip>
+          <Tooltip
+            title="View Dispatch Documents"
+            enterDelay={500}
+            placement="top"
+          >
+            <FileBox
+              strokeWidth={2.1}
+              color="green"
+              className="hover:bg-green-200 active:scale-95 transition-all p-1.5 rounded-lg"
+              size={30}
+              onClick={() => {
+                setSingleOrderId(params.row.id);
+                setOpenInvoice(true);
+              }}
+            />
+          </Tooltip>
         </div>
       ),
     },
@@ -127,7 +133,7 @@ const DispatchedOrders = () => {
     party: order?.party?.companyName,
     date: format(order?.createdAt, "dd MMM yyyy"),
     product: order?.item?.name,
-    quantity: `${order.quantity}kg`,
+    quantity: `${order.quantity} bags`,
     totalAmount: formatRupee(order.totalAmount),
     advanceAmount: formatRupee(order.advanceAmount),
     dueAmount: formatRupee(order.dueAmount),
@@ -174,7 +180,7 @@ const DispatchedOrders = () => {
             overflowY: "auto",
           },
           "& .MuiDataGrid-main": {
-            maxWidth: "1210px",
+            maxWidth: "100%",
           },
         }}
         disableColumnResize={false}
@@ -255,10 +261,14 @@ const DispatchedOrders = () => {
                     </span>{" "}
                     {singleOrderFromPlanthead?.paymentMode}
                   </div>
-                  <div className="flex items-center justify-between font-semibold">
-                    <span className="text-gray-600 font-normal">Due Date:</span>{" "}
-                    {format(singleOrderFromPlanthead?.dueDate, "dd MMM yyyy")}
-                  </div>
+                  {singleOrderFromPlanthead?.dueAmount !== 0 && (
+                    <div className="flex items-center justify-between font-semibold">
+                      <span className="text-gray-600 font-normal">
+                        Due Date:
+                      </span>{" "}
+                      {format(singleOrderFromPlanthead?.dueDate, "dd MMM yyyy")}
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -370,178 +380,109 @@ const DispatchedOrders = () => {
         </div>
       )}
 
-      {/* --- Dispatch Order Modal --- */}
-      {openDispatch && (
+      {/* Open Invoice Modal */}
+      {openInvoice && (
         <div className="transition-all bg-black/30 backdrop-blur-sm w-full z-50 h-screen absolute top-0 left-0 flex items-center justify-center">
-          <div className="bg-white relative p-7 rounded-lg w-[30%] overflow-auto">
-            <div className="flex items-center justify-between">
-              <p className="text-xl font-bold">Dispatch Order</p>
-              <IconButton size="small" onClick={() => setOpenDispatch(false)}>
-                <CloseIcon />
-              </IconButton>
-            </div>
-            <div className="mt-5">
-              <form
-                className="space-y-5"
-                onSubmit={handleSubmit(handleOrderDispatch)}
-              >
-                <div>
-                  <TextField
-                    fullWidth
-                    error={!!errors?.driverName}
-                    size="small"
-                    label="Driver Name"
-                    variant="outlined"
-                    {...register("driverName", {
-                      required: {
-                        value: true,
-                        message: "Driver Name is required",
-                      },
-                    })}
-                  />
-                  {errors?.driverName && (
-                    <p className="text-red-500 text-xs mt-1">
-                      {errors?.driverName?.message}
-                    </p>
-                  )}
-                </div>
-                <div>
-                  <TextField
-                    fullWidth
-                    error={!!errors?.driverContact}
-                    size="small"
-                    label="Driver Contact"
-                    variant="outlined"
-                    {...register("driverContact", {
-                      required: {
-                        value: true,
-                        message: "Driver Contact is required",
-                      },
-                    })}
-                  />
-                  {errors?.driverContact && (
-                    <p className="text-red-500 text-xs mt-1">
-                      {errors?.driverContact?.message}
-                    </p>
-                  )}
-                </div>
-                <div>
-                  <TextField
-                    fullWidth
-                    error={!!errors?.vehicleNumber}
-                    size="small"
-                    label="Vehicle Number"
-                    variant="outlined"
-                    {...register("vehicleNumber", {
-                      required: {
-                        value: true,
-                        message: "Vehicle Number is required",
-                      },
-                    })}
-                  />
-                  {errors?.vehicleNumber && (
-                    <p className="text-red-500 text-xs mt-1">
-                      {errors?.vehicleNumber?.message}
-                    </p>
-                  )}
-                </div>
-                <div>
-                  <TextField
-                    fullWidth
-                    error={!!errors?.transportCompany}
-                    size="small"
-                    label="Transport Company"
-                    variant="outlined"
-                    {...register("transportCompany", {
-                      required: {
-                        value: true,
-                        message: "Transport Company is required",
-                      },
-                    })}
-                  />
-                  {errors?.transportCompany && (
-                    <p className="text-red-500 text-xs mt-1">
-                      {errors?.transportCompany?.message}
-                    </p>
-                  )}
-                </div>
-                <div className="flex items-center justify-end gap-3 mt-5">
-                  <Button
-                    variant="outlined"
-                    disableElevation
-                    sx={{ textTransform: "none" }}
-                    onClick={() => setOpenDispatch(false)}
+          <div className="bg-white relative p-7 rounded-lg max-w-[60%] min-w-[35%] max-h-[90%] overflow-auto">
+            <div className="mb-5">
+              <div className="flex items-center justify-between">
+                <p className="text-xl font-bold">Dispatch Details</p>
+                <div className="flex items-center gap-5">
+                  <Tooltip
+                    title="Download Dispatch Docs"
+                    enterDelay={500}
+                    placement="top"
                   >
-                    Cancel
-                  </Button>
-                  <Button
-                    loading={isDispatchingOrder}
-                    loadingPosition="start"
-                    variant="contained"
-                    disableElevation
-                    sx={{ textTransform: "none" }}
-                    type="submit"
+                    <Download
+                      color="blue"
+                      className="hover:bg-blue-200 active:scale-95 transition-all p-1.5 rounded-lg"
+                      size={30}
+                      onClick={() =>
+                        downloadFile(
+                          singleOrderFromPlanthead?.dispatchInfo?.dispatchDocs,
+                          "dispatch-docs"
+                        )
+                      }
+                    />
+                  </Tooltip>
+                  <IconButton
+                    size="small"
+                    onClick={() => setOpenInvoice(false)}
                   >
-                    Dispatch
-                  </Button>
+                    <CloseIcon />
+                  </IconButton>
                 </div>
-              </form>
+              </div>
             </div>
-          </div>
-        </div>
-      )}
 
-      {/* Cancel Order Modal */}
-      {openCancel && (
-        <div className="transition-all bg-black/30 backdrop-blur-sm w-full z-50 h-screen absolute top-0 left-0 flex items-center justify-center">
-          <div className="bg-white p-7 rounded-lg w-[29rem]">
-            <p className="text-lg font-semibold">
-              Are you sure you want to cancel "
-              {singleOrderFromPlanthead?.item?.name}"?
-            </p>
-            <p className="text-gray-800 my-2">
-              Tell us why you are cancelling this order:
-            </p>
-            <form onSubmit={handleSubmit(handleCancelOrder)}>
-              <div>
-                <TextField
-                  error={!!errors.reason}
-                  size="small"
-                  label="Reason"
-                  variant="outlined"
-                  fullWidth
-                  {...register("reason", {
-                    required: "Reason is required",
-                  })}
+            <div className="rounded-lg shadow mb-5">
+              {singleOrderFromPlanthead?.dispatchInfo?.dispatchDocs?.endsWith(
+                ".pdf"
+              ) ? (
+                <iframe
+                  src={singleOrderFromPlanthead?.dispatchInfo?.dispatchDocs}
+                  className="w-full h-96"
+                  title="Dispatch Documents PDF"
                 />
-                {errors.reason && (
-                  <p className="text-red-500 text-xs mt-1">
-                    {errors.reason.message}
-                  </p>
-                )}
+              ) : (
+                <Tooltip title="Click to view invoice in new tab" followCursor>
+                  <a
+                    href={singleOrderFromPlanthead?.dispatchInfo?.dispatchDocs}
+                    target="_blank"
+                  >
+                    {(
+                      <img
+                        src={
+                          singleOrderFromPlanthead?.dispatchInfo?.dispatchDocs
+                        }
+                        className="w-full h-full object-contain"
+                        alt="Dispatch Documents"
+                      />
+                    ) || (
+                      <p className="p-5  text-gray-600 text-center">
+                        Loading...
+                      </p>
+                    )}
+                  </a>
+                </Tooltip>
+              )}
+            </div>
+
+            <div className="grid grid-cols-2 gap-7">
+              <div className="flex flex-col gap-2 text-sm">
+                <h1 className="font-semibold text-base text-gray-800">
+                  Dispatched By
+                </h1>
+                <div className="flex items-center justify-between font-semibold">
+                  <span className="text-gray-600 font-normal">Name:</span>
+                  {singleOrderFromPlanthead?.dispatchInfo?.dispatchedBy?.name}
+                </div>
+                <div className="flex items-center justify-between font-semibold">
+                  <span className="text-gray-600 font-normal">Email:</span>
+                  {singleOrderFromPlanthead?.dispatchInfo?.dispatchedBy?.email}
+                </div>
               </div>
-              <div className="flex items-center justify-end gap-3 mt-5">
-                <Button
-                  variant="outlined"
-                  disableElevation
-                  color="error"
-                  sx={{ textTransform: "none" }}
-                  onClick={() => setOpenCancel(false)}
-                >
-                  Keep Order
-                </Button>
-                <Button
-                  disabled={!reason}
-                  variant="contained"
-                  disableElevation
-                  color="error"
-                  type="Submit"
-                  sx={{ textTransform: "none" }}
-                >
-                  Cancel Order
-                </Button>
+              <div className="flex flex-col gap-2 text-sm">
+                <h1 className="font-semibold text-base text-gray-800">
+                  Dispatched Details:
+                </h1>
+                <div className="flex items-center justify-between font-semibold">
+                  <span className="text-gray-600 font-normal">
+                    Dispatched on:
+                  </span>
+                  {format(
+                    singleOrderFromPlanthead?.dispatchInfo?.dispatchDate,
+                    "dd MMM yyyy"
+                  )}
+                </div>
+                <div className="flex items-center justify-between font-semibold">
+                  <span className="text-gray-600 font-normal">
+                    Transport Company:
+                  </span>
+                  {singleOrderFromPlanthead?.dispatchInfo?.transportCompany}
+                </div>
               </div>
-            </form>
+            </div>
           </div>
         </div>
       )}

@@ -1,6 +1,16 @@
 import { useState } from "react";
-import { Button, CircularProgress, IconButton } from "@mui/material";
-import { Eye, Trash2 } from "lucide-react";
+import {
+  Button,
+  CircularProgress,
+  FormControl,
+  IconButton,
+  InputLabel,
+  MenuItem,
+  Select,
+  TextField,
+  Tooltip,
+} from "@mui/material";
+import { Eye, File, Trash2 } from "lucide-react";
 import { TbFileInvoice } from "react-icons/tb";
 import { format } from "date-fns";
 import { DataGrid } from "@mui/x-data-grid";
@@ -8,20 +18,35 @@ import CloseIcon from "@mui/icons-material/Close";
 import { formatRupee } from "../../../utils/formatRupee.js";
 import { useSalesmanOrder } from "../../../hooks/useSalesmanOrder.js";
 import { CgCreditCard } from "react-icons/cg";
+import { Controller, useForm } from "react-hook-form";
+import { MdOutlineCancel } from "react-icons/md";
 
 const DueOrdersForSalesman = () => {
   const [singleOrderId, setSingleOrderId] = useState(null);
   const [openView, setOpenView] = useState(false);
-  const [openDelete, setOpenDelete] = useState(false);
   const [openInvoice, setOpenInvoice] = useState(false);
+  const [openCancel, setOpenCancel] = useState(false);
+  const [openUpdatePayment, setOpenUpdatePayment] = useState(false);
 
   const {
-    deleteOrder,
+    register,
+    handleSubmit,
+    control,
+    formState: { errors },
+    watch,
+  } = useForm();
+
+  const reason = watch("reason");
+
+  const {
     singleOrderFromSalesman,
     singleOrderLoading,
     dueOrdersInSalesman,
     dueOrdersInSalesmanLoading,
-    isDeletingOrder,
+    cancelOrder,
+    updatePayment,
+    isUpdatingPayment,
+    isCancelingOrder,
   } = useSalesmanOrder(singleOrderId);
 
   const [paginationModel, setPaginationModel] = useState({
@@ -39,27 +64,37 @@ const DueOrdersForSalesman = () => {
     setOpenInvoice(true);
   };
 
-  const handleDelete = () => {
-    deleteOrder(singleOrderId);
-    setOpenDelete(false);
+  const handleCancelOrder = (data) => {
+    data.orderId = singleOrderId;
+    console.log(data);
+    cancelOrder(data);
+    setOpenCancel(false);
+  };
+
+  const handleUpdatePayment = (data) => {
+    data.orderId = singleOrderId;
+    console.log(data);
+    updatePayment(data);
+    setOpenUpdatePayment(false);
+    setValue("amount", "");
+    setValue("paymentMode", "");
   };
 
   const columns = [
-    { field: "product", headerName: "Product", flex: 1, maxWidth: 150 },
-    { field: "party", headerName: "Party", flex: 1, maxWidth: 150 },
-    { field: "date", headerName: "Date", flex: 1, maxWidth: 150 },
-    { field: "quantity", headerName: "Quantity", flex: 1, maxWidth: 150 },
+    { field: "product", headerName: "Product", flex: 1 },
+    { field: "party", headerName: "Party", flex: 1 },
+    { field: "date", headerName: "Date", flex: 1 },
+    { field: "quantity", headerName: "Quantity", flex: 1 },
     {
       field: "totalAmount",
       headerName: "Total Amount",
       flex: 1,
-      maxWidth: 150,
     },
     {
       field: "advanceAmount",
       headerName: "Advance Amount",
       flex: 1,
-      maxWidth: 150,
+
       renderCell: (params) => (
         <span className={`${params.value !== "₹0" && "text-green-700"}`}>
           {params.value}
@@ -70,7 +105,7 @@ const DueOrdersForSalesman = () => {
       field: "dueAmount",
       headerName: "Due Amount",
       flex: 1,
-      maxWidth: 150,
+
       renderCell: (params) => (
         <span className={`${params.value !== "₹0" && "text-red-600"}`}>
           {params.value}
@@ -81,7 +116,6 @@ const DueOrdersForSalesman = () => {
       field: "orderStatus",
       headerName: "Status",
       flex: 1,
-      maxWidth: 150,
       renderCell: (params) => (
         <span
           className={`${
@@ -111,34 +145,39 @@ const DueOrdersForSalesman = () => {
             size={30}
             onClick={() => handleView(params.row.id)}
           />
-
+          {params.row.paymentStatus !== "Paid" &&
+            params.row.orderStatus !== "Delivered" && (
+              <CgCreditCard
+                color="purple"
+                className="hover:bg-purple-200 active:scale-95 transition-all p-1.5 rounded-lg"
+                size={30}
+                onClick={() => {
+                  setSingleOrderId(params.row.id);
+                  setOpenUpdatePayment(true);
+                }}
+              />
+            )}
           {params.row.invoiceGenerated && (
-            <TbFileInvoice
+            <File
+              strokeWidth={2.1}
               color="green"
               className="hover:bg-green-200 active:scale-95 transition-all p-1.5 rounded-lg"
               size={30}
               onClick={() => handleOpenInvoice(params.row.id)}
             />
           )}
-          {params.row.invoiceGenerated && (
-            <CgCreditCard
-              color="purple"
-              className="hover:bg-purple-200 active:scale-95 transition-all p-1.5 rounded-lg"
-              size={30}
-              onClick={() => handleOpenInvoice(params.row.id)}
-            />
-          )}
-
           {params.row.orderStatus == "Placed" && (
-            <Trash2
-              color="red"
-              className="hover:bg-red-100 active:scale-95 transition-all p-1.5 rounded-lg"
-              size={30}
-              onClick={() => {
-                setSingleOrderId(params.row.id);
-                setOpenDelete(true);
-              }}
-            />
+            <Tooltip title="Cancel Order" placement="top">
+              <MdOutlineCancel
+                color="red"
+                className="hover:bg-red-100 active:scale-95 transition-all p-1.5 rounded-lg"
+                size={30}
+                onClick={() => {
+                  setSingleOrderId(params.row.id);
+                  setOpenCancel(true);
+                }}
+              />
+            </Tooltip>
           )}
         </div>
       ),
@@ -150,7 +189,7 @@ const DueOrdersForSalesman = () => {
     party: order?.party?.companyName,
     date: format(order?.createdAt, "dd MMM yyyy"),
     product: order?.item?.name,
-    quantity: `${order.quantity}kg`,
+    quantity: `${order.quantity} bags`,
     totalAmount: formatRupee(order.totalAmount),
     advanceAmount: formatRupee(order.advanceAmount),
     dueAmount: formatRupee(order.dueAmount),
@@ -158,7 +197,12 @@ const DueOrdersForSalesman = () => {
     invoiceGenerated: order.invoiceGenerated,
   }));
 
-  if (dueOrdersInSalesmanLoading || isDeletingOrder || singleOrderLoading)
+  if (
+    dueOrdersInSalesmanLoading ||
+    isCancelingOrder ||
+    isUpdatingPayment ||
+    singleOrderLoading
+  )
     return (
       <div className="flex items-center justify-center h-full w-full">
         <CircularProgress />
@@ -198,7 +242,7 @@ const DueOrdersForSalesman = () => {
             overflowY: "auto",
           },
           "& .MuiDataGrid-main": {
-            maxWidth: "1210px",
+            maxWidth: "100%",
           },
         }}
         disableColumnResize={false}
@@ -279,10 +323,14 @@ const DueOrdersForSalesman = () => {
                     </span>
                     {singleOrderFromSalesman?.paymentMode}
                   </div>
-                  <div className="flex items-center justify-between font-semibold">
-                    <span className="text-gray-600 font-normal">Due Date:</span>
-                    {format(singleOrderFromSalesman?.dueDate, "dd MMM yyyy")}
-                  </div>
+                  {singleOrderFromSalesman?.dueAmount !== 0 && (
+                    <div className="flex items-center justify-between font-semibold">
+                      <span className="text-gray-600 font-normal">
+                        Due Date:
+                      </span>
+                      {format(singleOrderFromSalesman?.dueDate, "dd MMM yyyy")}
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -545,7 +593,7 @@ const DueOrdersForSalesman = () => {
       )}
 
       {/* Delete Order Modal */}
-      {openDelete && (
+      {/* {openDelete && (
         <div className="transition-all bg-black/30 backdrop-blur-sm w-full z-50 h-screen absolute top-0 left-0 flex items-center justify-center">
           <div className="bg-white p-7 rounded-lg w-[29rem]">
             <p className="text-lg font-semibold">
@@ -577,6 +625,152 @@ const DueOrdersForSalesman = () => {
                 Delete
               </Button>
             </div>
+          </div>
+        </div>
+      )} */}
+
+      {/* --- Update Payment Modal --- */}
+      {openUpdatePayment && (
+        <div className="transition-all bg-black/30 backdrop-blur-sm w-full z-50 h-screen absolute top-0 left-0 flex items-center justify-center">
+          <div className="bg-white relative p-7 w-[25%] rounded-lg overflow-auto">
+            <div className="mb-5">
+              <div className="flex items-center justify-between">
+                <p className="text-xl font-bold">Update Payment</p>
+              </div>
+            </div>
+            <div>
+              <form
+                className="space-y-5"
+                onSubmit={handleSubmit(handleUpdatePayment)}
+              >
+                <div>
+                  <TextField
+                    error={!!errors.amount}
+                    fullWidth
+                    size="small"
+                    label="Amount"
+                    {...register("amount", {
+                      required: "Amount is required",
+                    })}
+                  />
+                  {errors.amount && (
+                    <span className="text-red-600 text-xs">
+                      {errors.amount.message}
+                    </span>
+                  )}
+                </div>
+                <div>
+                  <FormControl
+                    fullWidth
+                    size="small"
+                    error={!!errors.paymentMode}
+                    className="mb-4"
+                  >
+                    <InputLabel id="paymentMode-label">Payment Mode</InputLabel>
+                    <Controller
+                      name="paymentMode"
+                      control={control}
+                      rules={{ required: "Payment Mode is required" }}
+                      render={({ field }) => (
+                        <Select
+                          {...field}
+                          labelId="paymentMode-label"
+                          id="paymentMode"
+                          label="Payment Mode"
+                        >
+                          <MenuItem>Select Payment Mode</MenuItem>
+                          <MenuItem value="UPI">UPI</MenuItem>
+                          <MenuItem value="Cash">Cash</MenuItem>
+                          <MenuItem value="Bank Transfer">
+                            Bank Transfer
+                          </MenuItem>
+                        </Select>
+                      )}
+                    />
+                  </FormControl>
+                  {errors.paymentMode && (
+                    <span className="text-red-600 text-xs">
+                      {errors.paymentMode.message}
+                    </span>
+                  )}
+                </div>
+                <div className="flex items-center justify-end gap-2">
+                  <Button
+                    onClick={() => setOpenUpdatePayment(false)}
+                    variant="outlined"
+                    disableElevation
+                    color="primary"
+                    sx={{ textTransform: "none" }}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    type="submit"
+                    variant="contained"
+                    disableElevation
+                    color="primary"
+                    sx={{ textTransform: "none" }}
+                  >
+                    Submit
+                  </Button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Cancel Order Modal */}
+      {openCancel && (
+        <div className="transition-all bg-black/30 backdrop-blur-sm w-full z-50 h-screen absolute top-0 left-0 flex items-center justify-center">
+          <div className="bg-white p-7 rounded-lg w-[29rem]">
+            <p className="text-lg font-semibold">
+              Are you sure you want to cancel "
+              {singleOrderFromSalesman?.item?.name}"?
+            </p>
+            <p className="text-gray-800 my-2">
+              Tell us why you are cancelling this order:
+            </p>
+            <form onSubmit={handleSubmit(handleCancelOrder)}>
+              <div>
+                <TextField
+                  error={!!errors.reason}
+                  size="small"
+                  label="Reason"
+                  variant="outlined"
+                  fullWidth
+                  {...register("reason", {
+                    required: "Reason is required",
+                  })}
+                />
+                {errors.reason && (
+                  <p className="text-red-500 text-xs mt-1">
+                    {errors.reason.message}
+                  </p>
+                )}
+              </div>
+              <div className="flex items-center justify-end gap-3 mt-5">
+                <Button
+                  variant="outlined"
+                  disableElevation
+                  color="error"
+                  sx={{ textTransform: "none" }}
+                  onClick={() => setOpenCancel(false)}
+                >
+                  Keep Order
+                </Button>
+                <Button
+                  disabled={!reason}
+                  variant="contained"
+                  disableElevation
+                  color="error"
+                  type="Submit"
+                  sx={{ textTransform: "none" }}
+                >
+                  Cancel Order
+                </Button>
+              </div>
+            </form>
           </div>
         </div>
       )}

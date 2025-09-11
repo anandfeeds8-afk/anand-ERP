@@ -9,7 +9,7 @@ import {
   TextField,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
-import { Controller, set, useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { useProduct } from "../../hooks/useProduct";
 import { CircularProgress } from "@mui/material";
 import { formatRupee } from "../../utils/formatRupee";
@@ -17,12 +17,25 @@ import Box from "@mui/material/Box";
 import AllOrdersForSalesman from "../../components/Salesman/OrderManagement/AllOrdersForSalesman";
 import { useSalesmanOrder } from "../../hooks/useSalesmanOrder";
 import DueOrdersForSalesman from "../../components/Salesman/OrderManagement/DueOrdersForSalesman";
+import { format } from "date-fns";
+import { useUser } from "../../hooks/useUser";
 
 const SalesmanDashboardPage = () => {
   const [price, setPrice] = useState(0);
   const [totalAmount, setTotalAmount] = useState(0);
   const [error, setError] = useState("");
   const [dueDateError, setDueDateError] = useState("");
+  const [selectedParty, setSelectedParty] = useState({});
+
+  const { user } = useUser();
+
+  const { allProducts, isLoading } = useProduct();
+  const {
+    createOrder,
+    isCreatingOrder,
+    approvedParties,
+    approvedPartiesLoading,
+  } = useSalesmanOrder();
 
   const {
     register,
@@ -32,7 +45,8 @@ const SalesmanDashboardPage = () => {
     watch,
   } = useForm();
 
-  const { allProducts, isLoading } = useProduct();
+  const advanceAmountDocs = watch("advanceAmountDocs");
+  const advanceAmountFile = advanceAmountDocs ? advanceAmountDocs[0] : null;
 
   const selectedProductId = watch("item");
   useEffect(() => {
@@ -49,6 +63,7 @@ const SalesmanDashboardPage = () => {
   }, [quantity]);
 
   const advanceAmount = watch("advanceAmount");
+  const dueAmount = totalAmount - advanceAmount;
   useEffect(() => {
     if (advanceAmount > totalAmount) {
       setError("Advance cannot be greater than total amount");
@@ -57,16 +72,25 @@ const SalesmanDashboardPage = () => {
     }
   }, [totalAmount, advanceAmount]);
 
-  const dueDate = watch("dueDate");
+  const selectedPartyId = watch("party");
   useEffect(() => {
-    if (dueDate < new Date().toISOString().split("T")[0]) {
+    const Party = approvedParties?.find(
+      (party) => party._id === selectedPartyId
+    );
+    setSelectedParty(Party);
+  }, [selectedPartyId]);
+
+  const dueDate = watch("dueDate");
+
+  useEffect(() => {
+    if (dueDate < format(new Date(), "yyyy-MM-dd")) {
       setDueDateError("Due Date cannot be in past");
+    } else if (!dueDate) {
+      setDueDateError("");
     } else {
       setDueDateError("");
     }
   }, [dueDate]);
-
-  const { createOrder, isCreatingOrder } = useSalesmanOrder();
 
   const [openForm, setOpenForm] = useState(false);
 
@@ -74,11 +98,24 @@ const SalesmanDashboardPage = () => {
   const [isActive, setIsActive] = useState("All Orders");
 
   const onSubmit = (data) => {
-    createOrder(data);
-    setOpenForm(false);
+    const formData = new FormData();
+    formData.append("item", data.item);
+    formData.append("party", JSON.stringify(selectedParty));
+    formData.append("quantity", data.quantity);
+    formData.append("advanceAmount", data.advanceAmount);
+    formData.append("dueDate", data.dueDate);
+    formData.append("paymentMode", data.paymentMode);
+    formData.append("notes", data.notes);
+    formData.append("advanceAmountDocs", advanceAmountFile);
+
+    for (let [key, value] of formData.entries()) {
+      console.log(key, value);
+    }
+
+    createOrder(formData, { onSuccess: () => setOpenForm(false) });
   };
 
-  if (isLoading)
+  if (isLoading || approvedPartiesLoading)
     return (
       <div className="flex-1 flex items-center justify-center h-full w-full">
         <CircularProgress />
@@ -90,6 +127,7 @@ const SalesmanDashboardPage = () => {
       <div className="flex items-center justify-between">
         <h1 className="lg:text-3xl lg:font-bold mb-5">{isActive}</h1>
         <Button
+          disabled={!user.isActive}
           disableElevation
           variant="contained"
           size="small"
@@ -137,75 +175,67 @@ const SalesmanDashboardPage = () => {
             >
               <div>
                 <div className="mb-5">
-                  <h1 className="font-semibold text-gray-800 mb-3">
-                    Party Information
-                  </h1>
-                  <div className="space-y-5">
-                    <div>
-                      <TextField
-                        error={!!errors.party?.companyName}
-                        size="small"
-                        fullWidth
-                        id="outlined-basic"
-                        label="Company Name"
-                        variant="outlined"
-                        {...register("party.companyName", {
-                          required: {
-                            value: true,
-                            message: "Company Name is required",
-                          },
-                        })}
-                      />
-                      {errors.party?.companyName && (
-                        <p className="text-red-600 text-xs mt-1">
-                          {errors.party.companyName.message}
-                        </p>
-                      )}
-                    </div>
-                    <div>
-                      <TextField
-                        error={!!errors.party?.contactPersonNumber}
-                        size="small"
-                        type="number"
-                        fullWidth
-                        id="outlined-basic"
-                        label="Contact Person Number"
-                        variant="outlined"
-                        {...register("party.contactPersonNumber", {
-                          required: {
-                            value: true,
-                            message: "Contact Person Number is required",
-                          },
-                        })}
-                      />
-                      {errors.party?.contactPersonNumber && (
-                        <p className="text-red-600 text-xs mt-1">
-                          {errors.party.contactPersonNumber.message}
-                        </p>
-                      )}
-                    </div>
-                    <div>
-                      <TextField
-                        size="small"
-                        error={!!errors.party?.address}
-                        fullWidth
-                        id="outlined-basic"
-                        label="Address"
-                        variant="outlined"
-                        {...register("party.address", {
-                          required: {
-                            value: true,
-                            message: "Address is required",
-                          },
-                        })}
-                      />{" "}
-                      {errors.party?.address && (
-                        <p className="text-red-600 text-xs mt-1">
-                          {errors.party.address.message}
-                        </p>
-                      )}
-                    </div>
+                  <div className="flex items-start justify-between">
+                    <h1 className="font-semibold text-gray-800 mb-3">
+                      Party Information
+                    </h1>
+
+                    {!isNaN(selectedParty?.balance) && (
+                      <div>
+                        {selectedParty?.balance > 666666 && (
+                          <span className="text-green-600 text-sm font-semibold">
+                            Max Loan: {formatRupee(selectedParty?.balance)}
+                          </span>
+                        )}
+                        {selectedParty?.balance < 666666 && (
+                          <span className="text-yellow-600 text-sm font-semibold">
+                            Max Loan: {formatRupee(selectedParty?.balance)}
+                          </span>
+                        )}
+                        {selectedParty?.balance < 333333 && (
+                          <span className="text-orange-600 text-sm font-semibold">
+                            Max Loan: {formatRupee(selectedParty?.balance)}
+                          </span>
+                        )}
+                        {selectedParty?.balance < 100000 && (
+                          <span className="text-red-600 text-sm font-semibold">
+                            Max Loan: {formatRupee(selectedParty?.balance)}
+                          </span>
+                        )}
+                      </div>
+                    )}
                   </div>
+
+                  <FormControl
+                    fullWidth
+                    size="small"
+                    error={!!errors.party}
+                    className="mb-4"
+                  >
+                    <InputLabel id="party-label">Party</InputLabel>
+                    <Controller
+                      name="party"
+                      control={control}
+                      rules={{ required: "Party is required" }}
+                      render={({ field }) => (
+                        <Select
+                          {...field}
+                          label="Party"
+                          size="small"
+                          fullWidth
+                          variant="outlined"
+                          error={!!errors.party}
+                        >
+                          <MenuItem>Select Party</MenuItem>
+                          {approvedParties?.map((party) => (
+                            <MenuItem key={party._id} value={party._id}>
+                              {party.companyName}
+                            </MenuItem>
+                          ))}
+                        </Select>
+                      )}
+                    />
+                  </FormControl>
                 </div>
 
                 <div>
@@ -241,7 +271,8 @@ const SalesmanDashboardPage = () => {
                             <MenuItem>Select Product</MenuItem>
                             {allProducts?.map((product) => (
                               <MenuItem key={product._id} value={product._id}>
-                                {product.name} ({formatRupee(product.price)}/kg)
+                                {product.name} ({formatRupee(product.price)}{" "}
+                                M.R.P / bag)
                               </MenuItem>
                             ))}
                           </Select>
@@ -260,7 +291,7 @@ const SalesmanDashboardPage = () => {
                         fullWidth
                         type="number"
                         id="outlined-basic"
-                        label="Quantity in kg"
+                        label="Quantity in bags"
                         variant="outlined"
                         {...register("quantity", {
                           required: {
@@ -281,9 +312,17 @@ const SalesmanDashboardPage = () => {
 
               <div>
                 <div>
-                  <h1 className="font-semibold text-gray-800 mb-3">
-                    Payment Information
-                  </h1>
+                  <div className="flex items-start justify-between">
+                    <h1 className="font-semibold text-gray-800 mb-3">
+                      Payment Information
+                    </h1>
+                    {!isNaN(dueAmount) && (
+                      <span className="text-red-600 text-sm font-semibold">
+                        Due: {formatRupee(dueAmount)}
+                      </span>
+                    )}
+                  </div>
+
                   <div className="space-y-5">
                     <div>
                       <TextField
@@ -311,31 +350,58 @@ const SalesmanDashboardPage = () => {
                         <p className="text-red-600 text-xs mt-1">{error}</p>
                       )}
                     </div>
-                    <Box sx={{ width: "100%" }}>
-                      <TextField
-                        error={!!errors.dueDate || dueDateError}
-                        fullWidth
-                        label="Due Date"
-                        type="date"
-                        size="small"
-                        InputLabelProps={{
-                          shrink: true,
-                        }}
-                        {...register("dueDate", {
-                          required: {
-                            value: true,
-                            message: "Due Date is required",
-                          },
-                        })}
+                    <div>
+                      <span className="text-sm mb-1">
+                        Upload advance payment receipt
+                      </span>
+                      <input
+                        disabled={advanceAmount <= 0 || !advanceAmount}
+                        className="relative m-0 block w-full min-w-0 flex-auto rounded border border-solid border-neutral-300 bg-clip-padding px-3 py-[0.32rem] text-base font-normal text-neutral-700 transition duration-300 ease-in-out file:-mx-3 file:-my-[0.32rem] file:overflow-hidden file:rounded-none file:border-0 file:border-solid file:border-inherit file:bg-neutral-100 file:px-3 file:py-[0.32rem] file:text-neutral-700 file:transition file:duration-150 file:ease-in-out file:[border-inline-end-width:1px] file:[margin-inline-end:0.75rem] hover:file:bg-neutral-200 focus:border-primary focus:text-neutral-700 focus:shadow-te-primary focus:outline-none "
+                        type="file"
+                        id="formFileMultiple"
+                        multiple
+                        {...register("advanceAmountDocs")}
                       />
+                      {errors.advanceAmountDocs && (
+                        <p className="text-red-600 text-xs mt-1">
+                          {errors.advanceAmountDocs.message}
+                        </p>
+                      )}
+                    </div>
+                    <Box sx={{ width: "100%" }}>
+                      {dueAmount === 0 ? (
+                        <TextField
+                          disabled
+                          error={!!errors.dueDate}
+                          fullWidth
+                          label="Due Date"
+                          type="date"
+                          size="small"
+                          InputLabelProps={{
+                            shrink: true,
+                          }}
+                        />
+                      ) : (
+                        <TextField
+                          error={!!errors.dueDate}
+                          fullWidth
+                          label="Due Date"
+                          type="date"
+                          size="small"
+                          InputLabelProps={{
+                            shrink: true,
+                          }}
+                          {...register("dueDate", {
+                            required: {
+                              value: true,
+                              message: "Due Date is required",
+                            },
+                          })}
+                        />
+                      )}
                       {errors.dueDate && (
                         <p className="text-red-600 text-xs mt-1">
                           {errors.dueDate.message}
-                        </p>
-                      )}
-                      {dueDateError && (
-                        <p className="text-red-600 text-xs mt-1">
-                          {dueDateError}
                         </p>
                       )}
                     </Box>
@@ -359,15 +425,22 @@ const SalesmanDashboardPage = () => {
                             id="paymentMode"
                             label="Payment Mode"
                           >
-                            <MenuItem>Select Payment Mode</MenuItem>
-                            {Number(watch("advanceAmount")) === 0 && (
+                            <MenuItem value="">Select Payment Mode</MenuItem>
+                            {Number(watch("advanceAmount")) === 0 ? (
                               <MenuItem value="Not Paid">Not Paid</MenuItem>
+                            ) : (
+                              [
+                                <MenuItem key="upi" value="UPI">
+                                  UPI
+                                </MenuItem>,
+                                <MenuItem key="cash" value="Cash">
+                                  Cash
+                                </MenuItem>,
+                                <MenuItem key="bank" value="Bank Transfer">
+                                  Bank Transfer
+                                </MenuItem>,
+                              ]
                             )}
-                            <MenuItem value="UPI">UPI</MenuItem>
-                            <MenuItem value="Cash">Cash</MenuItem>
-                            <MenuItem value="Bank Transfer">
-                              Bank Transfer
-                            </MenuItem>
                           </Select>
                         )}
                       />
@@ -377,6 +450,7 @@ const SalesmanDashboardPage = () => {
                         </p>
                       )}
                     </FormControl>
+
                     <div>
                       <TextField
                         size="small"

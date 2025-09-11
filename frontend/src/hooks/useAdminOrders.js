@@ -20,7 +20,7 @@ export const useAdminOrder = (id) => {
           },
         }
       );
-      console.log("orders", response.data.data);
+      // console.log("orders", response.data.data);
       return response.data.data;
     },
     onError: (error) => {
@@ -48,10 +48,11 @@ export const useAdminOrder = (id) => {
     },
   });
 
+  //approve warehouse
   const { mutate: approveWarehouse, isPending: isApprovingWarehouse } =
     useMutation({
       mutationFn: async (orderId) => {
-        const response = await axios.post(
+        const response = await axios.patch(
           BASE_URL + API_PATHS.ADMIN.ORDERS.APPROVE,
           { orderId },
           {
@@ -72,12 +73,205 @@ export const useAdminOrder = (id) => {
       },
     });
 
+  //get all parties
+  const { data: allParties, isPending: allPartiesLoading } = useQuery({
+    queryKey: ["allParties"],
+    queryFn: async () => {
+      const response = await axios.get(
+        BASE_URL + API_PATHS.ADMIN.PARTY.GET_ALL_PARTIES,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      return response.data.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["parties"] });
+    },
+    onError: (error) => {
+      console.log(error);
+      toast.error(error.response.data.message);
+    },
+  });
+
+  //get approved parties
+  const { data: approvedParties, isPending: approvedPartiesLoading } = useQuery(
+    {
+      queryKey: ["approvedParties"],
+      queryFn: async () => {
+        const response = await axios.get(
+          BASE_URL + API_PATHS.ADMIN.PARTY.GET_APPROVED_PARTIES,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        return response.data.data;
+      },
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ["parties"] });
+      },
+      onError: (error) => {
+        console.log(error);
+        toast.error(error.response.data.message);
+      },
+    }
+  );
+
+  //get rejected parties
+  const { data: rejectedParties, isPending: rejectedPartiesLoading } = useQuery(
+    {
+      queryKey: ["rejectedParties"],
+      queryFn: async () => {
+        const response = await axios.get(
+          BASE_URL + API_PATHS.ADMIN.PARTY.GET_REJECTED_PARTIES,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        return response.data.data;
+      },
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ["parties"] });
+      },
+      onError: (error) => {
+        console.log(error);
+        toast.error(error.response.data.message);
+      },
+    }
+  );
+
+  //get parties to approve
+  const { data: partiesToApprove, isPending: partiesToApproveLoading } =
+    useQuery({
+      queryKey: ["partiesToApprove"],
+      queryFn: async () => {
+        const response = await axios.get(
+          BASE_URL + API_PATHS.ADMIN.PARTY.GET_PARTIES_TO_APPROVE,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        return response.data.data;
+      },
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ["parties"] });
+        queryClient.invalidateQueries({ queryKey: ["allParties"] });
+      },
+      onError: (error) => {
+        console.log(error);
+        toast.error(error.response.data.message);
+      },
+    });
+
+  //approve party
+  const { mutate: approveParty, isPending: isApprovingParty } = useMutation({
+    mutationFn: async (partyId) => {
+      console.log("partyId", partyId);
+      const response = await axios.patch(
+        BASE_URL + API_PATHS.ADMIN.PARTY.APPROVE,
+        { partyId },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      return response.data.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["parties"] });
+      queryClient.invalidateQueries({ queryKey: ["allParties"] });
+      queryClient.invalidateQueries({ queryKey: ["partiesToApprove"] });
+      toast.success("Party approved successfully");
+    },
+    onError: (error) => {
+      console.log(error);
+      toast.error(error.response.data.message);
+    },
+  });
+
+  //reject party
+  const { mutate: rejectParty, isPending: isRejectingParty } = useMutation({
+    mutationFn: async (partyId) => {
+      console.log("partyId", partyId);
+      const response = await axios.patch(
+        BASE_URL + API_PATHS.ADMIN.PARTY.REJECT,
+        { partyId },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      return response.data.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["parties"] });
+      queryClient.invalidateQueries({ queryKey: ["allParties"] });
+      queryClient.invalidateQueries({ queryKey: ["partiesToApprove"] });
+      toast.success("Party rejected successfully");
+    },
+    onError: (error) => {
+      console.log(error);
+      toast.error(error.response.data.message);
+    },
+  });
+
+  //update party
+  const { mutate: updateParty, isPending: isUpdatingParty } = useMutation({
+    mutationFn: async (data) => {
+      console.log("partyId", data.partyId);
+      const response = await axios.patch(
+        BASE_URL + API_PATHS.ADMIN.PARTY.UPDATE_PARTY(data.partyId),
+        data,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      return response.data.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["parties"] });
+      queryClient.invalidateQueries({ queryKey: ["allParties"] });
+      queryClient.invalidateQueries({ queryKey: ["partiesToApprove"] });
+      toast.success("Party updated successfully");
+    },
+    onError: (error) => {
+      console.log(error);
+      toast.error(error.response.data.message);
+    },
+  });
+
   return {
     orders,
+    rejectParty,
+    updateParty,
+    isUpdatingParty,
+    isRejectingParty,
+    approveParty,
+    rejectedParties,
+    rejectedPartiesLoading,
+    isApprovingParty,
     singleOrder,
     ordersLoading,
     singleOrderLoading,
     approveWarehouse,
     isApprovingWarehouse,
+    partiesToApprove,
+    partiesToApproveLoading,
+    allParties,
+    allPartiesLoading,
+    approvedParties,
+    approvedPartiesLoading,
   };
 };

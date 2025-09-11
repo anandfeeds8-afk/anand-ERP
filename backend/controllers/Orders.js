@@ -1,5 +1,8 @@
 const orderModel = require("../models/Order");
+const imagekit = require("../config/imagekit.js");
 const Product = require("../models/Product");
+const Party = require("../models/Party.js");
+const WareHouse = require("../models/WareHouse.js");
 
 const createOrder = async (req, res) => {
   try {
@@ -13,13 +16,28 @@ const createOrder = async (req, res) => {
       party, // { companyName, contactPersonNumber, address }
     } = req.body;
 
+    const parsedParty = JSON.parse(party);
+
     const placedBy = req.user.id; // from auth middleware
 
     // Validate party fields
-    if (!party?.companyName || !party?.contactPersonNumber || !party?.address) {
+    if (
+      !parsedParty?.companyName ||
+      !parsedParty?.contactPersonNumber ||
+      !parsedParty?.address
+    ) {
       return res.status(400).json({
         success: false,
         message: "Party information is incomplete",
+      });
+    }
+
+    let advancePaymentProof;
+    if (req.file?.buffer) {
+      advancePaymentProof = await imagekit.upload({
+        file: req.file?.buffer,
+        fileName: req.file.originalname,
+        folder: "/advanceAmountDocs",
       });
     }
 
@@ -51,20 +69,42 @@ const createOrder = async (req, res) => {
       paymentStatus = "Unpaid";
     }
 
-    // Create order
-    const newOrder = await orderModel.create({
-      item, // store product ID, not name
+    let duePaymentStatus;
+    if (dueAmount > 0) {
+      duePaymentStatus = "Pending";
+    }
+
+    let advancePaymentStatus;
+    if (advance > 0 && advancePaymentProof) {
+      advancePaymentStatus = "Pending";
+    }
+
+    //update party max loan amount
+    await Party.findByIdAndUpdate(parsedParty._id, {
+      balance: parsedParty.balance - dueAmount,
+    });
+
+    const orderItems = {
+      item,
       quantity,
       totalAmount,
       advanceAmount: advance,
       dueAmount,
       dueDate,
       paymentMode,
+      advancePaymentStatus,
+      duePaymentStatus,
       notes,
       paymentStatus,
       placedBy,
-      party,
-    });
+      party: parsedParty,
+    };
+
+    if (advancePaymentProof) {
+      orderItems.advancePaymentDoc = advancePaymentProof.url;
+    }
+
+    const newOrder = await orderModel.create(orderItems);
 
     res.status(201).json({
       success: true,
@@ -84,13 +124,13 @@ const createOrder = async (req, res) => {
 // Common populate configuration
 const orderPopulateFields = [
   { path: "placedBy", select: "name email" },
-  { path: "party", select: "companyName" },
+  { path: "party", select: "companyName contactPersonNumber address" },
   { path: "approvedBy", select: "name email role" },
   { path: "forwardedByManager", select: "name email role" },
   { path: "forwardedByAuthorizer", select: "name email role" },
   { path: "dispatchInfo.dispatchedBy", select: "name email role" },
   { path: "assignedWarehouse", select: "name location" },
-  { path: "invoicedBy", select: "name email role" },
+  { path: "invoiceDetails.invoicedBy", select: "name email role" },
   { path: "paymentCollectedBy", select: "name email role" },
   { path: "canceledBy.user", select: "name email role" },
 ];
@@ -237,8 +277,7 @@ const getOrdersToApprove = async (req, res) => {
 const approveOrderToWarehouse = async (req, res) => {
   try {
     const { orderId } = req.body;
-    const adminId = req.user.id; // Make sure your middleware sets req.user correctly
-    console.log(adminId);
+    const AuthorizerId = req.user.id;
 
     // Validate input
     if (!orderId) {
@@ -265,10 +304,30 @@ const approveOrderToWarehouse = async (req, res) => {
       });
     }
 
+    const warehouse = await WareHouse.findById(order.assignedWarehouse);
+    if (!warehouse) {
+      return res.status(404).json({
+        success: false,
+        message: "Warehouse not found",
+      });
+    }
+
+    const item = warehouse.stock.find((item) => {
+      return String(item.product._id) === String(order.item);
+    });
+
+    item.quantity = item.quantity - order.quantity;
+
     // Approve order
     order.orderStatus = "Approved";
-    order.approvedBy = adminId;
+    order.approvedBy = AuthorizerId;
+    if (order.advanceAmount > 0 && order.advancePaymentDoc) {
+      order.advancePaymentStatus = "SentForApproval";
+      order.advancePaymentApprovalSentTo = warehouse.accountant;
+    }
     await order.save();
+
+    await warehouse.save();
 
     res.status(200).json({
       success: true,

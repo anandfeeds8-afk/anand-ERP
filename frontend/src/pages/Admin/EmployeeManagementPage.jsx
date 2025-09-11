@@ -60,18 +60,14 @@ const EmployeeManagementPage = () => {
   const [isActive, setIsActive] = useState("Salesman");
   const [openForm, setOpenForm] = useState(false);
 
-  console.log("salesman", salesman);
-  console.log("salesmanager", salesmanager);
-  console.log("salesauthorizer", salesauthorizer);
-  console.log("planthead", planthead);
-  console.log("accountant", accountant);
-
   const totalEmployees =
     salesman?.length +
     salesmanager?.length +
     salesauthorizer?.length +
     planthead?.length +
     accountant?.length;
+
+  console.log(totalEmployees);
 
   const totalActiveEmployees =
     salesman?.filter((item) => item.isActive === true)?.length +

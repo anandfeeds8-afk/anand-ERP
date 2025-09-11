@@ -22,7 +22,7 @@ export const useSalesAuthorizerOrder = (id) => {
           },
         }
       );
-      console.log("sales authorizer orders", response.data.data);
+      // console.log("sales authorizer orders", response.data.data);
       return response.data.data;
     },
     onError: (error) => {
@@ -54,12 +54,14 @@ export const useSalesAuthorizerOrder = (id) => {
   });
 
   // GET all approved warehouse using order id
+  //warehouse status
   const {
     data: ApprovedOrderForWarehouse,
     isPending: ApprovedOrderForWarehouseLoading,
   } = useQuery({
     queryKey: ["ApprovedOrderForWarehouse", id],
     queryFn: async () => {
+      if (!id) return null;
       const response = await axios.get(
         BASE_URL + API_PATHS.AUTHORIZER.CHECK_WAREHOUSE_STATUS(id),
         {
@@ -88,7 +90,7 @@ export const useSalesAuthorizerOrder = (id) => {
           },
         }
       );
-      console.log("sales authorizer warehouses", response.data.data);
+      // console.log("sales authorizer warehouses", response.data.data);
       return response.data.data;
     },
     onError: (error) => {
@@ -113,7 +115,7 @@ export const useSalesAuthorizerOrder = (id) => {
           },
         }
       );
-      console.log("salesman single order", response.data.data);
+      // console.log("salesman single order", response.data.data);
       return response.data.data;
     },
     onError: (error) => {
@@ -135,13 +137,64 @@ export const useSalesAuthorizerOrder = (id) => {
             },
           }
         );
-        console.log("assign warehouse response", response.data);
+        // console.log("assign warehouse response", response.data);
+        return response.data;
+      },
+      onSuccess: (data) => {
+        queryClient.invalidateQueries({ queryKey: ["order"] });
+        queryClient.invalidateQueries({
+          queryKey: ["AuthorizerAssignmentHistory"],
+        });
+        queryClient.invalidateQueries({
+          queryKey: ["ApprovedOrderForWarehouse"],
+        });
+        queryClient.invalidateQueries({
+          queryKey: ["ordersInSalesAuthorizer"],
+        });
+        queryClient.invalidateQueries({
+          queryKey: ["singleOrderFromSalesauthorizer"],
+        });
+        console.log(data);
+        toast.success(data.message);
+      },
+      onError: (error) => {
+        console.log(error);
+        toast.error(error.response.data.message);
+      },
+    });
+
+  //approve warehouse to order
+  const { mutate: approveWarehouse, isPending: approveWarehouseLoading } =
+    useMutation({
+      mutationFn: async (orderId) => {
+        const response = await axios.patch(
+          BASE_URL + API_PATHS.AUTHORIZER.APPROVE_WAREHOUSE,
+          { orderId },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        // console.log("assign warehouse response", response.data);
         return response.data;
       },
       onSuccess: (data) => {
         queryClient.invalidateQueries({ queryKey: ["order"] });
         queryClient.invalidateQueries({
           queryKey: ["ordersInSalesAuthorizer"],
+        });
+        queryClient.invalidateQueries({
+          queryKey: ["allWarehousesFromAuthorizer"],
+        });
+        queryClient.invalidateQueries({
+          queryKey: ["singleOrderFromSalesauthorizer"],
+        });
+        queryClient.invalidateQueries({
+          queryKey: ["warehouses"],
+        });
+        queryClient.invalidateQueries({
+          queryKey: ["singleWarehouse"],
         });
         console.log(data);
         toast.success(data.message);
@@ -164,12 +217,20 @@ export const useSalesAuthorizerOrder = (id) => {
           },
         }
       );
-      console.log("cancel order response", response.data);
+      // console.log("cancel order response", response.data);
       return response.data;
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["order"] });
-      queryClient.invalidateQueries({ queryKey: ["ordersInSalesManager"] });
+      queryClient.invalidateQueries({
+        queryKey: ["ordersInSalesAuthorizer"],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["allWarehousesFromAuthorizer"],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["singleOrderFromSalesauthorizer"],
+      });
       console.log(data);
       toast.success(data.message);
     },
@@ -182,6 +243,7 @@ export const useSalesAuthorizerOrder = (id) => {
   return {
     ordersInSalesAuthorizer,
     singleOrderFromSalesauthorizer,
+    approveWarehouse,
     allWarehouses,
     assignWarehouseToOrder,
     cancelOrder,
@@ -190,6 +252,7 @@ export const useSalesAuthorizerOrder = (id) => {
 
     //Loading
     ordersInSalesAuthorizerLoading,
+    approveWarehouseLoading,
     AuthorizerAssignmentHistoryLoading,
     ApprovedOrderForWarehouseLoading,
     singleOrderLoading,

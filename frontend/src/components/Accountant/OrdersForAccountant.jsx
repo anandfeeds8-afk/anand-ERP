@@ -1,17 +1,115 @@
 import { useState } from "react";
 import { Button, CircularProgress, IconButton, Tooltip } from "@mui/material";
-import { Eye, SquarePen, Trash2 } from "lucide-react";
+import {
+  Download,
+  DownloadIcon,
+  Eye,
+  File,
+  FileBox,
+  SquarePen,
+  Trash2,
+} from "lucide-react";
 import { format } from "date-fns";
 import { DataGrid } from "@mui/x-data-grid";
 import CloseIcon from "@mui/icons-material/Close";
 import { formatRupee } from "../../utils/formatRupee.js";
 import { useAccountantOrder } from "../../hooks/useAccountant.js";
-import { TbFileInvoice } from "react-icons/tb";
+import { useUser } from "../../hooks/useUser.js";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
+import { downloadFile } from "../../utils/downloadFile.js";
+
+const downloadInvoice = ({
+  accName,
+  accEmail,
+  partyName,
+  partyAddress,
+  partyContact,
+  totalAmount,
+  advanceAmount,
+  dueAmount,
+  dueDate,
+}) => {
+  const invoiceBy = { name: accName, email: accEmail };
+  const partyDetails = {
+    company: partyName,
+    address: partyAddress,
+    contact: partyContact,
+  };
+  const paymentInfo = {
+    total: totalAmount,
+    advance: advanceAmount,
+    due: dueAmount,
+    dueDate: dueDate,
+  };
+
+  const doc = new jsPDF();
+
+  // Title
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(20);
+  doc.setTextColor(44, 62, 80); // dark blue
+  doc.text("INVOICE", 14, 20);
+
+  // Reset color
+  doc.setTextColor(0, 0, 0);
+
+  // Invoice By
+  doc.setFontSize(14);
+  doc.setFont("helvetica", "bold");
+  doc.text("Invoice By:", 14, 35);
+  doc.setFont("helvetica", "normal");
+  doc.text(`Name: ${invoiceBy.name}`, 14, 42);
+  doc.text(`Email: ${invoiceBy.email}`, 14, 49);
+
+  // Party Details
+  doc.setFont("helvetica", "bold");
+  doc.text("Party Details:", 14, 65);
+  doc.setFont("helvetica", "normal");
+  doc.text(`Company Name: ${partyDetails.company}`, 14, 72);
+  doc.text(`Address: ${partyDetails.address}`, 14, 79);
+  doc.text(`Contact Person Number: ${partyDetails.contact}`, 14, 86);
+
+  // Payment Information Table
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(14);
+  doc.setTextColor(231, 76, 60); // red heading
+  doc.text("Payment Information:", 14, 105);
+
+  doc.setTextColor(0, 0, 0); // reset to black
+  autoTable(doc, {
+    startY: 110,
+    theme: "striped",
+    headStyles: {
+      fillColor: [52, 152, 219], // blue header background
+      textColor: 255, // white text
+      fontStyle: "bold",
+    },
+    bodyStyles: {
+      fontSize: 12,
+    },
+    head: [["Total Amount", "Advance Amount", "Due Amount", "Due Date"]],
+    body: [
+      [
+        `${formatRupee(paymentInfo.total)}`,
+        `${formatRupee(paymentInfo.advance)}`,
+        `${formatRupee(paymentInfo.due)}`,
+        paymentInfo.dueDate,
+      ],
+    ],
+  });
+
+  // Save file
+  doc.save("invoice.pdf");
+};
 
 const OrdersForAccountant = () => {
   const [singleOrderId, setSingleOrderId] = useState(null);
   const [openView, setOpenView] = useState(false);
   const [openInvoice, setOpenInvoice] = useState(false);
+  const [openDispatchDocs, setOpenDispatchDocs] = useState(false);
+
+  const { user } = useUser();
 
   const {
     ordersInAccountant,
@@ -22,29 +120,22 @@ const OrdersForAccountant = () => {
     isGettingInvoice,
   } = useAccountantOrder(singleOrderId);
 
-  console.log(ordersInAccountant);
-
-  console.log("singleOrderInAccountant", singleOrderInAccountant);
-
   const [paginationModel, setPaginationModel] = useState({
     page: 0,
     pageSize: 5,
   });
 
   const handleView = (id) => {
-    console.log(id);
     setSingleOrderId(id);
     setOpenView(true);
   };
 
   const handleGetInvoice = (id) => {
-    console.log(id);
     setSingleOrderId(id);
     setOpenInvoice(true);
   };
 
   const handleInvoiceGeneration = () => {
-    console.log(singleOrderId);
     const data = {
       orderId: singleOrderId,
       dueDate: format(singleOrderInAccountant?.dueDate, "yyyy-MM-dd"),
@@ -52,50 +143,54 @@ const OrdersForAccountant = () => {
     generateInvoice(data);
   };
 
+  const handleDownloadInvoice = () => {
+    downloadInvoice({
+      accName: singleOrderInAccountant?.invoiceDetails?.invoicedBy?.name,
+      accEmail: singleOrderInAccountant?.invoiceDetails?.invoicedBy?.email,
+      partyName: singleOrderInAccountant?.party?.companyName,
+      partyAddress: singleOrderInAccountant?.party?.address,
+      partyContact: singleOrderInAccountant?.party?.contactPersonNumber,
+      totalAmount: singleOrderInAccountant?.totalAmount,
+      advanceAmount: singleOrderInAccountant?.advanceAmount,
+      dueAmount: singleOrderInAccountant?.dueAmount,
+      dueDate: format(singleOrderInAccountant?.dueDate, "dd MMM yyyy"),
+    });
+  };
+
   const columns = [
-    { field: "product", headerName: "Product", flex: 1, maxWidth: 150 },
-    { field: "party", headerName: "Party", flex: 1, maxWidth: 150 },
-    { field: "date", headerName: "Date", flex: 1, maxWidth: 150 },
-    { field: "quantity", headerName: "Quantity", flex: 1, maxWidth: 150 },
+    { field: "product", headerName: "Product", flex: 1 },
+    { field: "party", headerName: "Party", flex: 1 },
+    { field: "date", headerName: "Date", flex: 1 },
+    { field: "quantity", headerName: "Quantity", flex: 1 },
     {
       field: "totalAmount",
       headerName: "Total Amount",
       flex: 1,
-      maxWidth: 150,
     },
     {
       field: "advanceAmount",
       headerName: "Advance Amount",
       flex: 1,
-      maxWidth: 150,
       renderCell: (params) => (
-        console.log(params.value),
-        (
-          <span className={`${params.value !== "₹0" && "text-green-700"}`}>
-            {params.value}
-          </span>
-        )
+        <span className={`${params.value !== "₹0" && "text-green-700"}`}>
+          {params.value}
+        </span>
       ),
     },
     {
       field: "dueAmount",
       headerName: "Due Amount",
       flex: 1,
-      maxWidth: 150,
       renderCell: (params) => (
-        console.log(params.value),
-        (
-          <span className={`${params.value !== "₹0" && "text-red-600"}`}>
-            {params.value}
-          </span>
-        )
+        <span className={`${params.value !== "₹0" && "text-red-600"}`}>
+          {params.value}
+        </span>
       ),
     },
     {
       field: "orderStatus",
       headerName: "Status",
       flex: 1,
-      maxWidth: 150,
       renderCell: (params) => (
         <span
           className={`${
@@ -127,9 +222,28 @@ const OrdersForAccountant = () => {
               onClick={() => handleView(params.row.id)}
             />
           </Tooltip>
+          {params.row.dispatchDocs && (
+            <Tooltip
+              title="View dispatch docs"
+              enterDelay={500}
+              placement="top"
+            >
+              <FileBox
+                strokeWidth={2.1}
+                color="green"
+                className="hover:bg-green-200 active:scale-95 transition-all p-1.5 rounded-lg"
+                size={30}
+                onClick={() => {
+                  setSingleOrderId(params.row.id);
+                  setOpenDispatchDocs(true);
+                }}
+              />
+            </Tooltip>
+          )}
           {params.row.invoiceGenerated === true && (
-            <Tooltip title="View invoice" enterDelay={500} placement="right">
-              <TbFileInvoice
+            <Tooltip title="View invoice" enterDelay={500} placement="top">
+              <File
+                strokeWidth={2.1}
                 color="green"
                 className="hover:bg-green-200 active:scale-95 transition-all p-1.5 rounded-lg"
                 size={30}
@@ -147,12 +261,13 @@ const OrdersForAccountant = () => {
     party: order?.party?.companyName,
     date: format(order?.createdAt, "dd MMM yyyy"),
     product: order?.item?.name,
-    quantity: `${order.quantity}kg`,
+    quantity: `${order.quantity} bags`,
     totalAmount: formatRupee(order.totalAmount),
     advanceAmount: formatRupee(order.advanceAmount),
     dueAmount: formatRupee(order.dueAmount),
     orderStatus: order.orderStatus,
     invoiceGenerated: order.invoiceGenerated,
+    dispatchDocs: order.dispatchInfo.dispatchDocs,
   }));
 
   if (
@@ -199,7 +314,7 @@ const OrdersForAccountant = () => {
             overflowY: "auto",
           },
           "& .MuiDataGrid-main": {
-            maxWidth: "1210px",
+            maxWidth: "100%",
           },
         }}
         disableColumnResize={false}
@@ -211,23 +326,15 @@ const OrdersForAccountant = () => {
             <div className="mb-5">
               <div className="flex items-center justify-between">
                 <p className="text-xl font-bold">Order Details</p>
-                {/* {singleOrderInAccountant?.paymentStatus === "Paid" ? (
-                  <Button onClick={handleInvoiceGeneration}>
-                    Generate Invoice
-                  </Button>
-                ) : (
-                  <Tooltip
-                    placement="top"
-                    title="Cannot generate invoice as order is not paid, ask salesman to clear dues"
-                  >
-                    <span>
-                      <Button disabled>Generate Invoice</Button>
-                    </span>
-                  </Tooltip>
-                )} */}
-                <Button onClick={handleInvoiceGeneration}>
-                  Generate Invoice
-                </Button>
+
+                <div>
+                  {!singleOrderInAccountant?.invoiceGenerated && (
+                    <Button onClick={handleInvoiceGeneration}>
+                      Generate Invoice
+                    </Button>
+                  )}
+                </div>
+
                 <IconButton size="small" onClick={() => setOpenView(false)}>
                   <CloseIcon />
                 </IconButton>
@@ -296,10 +403,14 @@ const OrdersForAccountant = () => {
                     </span>{" "}
                     {singleOrderInAccountant?.paymentMode}
                   </div>
-                  <div className="flex items-center justify-between font-semibold">
-                    <span className="text-gray-600 font-normal">Due Date:</span>{" "}
-                    {format(singleOrderInAccountant?.dueDate, "dd MMM yyyy")}
-                  </div>
+                  {singleOrderInAccountant?.dueAmount !== 0 && (
+                    <div className="flex items-center justify-between font-semibold">
+                      <span className="text-gray-600 font-normal">
+                        Due Date:
+                      </span>{" "}
+                      {format(singleOrderInAccountant?.dueDate, "dd MMM yyyy")}
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -415,9 +526,34 @@ const OrdersForAccountant = () => {
             <div className="mb-5">
               <div className="flex items-center justify-between">
                 <p className="text-xl font-bold">Invoice</p>
-                <IconButton size="small" onClick={() => setOpenInvoice(false)}>
-                  <CloseIcon />
-                </IconButton>
+                <div className="flex items-center gap-5">
+                  <div className="relative group">
+                    {user.isActive ? (
+                      <Tooltip
+                        title="Download Invoice"
+                        placement="top"
+                        enterDelay={500}
+                      >
+                        <DownloadIcon
+                          onClick={handleDownloadInvoice}
+                          className="text-blue-600 hover:bg-blue-100 p-1.5 rounded-lg active:scale-95 transition-all"
+                          size={30}
+                        />
+                      </Tooltip>
+                    ) : (
+                      <DownloadIcon
+                        className="text-gray-400 cursor-not-allowed p-1.5 rounded-lg"
+                        size={30}
+                      />
+                    )}
+                  </div>
+                  <IconButton
+                    size="small"
+                    onClick={() => setOpenInvoice(false)}
+                  >
+                    <CloseIcon />
+                  </IconButton>
+                </div>
               </div>
             </div>
 
@@ -435,7 +571,6 @@ const OrdersForAccountant = () => {
                   {singleOrderInAccountant?.invoiceDetails?.invoicedBy?.email}
                 </div>
               </div>
-
               <div className="flex flex-col gap-2 text-sm mt-5">
                 <h1 className="font-semibold text-base text-gray-800">
                   Party Details
@@ -457,7 +592,6 @@ const OrdersForAccountant = () => {
                   {singleOrderInAccountant?.party?.contactPersonNumber}
                 </div>
               </div>
-
               <div className="flex flex-col gap-2 text-sm mt-5">
                 <h1 className="font-semibold text-base text-gray-800">
                   Payment Information
@@ -484,12 +618,133 @@ const OrdersForAccountant = () => {
                     singleOrderInAccountant?.invoiceDetails?.dueAmount
                   )}
                 </div>
-                <div className="flex items-center justify-between font-semibold">
-                  <span className="text-gray-600 font-normal">Due Date:</span>
+                {singleOrderInAccountant?.dueAmount !== 0 && (
+                  <div className="flex items-center justify-between font-semibold">
+                    <span className="text-gray-600 font-normal">Due Date:</span>
+                    {format(
+                      singleOrderInAccountant?.invoiceDetails?.dueDate,
+                      "dd MMM yyyy"
+                    )}
+                  </div>
+                )}
+              </div>
+              <hr className="my-3" />
+              <div>
+                <div className="flex items-center justify-between font-semibold text-sm">
+                  <span className="text-gray-600 font-normal">
+                    Invoice Generated on:
+                  </span>
                   {format(
-                    singleOrderInAccountant?.invoiceDetails?.dueDate,
+                    singleOrderInAccountant?.invoiceDetails?.generatedAt,
                     "dd MMM yyyy"
                   )}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Open Dispatch Docs Modal */}
+      {openDispatchDocs && (
+        <div className="transition-all bg-black/30 backdrop-blur-sm w-full z-50 h-screen absolute top-0 left-0 flex items-center justify-center">
+          <div className="bg-white relative p-7 rounded-lg max-w-[60%] min-w-[35%] max-h-[90%] overflow-auto">
+            <div className="mb-5">
+              <div className="flex items-center justify-between">
+                <p className="text-xl font-bold">Dispatch Details</p>
+                <div className="flex items-center gap-5">
+                  <Tooltip
+                    title="Download Dispatch Docs"
+                    enterDelay={500}
+                    placement="top"
+                  >
+                    <Download
+                      color="blue"
+                      className="hover:bg-blue-200 active:scale-95 transition-all p-1.5 rounded-lg"
+                      size={30}
+                      onClick={() =>
+                        downloadFile(
+                          singleOrderInAccountant?.dispatchInfo?.dispatchDocs,
+                          "dispatch-docs"
+                        )
+                      }
+                    />
+                  </Tooltip>
+                  <IconButton
+                    size="small"
+                    onClick={() => setOpenDispatchDocs(false)}
+                  >
+                    <CloseIcon />
+                  </IconButton>
+                </div>
+              </div>
+            </div>
+
+            <div className="rounded-lg shadow mb-5">
+              {singleOrderInAccountant?.dispatchInfo?.dispatchDocs?.endsWith(
+                ".pdf"
+              ) ? (
+                <iframe
+                  src={singleOrderInAccountant?.dispatchInfo?.dispatchDocs}
+                  className="w-full h-96"
+                  title="Dispatch Documents PDF"
+                />
+              ) : (
+                <Tooltip title="Click to view invoice in new tab" followCursor>
+                  <a
+                    href={singleOrderInAccountant?.dispatchInfo?.dispatchDocs}
+                    target="_blank"
+                  >
+                    {(
+                      <img
+                        src={
+                          singleOrderInAccountant?.dispatchInfo?.dispatchDocs
+                        }
+                        className="w-full h-full object-contain"
+                        alt="Dispatch Documents"
+                      />
+                    ) || (
+                      <p className="p-5  text-gray-600 text-center">
+                        Loading...
+                      </p>
+                    )}
+                  </a>
+                </Tooltip>
+              )}
+            </div>
+
+            <div className="grid grid-cols-2 gap-7">
+              <div className="flex flex-col gap-2 text-sm">
+                <h1 className="font-semibold text-base text-gray-800">
+                  Dispatched By
+                </h1>
+                <div className="flex items-center justify-between font-semibold">
+                  <span className="text-gray-600 font-normal">Name:</span>
+                  {singleOrderInAccountant?.dispatchInfo?.dispatchedBy?.name}
+                </div>
+                <div className="flex items-center justify-between font-semibold">
+                  <span className="text-gray-600 font-normal">Email:</span>
+                  {singleOrderInAccountant?.dispatchInfo?.dispatchedBy?.email}
+                </div>
+              </div>
+              <div className="flex flex-col gap-2 text-sm">
+                <h1 className="font-semibold text-base text-gray-800">
+                  Dispatched Details:
+                </h1>
+                <div className="flex items-center justify-between font-semibold">
+                  <span className="text-gray-600 font-normal">
+                    Dispatched on:
+                  </span>
+                  {format(
+                    singleOrderInAccountant?.dispatchInfo?.dispatchDate,
+                    "dd MMM yyyy"
+                  )}
+                </div>
+                <div className="flex items-center justify-between font-semibold">
+                  <span className="text-gray-600 font-normal">
+                    Transport Company:
+                  </span>
+                  {singleOrderInAccountant?.dispatchInfo?.transportCompany}
                 </div>
               </div>
             </div>

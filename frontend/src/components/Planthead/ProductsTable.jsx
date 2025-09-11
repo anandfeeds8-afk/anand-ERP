@@ -83,7 +83,7 @@ const ProductsTable = () => {
     product: product?.name,
     category: product?.category,
     description: product?.description,
-    quantity: `${product.quantity}kg`,
+    quantity: `${product.quantity} bags`,
   }));
 
   return (
@@ -119,7 +119,7 @@ const ProductsTable = () => {
             overflowY: "auto",
           },
           "& .MuiDataGrid-main": {
-            maxWidth: "1210px",
+            maxWidth: "100%",
           },
         }}
         disableColumnResize={false}
@@ -168,7 +168,7 @@ const ProductsTable = () => {
                 size="small"
                 fullWidth
                 id="outlined-basic"
-                label="Quantity (in kg)"
+                label="Quantity (in bags)"
                 variant="outlined"
                 type="number"
                 {...register("quantity", {

@@ -51,6 +51,15 @@ const {
   getOrdersToApprove,
   approveOrderToWarehouse,
 } = require("../controllers/Orders");
+const {
+  getPartiesToApprove,
+  approveParty,
+  getRejectedPartiesForAdmin,
+  getAllPartiesForAdmin,
+  getApprovedParties,
+  rejectPartyApproval,
+  updateParty,
+} = require("../controllers/party");
 
 //ok
 adminRouter.post("/register", registerAdmin);
@@ -128,7 +137,7 @@ adminRouter.post(
 );
 adminRouter.get(
   "/:warehouseId/products",
-  // verifyAdmin,
+  verifyAdmin,
   getAllProductsFromWarehouse
 );
 adminRouter.delete(
@@ -144,8 +153,33 @@ adminRouter.get(
   getFilteredProducts
 );
 
+//Get all the parties
+adminRouter.get("/get-all-parties", verifyAdmin, getAllPartiesForAdmin);
+
+//get approved parties
+adminRouter.get("/get-approved-parties", verifyAdmin, getApprovedParties);
+
+//get rejected parties
+adminRouter.get(
+  "/get-rejected-parties",
+  verifyAdmin,
+  getRejectedPartiesForAdmin
+);
+
+//get parties which are sent for approval by salesman
+adminRouter.get("/get-parties-to-approve", verifyAdmin, getPartiesToApprove);
+
+//approve party
+adminRouter.patch("/approve-party", verifyAdmin, approveParty);
+
+//update party
+adminRouter.patch("/update-party/:partyId", verifyAdmin, updateParty);
+
+//reject party
+adminRouter.patch("/reject-party", verifyAdmin, rejectPartyApproval);
+
 adminRouter.get("/get_orders_to_approve", verifyAdmin, getOrdersToApprove);
-adminRouter.post("/approve_warehouse", verifyAdmin, approveOrderToWarehouse);
+
 adminRouter.get("/get_allorder", verifyAdmin, getAllOrder);
 adminRouter.get("/get_order/:id", verifyAdmin, getOrderDetails);
 adminRouter.post("/cancel_order/:id", verifyAdmin, cancelOrder);

@@ -10,7 +10,7 @@ import {
   TextField,
   Tooltip,
 } from "@mui/material";
-import { DownloadIcon, Eye, Trash2 } from "lucide-react";
+import { DownloadIcon, Eye, File } from "lucide-react";
 import { TbFileInvoice } from "react-icons/tb";
 import { format } from "date-fns";
 import { DataGrid } from "@mui/x-data-grid";
@@ -21,6 +21,10 @@ import { CgCreditCard } from "react-icons/cg";
 import { Controller, useForm } from "react-hook-form";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import { MdOutlineCancel } from "react-icons/md";
+import { PackageCheck } from "lucide-react";
+import { FileClock } from "lucide-react";
+import { useUser } from "../../../hooks/useUser.js";
 
 const downloadInvoice = ({
   accName,
@@ -32,6 +36,7 @@ const downloadInvoice = ({
   advanceAmount,
   dueAmount,
   dueDate,
+  paymentMode,
 }) => {
   const invoiceBy = { name: accName, email: accEmail };
   const partyDetails = {
@@ -44,6 +49,7 @@ const downloadInvoice = ({
     advance: advanceAmount,
     due: dueAmount,
     dueDate: dueDate,
+    paymentMode: paymentMode,
   };
 
   const doc = new jsPDF();
@@ -91,13 +97,22 @@ const downloadInvoice = ({
     bodyStyles: {
       fontSize: 12,
     },
-    head: [["Total Amount", "Advance Amount", "Due Amount", "Due Date"]],
+    head: [
+      [
+        "Total Amount",
+        "Advance Amount",
+        "Due Amount",
+        "Due Date",
+        "Payment Mode",
+      ],
+    ],
     body: [
       [
         `${formatRupee(paymentInfo.total)}`,
         `${formatRupee(paymentInfo.advance)}`,
         `${formatRupee(paymentInfo.due)}`,
         paymentInfo.dueDate,
+        paymentInfo.paymentMode,
       ],
     ],
   });
@@ -109,19 +124,25 @@ const downloadInvoice = ({
 const AllOrdersForSalesman = () => {
   const [singleOrderId, setSingleOrderId] = useState(null);
   const [openView, setOpenView] = useState(false);
-  const [openDelete, setOpenDelete] = useState(false);
   const [openInvoice, setOpenInvoice] = useState(false);
+  const [openDuePaymentInvoice, setOpenDuePaymentInvoice] = useState(false);
+  const [openDeliver, setOpenDeliver] = useState(false);
   const [openUpdatePayment, setOpenUpdatePayment] = useState(false);
+  const [openCancel, setOpenCancel] = useState(false);
+
+  const { user } = useUser();
 
   const {
-    deleteOrder,
     updatePayment,
     singleOrderFromSalesman,
     singleOrderLoading,
     ordersInSalesman,
-    isDeletingOrder,
     ordersInSalesmanLoading,
     isUpdatingPayment,
+    cancelOrder,
+    deliverOrder,
+    isDeliveringOrder,
+    isCancelingOrder,
   } = useSalesmanOrder(singleOrderId);
 
   const {
@@ -130,7 +151,10 @@ const AllOrdersForSalesman = () => {
     formState: { errors },
     control,
     setValue,
+    watch,
   } = useForm();
+
+  const reason = watch("reason");
 
   const [paginationModel, setPaginationModel] = useState({
     page: 0,
@@ -138,29 +162,64 @@ const AllOrdersForSalesman = () => {
   });
 
   const handleView = (id) => {
-    console.log(id);
     setSingleOrderId(id);
     setOpenView(true);
+    refetchSingleOrder();
   };
 
   const handleOpenInvoice = (id) => {
-    console.log(id);
     setSingleOrderId(id);
     setOpenInvoice(true);
   };
 
-  const handleDelete = () => {
-    deleteOrder(singleOrderId);
-    setOpenDelete(false);
+  const handleOpenDuePaymentInvoice = (id) => {
+    setSingleOrderId(id);
+    setOpenDuePaymentInvoice(true);
   };
+
+  const handleCancelOrder = (data) => {
+    data.orderId = singleOrderId;
+    cancelOrder(data);
+    setOpenCancel(false);
+  };
+
+  const handleDeliverOrder = () => {
+    deliverOrder(singleOrderId, { onSuccess: () => setOpenDeliver(false) });
+  };
+
+  const dueAmountDocs = watch("dueAmountDocs");
+  const dueAmountDocsFile = dueAmountDocs ? dueAmountDocs[0] : null;
 
   const handleUpdatePayment = (data) => {
     data.orderId = singleOrderId;
-    console.log(data);
-    updatePayment(data);
-    setOpenUpdatePayment(false);
+
+    const formData = new FormData();
+    formData.append("orderId", singleOrderId);
+    formData.append("amount", data.amount);
+    formData.append("paymentMode", data.paymentMode);
+    formData.append("dueAmountDocs", dueAmountDocsFile);
+    updatePayment(formData, { onSuccess: () => setOpenUpdatePayment(false) });
     setValue("amount", "");
     setValue("paymentMode", "");
+  };
+
+  const handleDownloadDueInvoice = () => {
+    downloadInvoice({
+      accName: singleOrderFromSalesman?.dueInvoiceDetails?.invoicedBy?.name,
+      accEmail: singleOrderFromSalesman?.dueInvoiceDetails?.invoicedBy?.email,
+      partyName: singleOrderFromSalesman?.dueInvoiceDetails?.party?.companyName,
+      partyAddress: singleOrderFromSalesman?.dueInvoiceDetails?.party?.address,
+      partyContact:
+        singleOrderFromSalesman?.dueInvoiceDetails?.party?.contactPersonNumber,
+      totalAmount: singleOrderFromSalesman?.dueInvoiceDetails?.totalAmount,
+      advanceAmount: singleOrderFromSalesman?.dueInvoiceDetails?.advanceAmount,
+      dueAmount: singleOrderFromSalesman?.dueInvoiceDetails?.dueAmount,
+      dueDate: format(
+        singleOrderFromSalesman?.dueInvoiceDetails?.dueDate,
+        "dd MMM yyyy"
+      ),
+      paymentMode: singleOrderFromSalesman?.dueInvoiceDetails?.paymentMode,
+    });
   };
 
   const handleDownloadInvoice = () => {
@@ -178,21 +237,19 @@ const AllOrdersForSalesman = () => {
   };
 
   const columns = [
-    { field: "product", headerName: "Product", flex: 1, maxWidth: 150 },
-    { field: "party", headerName: "Party", flex: 1, maxWidth: 150 },
-    { field: "date", headerName: "Date", flex: 1, maxWidth: 150 },
-    { field: "quantity", headerName: "Quantity", flex: 1, maxWidth: 150 },
+    { field: "product", headerName: "Product", flex: 1 },
+    { field: "party", headerName: "Party", flex: 1 },
+    { field: "date", headerName: "Date", flex: 1 },
+    { field: "quantity", headerName: "Quantity", flex: 1 },
     {
       field: "totalAmount",
       headerName: "Total Amount",
       flex: 1,
-      maxWidth: 150,
     },
     {
       field: "advanceAmount",
       headerName: "Advance Amount",
       flex: 1,
-      maxWidth: 150,
       renderCell: (params) => (
         <span className={`${params.value !== "₹0" && "text-green-700"}`}>
           {params.value}
@@ -203,7 +260,6 @@ const AllOrdersForSalesman = () => {
       field: "dueAmount",
       headerName: "Due Amount",
       flex: 1,
-      maxWidth: 150,
       renderCell: (params) => (
         <span className={`${params.value !== "₹0" && "text-red-600"}`}>
           {params.value}
@@ -214,7 +270,6 @@ const AllOrdersForSalesman = () => {
       field: "orderStatus",
       headerName: "Status",
       flex: 1,
-      maxWidth: 150,
       renderCell: (params) => (
         <span
           className={`${
@@ -238,23 +293,17 @@ const AllOrdersForSalesman = () => {
       filterable: false,
       renderCell: (params) => (
         <div className="flex items-center h-full gap-1">
-          <Eye
-            color="blue"
-            className="hover:bg-blue-200 active:scale-95 transition-all p-1.5 rounded-lg"
-            size={30}
-            onClick={() => handleView(params.row.id)}
-          />
-
-          {params.row.invoiceGenerated && (
-            <TbFileInvoice
-              color="green"
-              className="hover:bg-green-200 active:scale-95 transition-all p-1.5 rounded-lg"
+          <Tooltip title="View Order Details" placement="left">
+            <Eye
+              color="blue"
+              className="hover:bg-blue-200 active:scale-95 transition-all p-1.5 rounded-lg"
               size={30}
-              onClick={() => handleOpenInvoice(params.row.id)}
+              onClick={() => handleView(params.row.id)}
             />
-          )}
-          {params.row.paymentStatus !== "Paid" &&
-            params.row.orderStatus !== "Delivered" && (
+          </Tooltip>
+
+          {params.row.paymentStatus !== "Paid" && (
+            <Tooltip title="Update Payment" placement="top">
               <CgCreditCard
                 color="purple"
                 className="hover:bg-purple-200 active:scale-95 transition-all p-1.5 rounded-lg"
@@ -264,19 +313,71 @@ const AllOrdersForSalesman = () => {
                   setOpenUpdatePayment(true);
                 }}
               />
-            )}
-
-          {params.row.orderStatus == "Placed" && (
-            <Trash2
-              color="red"
-              className="hover:bg-red-100 active:scale-95 transition-all p-1.5 rounded-lg"
-              size={30}
-              onClick={() => {
-                setSingleOrderId(params.row.id);
-                setOpenDelete(true);
-              }}
-            />
+            </Tooltip>
           )}
+
+          {params.row.invoiceGenerated && (
+            <Tooltip title="View invoice" placement="top">
+              <File
+                strokeWidth={2.1}
+                color="teal"
+                className="hover:bg-teal-200 active:scale-95 transition-all p-1.5 rounded-lg"
+                size={30}
+                onClick={() => handleOpenInvoice(params.row.id)}
+              />
+            </Tooltip>
+          )}
+
+          {params.row.dueInvoiceGenerated && (
+            <Tooltip title="View due payment invoice" placement="top">
+              <FileClock
+                strokeWidth={2.1}
+                color="teal"
+                className="hover:bg-teal-200 active:scale-95 transition-all p-1.5 rounded-lg"
+                size={30}
+                onClick={() => handleOpenDuePaymentInvoice(params.row.id)}
+              />
+            </Tooltip>
+          )}
+
+          {params.row.orderStatus === "Placed" && (
+            <>
+              {user.isActive ? (
+                <Tooltip title="Cancel Order" placement="top">
+                  <MdOutlineCancel
+                    color="red"
+                    className="hover:bg-red-100 active:scale-95 transition-all p-1.5 rounded-lg"
+                    size={30}
+                    onClick={() => {
+                      setSingleOrderId(params.row.id);
+                      setOpenCancel(true);
+                    }}
+                  />
+                </Tooltip>
+              ) : (
+                <MdOutlineCancel
+                  color="gray"
+                  className="p-1.5 rounded-lg cursor-not-allowed"
+                  size={30}
+                />
+              )}
+            </>
+          )}
+
+          {params.row.orderStatus === "Dispatched" &&
+            params.row.invoiceGenerated && (
+              <Tooltip title="Mark as Delivered" placement="top">
+                <PackageCheck
+                  color="green"
+                  className="hover:bg-green-200 active:scale-95 transition-all p-1.5 rounded-lg"
+                  size={30}
+                  onClick={() => {
+                    setSingleOrderId(params.row.id);
+                    setOpenDeliver(true);
+                  }}
+                />
+              </Tooltip>
+            )}
         </div>
       ),
     },
@@ -287,20 +388,17 @@ const AllOrdersForSalesman = () => {
     party: order?.party?.companyName,
     date: format(order?.createdAt, "dd MMM yyyy"),
     product: order?.item?.name,
-    quantity: `${order.quantity}kg`,
+    quantity: `${order.quantity} bags`,
     totalAmount: formatRupee(order.totalAmount),
     advanceAmount: formatRupee(order.advanceAmount),
     dueAmount: formatRupee(order.dueAmount),
     invoiceGenerated: order.invoiceGenerated,
+    dueInvoiceGenerated: order.dueInvoiceGenerated,
+    paymentStatus: order.paymentStatus,
     orderStatus: order.orderStatus,
   }));
 
-  if (
-    ordersInSalesmanLoading ||
-    isDeletingOrder ||
-    singleOrderLoading ||
-    isUpdatingPayment
-  )
+  if (ordersInSalesmanLoading || singleOrderLoading)
     return (
       <div className="flex items-center justify-center h-full w-full">
         <CircularProgress />
@@ -340,7 +438,7 @@ const AllOrdersForSalesman = () => {
             overflowY: "auto",
           },
           "& .MuiDataGrid-main": {
-            maxWidth: "1210px",
+            maxWidth: "100%",
           },
         }}
         disableColumnResize={false}
@@ -390,7 +488,7 @@ const AllOrdersForSalesman = () => {
                     <span className="text-gray-600 font-normal">
                       Placed Date:
                     </span>
-                    {(singleOrderFromSalesman?.createdAt, "dd MMM yyyy")}
+                    {format(singleOrderFromSalesman?.createdAt, "dd MMM yyyy")}
                   </div>
                 </div>
                 <div className="flex flex-col gap-2 text-sm">
@@ -421,10 +519,14 @@ const AllOrdersForSalesman = () => {
                     </span>
                     {singleOrderFromSalesman?.paymentMode}
                   </div>
-                  <div className="flex items-center justify-between font-semibold">
-                    <span className="text-gray-600 font-normal">Due Date:</span>
-                    {format(singleOrderFromSalesman?.dueDate, "dd MMM yyyy")}
-                  </div>
+                  {singleOrderFromSalesman?.dueAmount !== 0 && (
+                    <div className="flex items-center justify-between font-semibold">
+                      <span className="text-gray-600 font-normal">
+                        Due Date:
+                      </span>
+                      {format(singleOrderFromSalesman?.dueDate, "dd MMM yyyy")}
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -611,17 +713,24 @@ const AllOrdersForSalesman = () => {
                 <p className="text-xl font-bold">Invoice</p>
                 <div className="flex items-center gap-5">
                   <div className="relative group">
-                    <Tooltip
-                      title="Download Invoice"
-                      placement="top"
-                      enterDelay={500}
-                    >
+                    {user.isActive ? (
+                      <Tooltip
+                        title="Download Invoice"
+                        placement="top"
+                        enterDelay={500}
+                      >
+                        <DownloadIcon
+                          onClick={handleDownloadInvoice}
+                          className="text-blue-600 hover:bg-blue-100 p-1.5 rounded-lg active:scale-95 transition-all"
+                          size={30}
+                        />
+                      </Tooltip>
+                    ) : (
                       <DownloadIcon
-                        onClick={handleDownloadInvoice}
-                        className="text-blue-600 hover:bg-blue-100 p-1.5 rounded-lg active:scale-95 transition-all"
+                        className="text-gray-400 cursor-not-allowed p-1.5 rounded-lg"
                         size={30}
                       />
-                    </Tooltip>
+                    )}
                   </div>
 
                   <IconButton
@@ -636,7 +745,7 @@ const AllOrdersForSalesman = () => {
             <div>
               <div className="flex flex-col gap-2 text-sm">
                 <h1 className="font-semibold text-base text-gray-800">
-                  Invoice By
+                  Invoiced By
                 </h1>
                 <div className="flex items-center justify-between font-semibold">
                   <span className="text-gray-600 font-normal">Name:</span>
@@ -656,17 +765,20 @@ const AllOrdersForSalesman = () => {
                   <span className="text-gray-600 font-normal">
                     Company Name:
                   </span>
-                  {singleOrderFromSalesman?.party?.companyName}
+                  {singleOrderFromSalesman?.invoiceDetails?.party?.companyName}
                 </div>
                 <div className="flex items-center justify-between font-semibold">
                   <span className="text-gray-600 font-normal">Address:</span>
-                  {singleOrderFromSalesman?.party?.address}
+                  {singleOrderFromSalesman?.invoiceDetails?.party?.address}
                 </div>
                 <div className="flex items-center justify-between font-semibold">
                   <span className="text-gray-600 font-normal">
                     Contact Person Number:
                   </span>
-                  {singleOrderFromSalesman?.party?.contactPersonNumber}
+                  {
+                    singleOrderFromSalesman?.invoiceDetails?.party
+                      ?.contactPersonNumber
+                  }
                 </div>
               </div>
 
@@ -704,23 +816,174 @@ const AllOrdersForSalesman = () => {
                   )}
                 </div>
               </div>
+              <hr className="my-3" />
+              <div>
+                <div className="flex items-center justify-between font-semibold text-sm">
+                  <span className="text-gray-600 font-normal">
+                    Invoice Generated on:
+                  </span>
+                  {format(
+                    singleOrderFromSalesman?.invoiceDetails?.generatedAt,
+                    "dd MMM yyyy"
+                  )}
+                </div>
+              </div>
             </div>
           </div>
         </div>
       )}
 
-      {/* Delete Order Modal */}
-      {openDelete && (
+      {/* --- View Invoice Modal --- */}
+      {openDuePaymentInvoice && (
         <div className="transition-all bg-black/30 backdrop-blur-sm w-full z-50 h-screen absolute top-0 left-0 flex items-center justify-center">
-          <div className="bg-white p-7 rounded-lg w-[29rem]">
+          <div className="bg-white relative p-7 w-[35%] rounded-lg overflow-auto">
+            <div className="mb-5">
+              <div className="flex items-center justify-between">
+                <p className="text-xl font-bold">Due Payment Invoice</p>
+                <div className="flex items-center gap-5">
+                  <div className="relative group">
+                    {user.isActive ? (
+                      <Tooltip
+                        title="Download Invoice"
+                        placement="top"
+                        enterDelay={500}
+                      >
+                        <DownloadIcon
+                          onClick={handleDownloadDueInvoice}
+                          className="text-blue-600 hover:bg-blue-100 p-1.5 rounded-lg active:scale-95 transition-all"
+                          size={30}
+                        />
+                      </Tooltip>
+                    ) : (
+                      <DownloadIcon
+                        className="text-gray-400 cursor-not-allowed p-1.5 rounded-lg"
+                        size={30}
+                      />
+                    )}
+                  </div>
+
+                  <IconButton
+                    size="small"
+                    onClick={() => setOpenDuePaymentInvoice(false)}
+                  >
+                    <CloseIcon />
+                  </IconButton>
+                </div>
+              </div>
+            </div>
+            <div>
+              <div className="flex flex-col gap-2 text-sm">
+                <h1 className="font-semibold text-base text-gray-800">
+                  Invoiced By
+                </h1>
+                <div className="flex items-center justify-between font-semibold">
+                  <span className="text-gray-600 font-normal">Name:</span>
+                  {singleOrderFromSalesman?.dueInvoiceDetails?.invoicedBy?.name}
+                </div>
+                <div className="flex items-center justify-between font-semibold">
+                  <span className="text-gray-600 font-normal">Email:</span>
+                  {
+                    singleOrderFromSalesman?.dueInvoiceDetails?.invoicedBy
+                      ?.email
+                  }
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-2 text-sm mt-5">
+                <h1 className="font-semibold text-base text-gray-800">
+                  Party Details
+                </h1>
+                <div className="flex items-center justify-between font-semibold">
+                  <span className="text-gray-600 font-normal">
+                    Company Name:
+                  </span>
+                  {
+                    singleOrderFromSalesman?.dueInvoiceDetails?.party
+                      ?.companyName
+                  }
+                </div>
+                <div className="flex items-center justify-between font-semibold">
+                  <span className="text-gray-600 font-normal">Address:</span>
+                  {singleOrderFromSalesman?.dueInvoiceDetails?.party?.address}
+                </div>
+                <div className="flex items-center justify-between font-semibold">
+                  <span className="text-gray-600 font-normal">
+                    Contact Person Number:
+                  </span>
+                  {
+                    singleOrderFromSalesman?.dueInvoiceDetails?.party
+                      ?.contactPersonNumber
+                  }
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-2 text-sm mt-5">
+                <h1 className="font-semibold text-base text-gray-800">
+                  Payment Information
+                </h1>
+                <div className="flex items-center justify-between font-semibold">
+                  <span className="text-gray-600 font-normal">
+                    Total Amount:
+                  </span>
+                  {formatRupee(
+                    singleOrderFromSalesman?.dueInvoiceDetails?.totalAmount
+                  )}
+                </div>
+                <div className="flex items-center justify-between font-semibold text-green-700">
+                  <span className="text-gray-600 font-normal">
+                    Advance Amount:
+                  </span>
+                  {formatRupee(
+                    singleOrderFromSalesman?.dueInvoiceDetails?.advanceAmount
+                  )}
+                </div>
+                <div className="flex items-center justify-between font-semibold text-red-700">
+                  <span className="text-gray-600 font-normal">Due Amount:</span>
+                  {formatRupee(
+                    singleOrderFromSalesman?.dueInvoiceDetails?.dueAmount
+                  )}
+                </div>
+                <div className="flex items-center justify-between font-semibold">
+                  <span className="text-gray-600 font-normal">Due Date:</span>
+                  {format(
+                    singleOrderFromSalesman?.dueInvoiceDetails?.dueDate,
+                    "dd MMM yyyy"
+                  )}
+                </div>
+                <div className="flex items-center justify-between font-semibold">
+                  <span className="text-gray-600 font-normal">
+                    Payment Mode:
+                  </span>
+                  {singleOrderFromSalesman?.dueInvoiceDetails?.paymentMode}
+                </div>
+              </div>
+              <hr className="my-3" />
+              <div>
+                <div className="flex items-center justify-between font-semibold text-sm">
+                  <span className="text-gray-600 font-normal">
+                    Invoice Generated on:
+                  </span>
+                  {format(
+                    singleOrderFromSalesman?.dueInvoiceDetails?.generatedAt,
+                    "dd MMM yyyy"
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Deliver Order Modal */}
+      {openDeliver && (
+        <div className="transition-all bg-black/30 backdrop-blur-sm w-full z-50 h-screen absolute top-0 left-0 flex items-center justify-center">
+          <div className="bg-white p-7 rounded-lg w-[35rem]">
             <p className="text-lg font-semibold">
-              Are you sure you want to delete "
-              {singleOrderFromSalesman?.item?.name}"?
+              Are you sure you want to mark this order Delivered?
             </p>
             <p className="text-gray-500 text-sm">
               This action cannot be undone.{" "}
-              {singleOrderFromSalesman?.item?.name}'s data will be permanently
-              removed.
+              {singleOrderFromSalesman?.item?.name} will be marked as Delivered.
             </p>
             <div className="flex items-center justify-end gap-3 mt-5">
               <Button
@@ -728,7 +991,7 @@ const AllOrdersForSalesman = () => {
                 disableElevation
                 color="error"
                 sx={{ textTransform: "none" }}
-                onClick={() => setOpenDelete(false)}
+                onClick={() => setOpenDeliver(false)}
               >
                 Cancel
               </Button>
@@ -737,9 +1000,10 @@ const AllOrdersForSalesman = () => {
                 disableElevation
                 color="error"
                 sx={{ textTransform: "none" }}
-                onClick={handleDelete}
+                onClick={handleDeliverOrder}
+                loading={isDeliveringOrder}
               >
-                Delete
+                Deliver Order
               </Button>
             </div>
           </div>
@@ -811,6 +1075,29 @@ const AllOrdersForSalesman = () => {
                     </span>
                   )}
                 </div>
+                <div>
+                  <span className="text-sm mb-1 ms-3 text-gray-600">
+                    Upload Due Payment Proof
+                  </span>
+                  <input
+                    // disabled={singleOrderFromPlanthead?.dueAmount > 0}
+                    className="relative mt-1 block w-full min-w-0 flex-auto rounded border border-solid border-neutral-300 bg-clip-padding px-3 py-[0.32rem] text-base font-normal text-neutral-700 transition duration-300 ease-in-out file:-mx-3 file:-my-[0.32rem] file:overflow-hidden file:rounded-none file:border-0 file:border-solid file:border-inherit file:bg-neutral-100 file:px-3 file:py-[0.32rem] file:text-neutral-700 file:transition file:duration-150 file:ease-in-out file:[border-inline-end-width:1px] file:[margin-inline-end:0.75rem] hover:file:bg-neutral-200 focus:border-primary focus:text-neutral-700 focus:shadow-te-primary focus:outline-none "
+                    type="file"
+                    id="formFileMultiple"
+                    multiple
+                    {...register("dueAmountDocs", {
+                      required: {
+                        value: true,
+                        message: "Due Payment Proof is required",
+                      },
+                    })}
+                  />
+                  {errors.dueAmountDocs && (
+                    <p className="text-red-600 text-xs mt-1">
+                      {errors.dueAmountDocs.message}
+                    </p>
+                  )}
+                </div>
                 <div className="flex items-center justify-end gap-2">
                   <Button
                     onClick={() => setOpenUpdatePayment(false)}
@@ -822,6 +1109,7 @@ const AllOrdersForSalesman = () => {
                     Cancel
                   </Button>
                   <Button
+                    loading={isUpdatingPayment}
                     type="submit"
                     variant="contained"
                     disableElevation
@@ -833,6 +1121,62 @@ const AllOrdersForSalesman = () => {
                 </div>
               </form>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Cancel Order Modal */}
+      {openCancel && (
+        <div className="transition-all bg-black/30 backdrop-blur-sm w-full z-50 h-screen absolute top-0 left-0 flex items-center justify-center">
+          <div className="bg-white p-7 rounded-lg w-[29rem]">
+            <p className="text-lg font-semibold">
+              Are you sure you want to cancel "
+              {singleOrderFromSalesman?.item?.name}"?
+            </p>
+            <p className="text-gray-800 my-2">
+              Tell us why you are cancelling this order:
+            </p>
+            <form onSubmit={handleSubmit(handleCancelOrder)}>
+              <div>
+                <TextField
+                  error={!!errors.reason}
+                  size="small"
+                  label="Reason"
+                  variant="outlined"
+                  fullWidth
+                  {...register("reason", {
+                    required: "Reason is required",
+                  })}
+                />
+                {errors.reason && (
+                  <p className="text-red-500 text-xs mt-1">
+                    {errors.reason.message}
+                  </p>
+                )}
+              </div>
+              <div className="flex items-center justify-end gap-3 mt-5">
+                <Button
+                  variant="outlined"
+                  disableElevation
+                  color="error"
+                  sx={{ textTransform: "none" }}
+                  onClick={() => setOpenCancel(false)}
+                >
+                  Keep Order
+                </Button>
+                <Button
+                  disabled={!reason}
+                  variant="contained"
+                  disableElevation
+                  color="error"
+                  type="Submit"
+                  sx={{ textTransform: "none" }}
+                  loading={isCancelingOrder}
+                >
+                  Cancel Order
+                </Button>
+              </div>
+            </form>
           </div>
         </div>
       )}

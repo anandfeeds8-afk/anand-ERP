@@ -10,19 +10,22 @@ import {
   TextField,
   Tooltip,
 } from "@mui/material";
-import { Eye, SquarePen } from "lucide-react";
+import { Eye } from "lucide-react";
 import { format } from "date-fns";
 import { DataGrid } from "@mui/x-data-grid";
 import CloseIcon from "@mui/icons-material/Close";
-import { MdDoneAll, MdOutlineCancel } from "react-icons/md";
+import { MdOutlineCancel } from "react-icons/md";
 import { formatRupee } from "../../../utils/formatRupee.js";
 import { Controller, useForm } from "react-hook-form";
 import { useSalesAuthorizerOrder } from "../../../hooks/useSalesAuthorizerOrder.js";
+import { useUser } from "../../../hooks/useUser.js";
 
 const OrdersForAuthorizer = () => {
   const [singleOrderId, setSingleOrderId] = useState(null);
   const [openView, setOpenView] = useState(false);
   const [openCancel, setOpenCancel] = useState(false);
+
+  const { user } = useUser();
 
   const {
     control,
@@ -36,6 +39,8 @@ const OrdersForAuthorizer = () => {
 
   const {
     allWarehouses,
+    approveWarehouse,
+    approveWarehouseLoading,
     assignWarehouseToOrder,
     warehousesLoading,
     ordersInSalesAuthorizer,
@@ -83,21 +88,20 @@ const OrdersForAuthorizer = () => {
     );
 
   const columns = [
-    { field: "product", headerName: "Product", flex: 1, maxWidth: 150 },
-    { field: "party", headerName: "Party", flex: 1, maxWidth: 150 },
-    { field: "date", headerName: "Date", flex: 1, maxWidth: 150 },
-    { field: "quantity", headerName: "Quantity", flex: 1, maxWidth: 150 },
+    { field: "product", headerName: "Product", flex: 1 },
+    { field: "party", headerName: "Party", flex: 1 },
+    { field: "date", headerName: "Date", flex: 1 },
+    { field: "quantity", headerName: "Quantity", flex: 1 },
     {
       field: "totalAmount",
       headerName: "Total Amount",
       flex: 1,
-      maxWidth: 150,
     },
     {
       field: "advanceAmount",
       headerName: "Advance Amount",
       flex: 1,
-      maxWidth: 150,
+
       renderCell: (params) => (
         <span className={`${params.value !== "₹0" && "text-green-700"}`}>
           {params.value}
@@ -108,7 +112,7 @@ const OrdersForAuthorizer = () => {
       field: "dueAmount",
       headerName: "Due Amount",
       flex: 1,
-      maxWidth: 150,
+
       renderCell: (params) => (
         <span className={`${params.value !== "₹0" && "text-red-600"}`}>
           {params.value}
@@ -119,7 +123,7 @@ const OrdersForAuthorizer = () => {
       field: "orderStatus",
       headerName: "Status",
       flex: 1,
-      maxWidth: 150,
+
       renderCell: (params) => (
         <span
           className={`${
@@ -151,24 +155,28 @@ const OrdersForAuthorizer = () => {
               onClick={() => handleView(params.row.id)}
             />
           </Tooltip>
-          <Tooltip title="Update order" enterDelay={500} placement="top">
-            <SquarePen
-              color="green"
-              className="hover:bg-green-100 active:scale-95 transition-all p-1.5 rounded-lg"
-              size={30}
-              onClick={() => handleUpdate(params.row.id)}
-            />
-          </Tooltip>
           <Tooltip title="Cancel order" enterDelay={500} placement="top">
-            <MdOutlineCancel
-              color="red"
-              className="hover:bg-red-100 active:scale-95 transition-all p-1.5 rounded-lg"
-              size={30}
-              onClick={() => {
-                setSingleOrderId(params.row.id);
-                setOpenCancel(true);
-              }}
-            />
+            {user.isActive ? (
+              <MdOutlineCancel
+                color="red"
+                className="hover:bg-red-100 active:scale-95 transition-all p-1.5 rounded-lg"
+                size={30}
+                onClick={() => {
+                  setSingleOrderId(params.row.id);
+                  setOpenCancel(true);
+                }}
+              />
+            ) : (
+              <MdOutlineCancel
+                color="gray"
+                className="p-1.5 rounded-lg cursor-ns-resize"
+                size={30}
+                onClick={() => {
+                  setSingleOrderId(params.row.id);
+                  setOpenCancel(true);
+                }}
+              />
+            )}
           </Tooltip>
         </div>
       ),
@@ -180,7 +188,7 @@ const OrdersForAuthorizer = () => {
     party: order?.party?.companyName,
     date: format(order?.createdAt, "dd MMM yyyy"),
     product: order?.item?.name,
-    quantity: `${order.quantity}kg`,
+    quantity: `${order.quantity} bags`,
     totalAmount: formatRupee(order.totalAmount),
     advanceAmount: formatRupee(order.advanceAmount),
     dueAmount: formatRupee(order.dueAmount),
@@ -220,7 +228,7 @@ const OrdersForAuthorizer = () => {
             overflowY: "auto",
           },
           "& .MuiDataGrid-main": {
-            maxWidth: "1210px",
+            maxWidth: "100%",
           },
         }}
         disableColumnResize={false}
@@ -229,10 +237,11 @@ const OrdersForAuthorizer = () => {
       {/* --- View Order Modal --- */}
       {openView && (
         <div className="transition-all bg-black/30 backdrop-blur-sm w-full z-50 h-screen absolute top-0 left-0 flex items-center justify-center">
-          <div className="bg-white relative p-7 rounded-lg w-[50%] h-[70%] overflow-auto">
+          <div className="bg-white relative p-7 rounded-lg w-[50%] max-h-[90%] overflow-auto">
             <div className="mb-5">
               <div className="flex items-center justify-between">
                 <p className="text-xl font-bold">Order Details</p>
+
                 <div className="w-64">
                   {singleOrderFromSalesauthorizer?.orderStatus ===
                     "ForwardedToAuthorizer" && (
@@ -245,6 +254,7 @@ const OrdersForAuthorizer = () => {
                           Assign Warehouse
                         </InputLabel>
                         <Controller
+                          disabled={!user.isActive}
                           name="warehouseId"
                           control={control}
                           rules={{ required: "Warehouse is required" }}
@@ -273,18 +283,17 @@ const OrdersForAuthorizer = () => {
                           </span>
                         )}
                       </FormControl>
-                      <Button size="small" variant="outlined" type="submit">
+                      <Button
+                        disabled={!user.isActive}
+                        size="small"
+                        variant="outlined"
+                        type="submit"
+                      >
                         Assign
                       </Button>
                     </form>
                   )}
                 </div>
-                {singleOrderFromSalesauthorizer?.orderStatus ===
-                  "AssignedToWarehouse" && (
-                  <div className="flex items-center gap-2 bg-blue-100 p-1 px-2 rounded-full text-blue-700">
-                    <MdDoneAll /> Warehouse Assigned
-                  </div>
-                )}
 
                 <IconButton size="small" onClick={() => setOpenView(false)}>
                   <CloseIcon />
@@ -357,13 +366,17 @@ const OrdersForAuthorizer = () => {
                     </span>{" "}
                     {singleOrderFromSalesauthorizer?.paymentMode}
                   </div>
-                  <div className="flex items-center justify-between font-semibold">
-                    <span className="text-gray-600 font-normal">Due Date:</span>{" "}
-                    {format(
-                      singleOrderFromSalesauthorizer?.dueDate,
-                      "dd MMM yyyy"
-                    )}
-                  </div>
+                  {singleOrderFromSalesauthorizer?.dueAmount !== 0 && (
+                    <div className="flex items-center justify-between font-semibold">
+                      <span className="text-gray-600 font-normal">
+                        Due Date:
+                      </span>{" "}
+                      {format(
+                        singleOrderFromSalesauthorizer?.dueDate,
+                        "dd MMM yyyy"
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -451,9 +464,46 @@ const OrdersForAuthorizer = () => {
                   </div>
                 </div>
                 <div className="flex flex-col gap-2 text-sm">
-                  <h1 className="font-semibold text-base text-gray-800">
-                    Assigned Warehouse
-                  </h1>
+                  <div className="flex items-center justify-between">
+                    <h1 className="font-semibold text-base text-gray-800">
+                      Assigned Warehouse
+                    </h1>
+                    {singleOrderFromSalesauthorizer?.orderStatus ===
+                      "WarehouseAssigned" && (
+                      <div className="flex items-center gap-3">
+                        <Button
+                          disabled={!user.isActive}
+                          loading={approveWarehouseLoading}
+                          variant="contained"
+                          color="success"
+                          disableElevation
+                          sx={{
+                            fontSize: "12px",
+                            textTransform: "none",
+                            padding: "2px 10px",
+                            borderRadius: "999px",
+                          }}
+                          onClick={() => approveWarehouse(singleOrderId)}
+                        >
+                          Approve
+                        </Button>
+                        <Button
+                          disabled={!user.isActive}
+                          variant="outlined"
+                          color="error"
+                          disableElevation
+                          sx={{
+                            textTransform: "none",
+                            fontSize: "12px",
+                            padding: "2px 10px",
+                            borderRadius: "999px",
+                          }}
+                        >
+                          Reject
+                        </Button>
+                      </div>
+                    )}
+                  </div>
                   <div className="flex items-center justify-between font-semibold">
                     <span className="text-gray-600 font-normal">
                       Warehouse:
@@ -476,6 +526,20 @@ const OrdersForAuthorizer = () => {
                     ) : (
                       <span className="text-red-700 bg-red-100 p-1 px-3 rounded-full text-xs">
                         Not Assigned
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex items-center justify-between font-semibold">
+                    <span className="text-gray-600 font-normal">
+                      Warehouse Approval:
+                    </span>
+                    {singleOrderFromSalesauthorizer?.approvedBy ? (
+                      <span className="text-green-700 font-semibold bg-green-100 p-1 px-3 rounded-full text-xs">
+                        Approved
+                      </span>
+                    ) : (
+                      <span className="text-red-700 font-semibold bg-red-100 p-1 px-3 rounded-full text-xs">
+                        Pending
                       </span>
                     )}
                   </div>

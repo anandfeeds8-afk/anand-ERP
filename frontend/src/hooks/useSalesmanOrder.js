@@ -89,7 +89,8 @@ export const useSalesmanOrder = (id) => {
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["order"] });
       queryClient.invalidateQueries({ queryKey: ["ordersInSalesman"] });
-      console.log(data);
+      queryClient.invalidateQueries({ queryKey: ["dueOrdersInSalesman"] });
+      // console.log(data);
       toast.success(data.message);
     },
     onError: (error) => {
@@ -99,10 +100,12 @@ export const useSalesmanOrder = (id) => {
   });
 
   // DELETE Order in Salesman
-  const { mutate: deleteOrder, isPending: isDeletingOrder } = useMutation({
+  const { mutate: deliverOrder, isPending: isDeliveringOrder } = useMutation({
     mutationFn: async (orderId) => {
-      const response = await axios.delete(
-        BASE_URL + API_PATHS.SALESMAN.DELETE_ORDER(orderId),
+      console.log("orderId", orderId);
+      const response = await axios.patch(
+        "http://localhost:5000/api/salesman/deliver-order",
+        { orderId },
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -114,7 +117,36 @@ export const useSalesmanOrder = (id) => {
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["order"] });
       queryClient.invalidateQueries({ queryKey: ["ordersInSalesman"] });
+      queryClient.invalidateQueries({ queryKey: ["dueOrdersInSalesman"] });
       console.log(data);
+      toast.success(data.message);
+    },
+    onError: (error) => {
+      console.log(error);
+      toast.error(error.response.data.message);
+    },
+  });
+
+  // Cancel order
+  const { mutate: cancelOrder, isPending: isCancelingOrder } = useMutation({
+    mutationFn: async (data) => {
+      const response = await axios.post(
+        BASE_URL + API_PATHS.SALESMAN.CANCEL_ORDER(data.orderId),
+        { reason: data.reason },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      // console.log("cancel order response", response.data);
+      return response.data;
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["order"] });
+      queryClient.invalidateQueries({ queryKey: ["ordersInSalesman"] });
+      queryClient.invalidateQueries({ queryKey: ["dueOrdersInSalesman"] });
+      // console.log(data);
       toast.success(data.message);
     },
     onError: (error) => {
@@ -128,8 +160,8 @@ export const useSalesmanOrder = (id) => {
     mutationFn: async (data) => {
       console.log("data", data);
       const response = await axios.post(
-        BASE_URL + API_PATHS.SALESMAN.UPDATE_PAYMENT(data.orderId),
-        { amount: data.amount, paymentMode: data.paymentMode },
+        BASE_URL + API_PATHS.SALESMAN.UPDATE_PAYMENT,
+        data,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -141,7 +173,180 @@ export const useSalesmanOrder = (id) => {
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["order"] });
       queryClient.invalidateQueries({ queryKey: ["ordersInSalesman"] });
-      console.log(data);
+      queryClient.invalidateQueries({ queryKey: ["dueOrdersInSalesman"] });
+      // console.log(data);
+      toast.success(data.message);
+    },
+    onError: (error) => {
+      console.log(error);
+      toast.error(error.response.data.message);
+    },
+  });
+
+  // ------------------------------ PARTY -------------------------------
+
+  // GET all Parties
+  const { data: parties, isPending: partiesLoading } = useQuery({
+    queryKey: ["parties"],
+    queryFn: async () => {
+      const response = await axios.get(
+        BASE_URL + API_PATHS.SALESMAN.GET_ALL_PARTIES,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      // console.log("parties", response.data.data);
+      return response.data.data;
+    },
+    onError: (error) => {
+      console.log(error);
+    },
+  });
+
+  // GET approved Parties
+  const { data: approvedParties, isPending: approvedPartiesLoading } = useQuery(
+    {
+      queryKey: ["approvedParties"],
+      queryFn: async () => {
+        const response = await axios.get(
+          BASE_URL + API_PATHS.SALESMAN.GET_APPROVED_PARTIES,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        // console.log("approved parties", response.data.data);
+        return response.data.data;
+      },
+      onError: (error) => {
+        console.log(error);
+      },
+    }
+  );
+
+  // GET rejected Parties
+  const { data: rejectedParties, isPending: rejectedPartiesLoading } = useQuery(
+    {
+      queryKey: ["rejectedParties"],
+      queryFn: async () => {
+        const response = await axios.get(
+          BASE_URL + API_PATHS.SALESMAN.GET_REJECTED_PARTIES,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        // console.log("approved parties", response.data.data);
+        return response.data.data;
+      },
+      onError: (error) => {
+        console.log(error);
+      },
+    }
+  );
+
+  //send party for approval
+  const { mutate: sendPartyForApproval, isPending: sendingPartyForApproval } =
+    useMutation({
+      mutationFn: async (partyId) => {
+        console.log("partyId", partyId);
+        if (!partyId) return null;
+        const response = await axios.post(
+          BASE_URL + API_PATHS.SALESMAN.APPROVE_PARTY,
+          { partyId },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        // console.log("send party for approval response", response.data);
+        return response.data;
+      },
+      onSuccess: (data) => {
+        queryClient.invalidateQueries({ queryKey: ["parties"] });
+        // console.log(data);
+        toast.success(data.message);
+      },
+      onError: (error) => {
+        console.log(error);
+        toast.error(error.response.data.message);
+      },
+    });
+
+  //add party
+  const { mutate: addParty, isPending: addingParty } = useMutation({
+    mutationFn: async (data) => {
+      console.log("add party data", data);
+      const response = await axios.post(
+        BASE_URL + API_PATHS.SALESMAN.ADD_PARTY,
+        data,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      return response.data;
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["parties"] });
+      // console.log(data);
+      toast.success(data.message);
+    },
+    onError: (error) => {
+      console.log(error);
+      toast.error(error.response.data.message);
+    },
+  });
+
+  //update party
+  const { mutate: updateParty, isPending: updatingParty } = useMutation({
+    mutationFn: async (data) => {
+      console.log("update party data", data);
+      const response = await axios.put(
+        BASE_URL + API_PATHS.SALESMAN.UPDATE_PARTY(data.partyId),
+        data,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      return response.data;
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["parties"] });
+      // console.log(data);
+      toast.success(data.message);
+    },
+    onError: (error) => {
+      console.log(error);
+      toast.error(error.response.data.message);
+    },
+  });
+
+  //delete party
+  const { mutate: deleteParty, isPending: deletingParty } = useMutation({
+    mutationFn: async (partyId) => {
+      console.log("delete party data", partyId);
+      const response = await axios.delete(
+        BASE_URL + API_PATHS.SALESMAN.DELETE_PARTY(partyId),
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      return response.data;
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["parties"] });
+      // console.log(data);
       toast.success(data.message);
     },
     onError: (error) => {
@@ -151,19 +356,35 @@ export const useSalesmanOrder = (id) => {
   });
 
   return {
+    parties,
+    addParty,
     ordersInSalesman,
     singleOrderFromSalesman,
     dueOrdersInSalesman,
     createOrder,
     updatePayment,
-    deleteOrder,
+    cancelOrder,
+    sendPartyForApproval,
+    approvedParties,
+    updateParty,
+    deleteParty,
+    deliverOrder,
+    rejectedParties,
 
     //Loading
+    isDeliveringOrder,
+    rejectedPartiesLoading,
+    partiesLoading,
+    deletingParty,
+    addingParty,
+    updatingParty,
+    isCancelingOrder,
+    sendingPartyForApproval,
+    approvedPartiesLoading,
     ordersInSalesmanLoading,
     singleOrderLoading,
     dueOrdersInSalesmanLoading,
     isUpdatingPayment,
     isCreatingOrder,
-    isDeletingOrder,
   };
 };

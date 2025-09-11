@@ -126,6 +126,7 @@ export const usePlantheadOrder = (id) => {
   // DISPATCH Order in Planthead
   const { mutate: dispatchOrder, isPending: isDispatchingOrder } = useMutation({
     mutationFn: async (data) => {
+      console.log("data in dispatch", data);
       const response = await axios.put(
         BASE_URL + API_PATHS.PLANT_HEAD.DISPATCH_ORDER(data.orderId),
         data,

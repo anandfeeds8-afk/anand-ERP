@@ -8,33 +8,73 @@ import WeeklySales from "../../components/Admin/AdminDashboard/WeeklySales";
 import AdvanceVsDue from "../../components/Admin/AdminDashboard/AdvanceVsDue";
 import RateChart from "../../components/Admin/AdminDashboard/RateChart";
 import ActiveEmployees from "../../components/Admin/AdminDashboard/ActiveEmployees";
-import RecentOrdersTable from "../../components/Admin/AdminDashboard/RecentOrdersTable";
 import TopSalesman from "../../components/Admin/AdminDashboard/TopSalesman";
+import { useAdminOrder } from "../../hooks/useAdminOrders.js";
+import useEmployees from "../../hooks/useEmployees.js";
+import { CircularProgress } from "@mui/material";
 
 const AdminDashboardPage = () => {
+  const { orders, ordersLoading } = useAdminOrder();
+  const {
+    salesman,
+    salesmanager,
+    salesauthorizer,
+    planthead,
+    accountant,
+    isLoading,
+  } = useEmployees();
+
+  const total = orders?.reduce((sum, order) => sum + order?.totalAmount, 0);
+  const advance = orders?.reduce((sum, order) => sum + order?.advanceAmount, 0);
+  const due = orders?.reduce((sum, order) => sum + order?.dueAmount, 0);
+  const totalOrders = orders?.length;
+  const totalEmployees =
+    salesman?.length +
+    salesmanager?.length +
+    salesauthorizer?.length +
+    planthead?.length +
+    accountant?.length;
+
+  const totalActiveEmployees =
+    salesman?.filter((item) => item.isActive === true)?.length +
+    salesmanager?.filter((item) => item.isActive === true)?.length +
+    salesauthorizer?.filter((item) => item.isActive === true)?.length +
+    planthead?.filter((item) => item.isActive === true)?.length +
+    accountant?.filter((item) => item.isActive === true)?.length;
+
+  if (isLoading) {
+    return <CircularProgress />;
+  }
+
   return (
     <div>
       <h1 className="lg:text-3xl lg:font-bold mb-5">Dashboard</h1>
       <div className="grid lg:grid-cols-3 lg:gap-7 lg:mt-3">
-        <TotalSales />
-        <AdvancedCollected />
-        <TotalOrders />
-        <TotalEmployees />
-        <ActiveEmployees />
-        <DueAmount />
+        <TotalSales total={total} ordersLoading={ordersLoading} />
+        <AdvancedCollected advance={advance} ordersLoading={ordersLoading} />
+        <TotalOrders totalOrders={totalOrders} ordersLoading={ordersLoading} />
+        <TotalEmployees
+          totalEmployees={totalEmployees}
+          ordersLoading={isLoading}
+        />
+        <ActiveEmployees
+          totalActiveEmployees={totalActiveEmployees}
+          ordersLoading={isLoading}
+        />
+        <DueAmount due={due} ordersLoading={ordersLoading} />
       </div>
-      <div className="my-7 grid lg:grid-cols-2 gap-7">
+      <div className="mb-5 mt-7 grid lg:grid-cols-2 gap-5">
         <WeeklySales />
         <AdvanceVsDue />
       </div>
-      <div className="my-7 grid lg:grid-cols-2 gap-7">
+      <div className="grid lg:grid-cols-2 gap-5">
         <RateChart />
         <TopSalesman />
       </div>
 
-      <div className="my-7">
+      {/* <div className="my-7">
         <RecentOrdersTable />
-      </div>
+      </div> */}
     </div>
   );
 };

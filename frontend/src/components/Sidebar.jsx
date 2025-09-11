@@ -10,13 +10,12 @@ import { TbLayoutSidebarLeftCollapse } from "react-icons/tb";
 import { TbLayoutSidebarLeftExpand } from "react-icons/tb";
 import { IoCartOutline, IoCart } from "react-icons/io5";
 import { MdOutlineWarehouse, MdWarehouse } from "react-icons/md";
+import { HiMiniUsers, HiOutlineUsers } from "react-icons/hi2";
 import { useUser } from "../hooks/useUser";
 import { GiGrain } from "react-icons/gi";
 
-const Sidebar = () => {
-  const [isCollapsed, setIsCollapsed] = useState(false);
-  const { user, isPending } = useUser();
-  // console.log(user);
+const Sidebar = ({ isCollapsed, setIsCollapsed }) => {
+  const { user } = useUser();
 
   return (
     <div
@@ -194,7 +193,35 @@ const Sidebar = () => {
               </div>
             )}
           </NavLink>
-
+          <NavLink
+            to="/admin/party-management"
+            className={({ isActive }) =>
+              isActive
+                ? "transition-all bg-blue-100 border-e-4 border-blue-500 p-2 w-full text-left rounded-lg"
+                : "transition-all hover:bg-blue-50 p-2 w-full text-gray-800 rounded-lg text-left"
+            }
+          >
+            {({ isActive }) => (
+              <div className="flex items-center gap-2 font-semibold w-56 h-6">
+                <div className="w-6 flex items-center justify-center">
+                  {isActive ? (
+                    <HiMiniUsers className="text-blue-600 text-xl" />
+                  ) : (
+                    <HiOutlineUsers className="text-blue-600 text-xl" />
+                  )}
+                </div>
+                <span
+                  className={`${
+                    isCollapsed
+                      ? "hidden"
+                      : "block line-clamp-1 truncate w-full text-gray-800"
+                  }`}
+                >
+                  Party Management
+                </span>
+              </div>
+            )}
+          </NavLink>
           <NavLink
             to="/admin/reports-module"
             className={({ isActive }) =>
@@ -254,6 +281,35 @@ const Sidebar = () => {
                   }`}
                 >
                   Order Management
+                </span>
+              </div>
+            )}
+          </NavLink>
+          <NavLink
+            to="/salesman/party-management"
+            className={({ isActive }) =>
+              isActive
+                ? "transition-all bg-blue-100 border-e-4 border-blue-500 p-2 w-full text-left rounded-lg"
+                : "transition-all hover:bg-blue-50 p-2 w-full text-gray-800 rounded-lg text-left"
+            }
+          >
+            {({ isActive }) => (
+              <div className="flex items-center gap-2 font-semibold w-56 h-6">
+                <div className="w-6 flex items-center justify-center">
+                  {isActive ? (
+                    <HiMiniUsers className="text-blue-600 text-xl" />
+                  ) : (
+                    <HiOutlineUsers className="text-blue-600 text-xl" />
+                  )}
+                </div>
+                <span
+                  className={`${
+                    isCollapsed
+                      ? "hidden"
+                      : "block line-clamp-1 truncate w-full text-gray-800"
+                  }`}
+                >
+                  Party Management
                 </span>
               </div>
             )}

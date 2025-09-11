@@ -4,6 +4,7 @@ const bcrypt = require("bcrypt");
 const PlantHead = require("../models/PlantHead");
 const Order = require("../models/Order");
 const WareHouse = require("../models/WareHouse");
+const imagekit = require("../config/imagekit");
 
 const SECRET_TOKEN = process.env.JWT_SECRET;
 
@@ -88,9 +89,11 @@ const getAllOrders = async (req, res) => {
 
     const orders = await Order.find({
       assignedWarehouse: warehouse._id,
-      orderStatus: { $in: ["WarehouseAssigned", "Approved"] },
+      orderStatus: {
+        $in: ["ForwardedToPlantHead", "Approved", "WarehouseAssigned"],
+      },
     })
-      .populate("party", "name contact")
+      .populate("party", "companyName address contactPersonNumber")
       .populate("placedBy", "name email")
       .populate("item", "name category");
 
@@ -108,10 +111,11 @@ const getAllOrders = async (req, res) => {
 const getOrderDetails = async (req, res) => {
   try {
     const order = await Order.findById(req.params.orderId)
-      .populate("party", "name contact")
+      .populate("party", "companyName address contactPersonNumber")
       .populate("placedBy", "name email")
       .populate("assignedWarehouse", "name location")
-      .populate("item", "name category");
+      .populate("item", "name category")
+      .populate("dispatchInfo.dispatchedBy", "name email");
 
     if (!order) {
       return res
@@ -214,9 +218,19 @@ const getAllProductsInWarehouse = async (req, res) => {
 const dispatchOrder = async (req, res) => {
   try {
     const plantHeadId = req.user.id;
-    const { orderId } = req.params;
-    const { vehicleNumber, driverName, driverContact, transportCompany } =
-      req.body;
+    const {
+      vehicleNumber,
+      driverName,
+      driverContact,
+      transportCompany,
+      orderId,
+    } = req.body;
+
+    const uploadedFile = await imagekit.upload({
+      file: req.file.buffer,
+      fileName: req.file.originalname,
+      folder: "/dispatch-docs",
+    });
 
     const order = await Order.findById(orderId);
     if (!order) {
@@ -225,7 +239,10 @@ const dispatchOrder = async (req, res) => {
         .json({ success: false, message: "Order not found" });
     }
 
-    if (order.orderStatus !== "Approved") {
+    if (
+      order.orderStatus !== "Approved" &&
+      order.orderStatus !== "ForwardedToPlantHead"
+    ) {
       return res
         .status(400)
         .json({ success: false, message: "Order is not ready to dispatch" });
@@ -238,6 +255,7 @@ const dispatchOrder = async (req, res) => {
       driverName,
       driverContact,
       transportCompany,
+      dispatchDocs: uploadedFile.url,
     };
     order.orderStatus = "Dispatched";
 
@@ -268,7 +286,7 @@ const getDispatchedOrders = async (req, res) => {
         orderStatus: "Dispatched",
       })
       .populate("item", "name category description")
-      .populate("party", "name contact")
+      .populate("party", "companyName address contactPersonNumber")
       .populate("placedBy", "name");
 
     res.status(200).json({ success: true, data: orders });

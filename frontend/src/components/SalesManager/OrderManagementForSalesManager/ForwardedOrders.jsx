@@ -1,19 +1,20 @@
 import { useState } from "react";
 import { Button, CircularProgress, IconButton, TextField } from "@mui/material";
-import { Eye, SquarePen, Trash2 } from "lucide-react";
+import { Eye } from "lucide-react";
 import { format } from "date-fns";
 import { DataGrid } from "@mui/x-data-grid";
 import CloseIcon from "@mui/icons-material/Close";
-import { MdDoneAll } from "react-icons/md";
 import { formatRupee } from "../../../utils/formatRupee.js";
 import { useSalesManagerOrder } from "../../../hooks/useSalesManagerOrder.js";
 import { MdOutlineCancel } from "react-icons/md";
 import { useForm } from "react-hook-form";
+import { useUser } from "../../../hooks/useUser.js";
 
 const ForwardedOrders = () => {
   const [singleOrderId, setSingleOrderId] = useState(null);
   const [openView, setOpenView] = useState(false);
   const [openCancel, setOpenCancel] = useState(false);
+  const { user } = useUser();
   const {
     ForwardedOrdersInSalesManager,
     singleOrderFromSalesManager,
@@ -49,10 +50,6 @@ const ForwardedOrders = () => {
     setOpenView(true);
   };
 
-  const handleUpdate = (id) => {
-    console.log(id);
-  };
-
   const handleCancelOrder = (data) => {
     data.orderId = singleOrderId;
     console.log(data);
@@ -73,21 +70,20 @@ const ForwardedOrders = () => {
     );
 
   const columns = [
-    { field: "product", headerName: "Product", flex: 1, maxWidth: 150 },
-    { field: "party", headerName: "Party", flex: 1, maxWidth: 150 },
-    { field: "date", headerName: "Date", flex: 1, maxWidth: 150 },
-    { field: "quantity", headerName: "Quantity", flex: 1, maxWidth: 150 },
+    { field: "product", headerName: "Product", flex: 1 },
+    { field: "party", headerName: "Party", flex: 1 },
+    { field: "date", headerName: "Date", flex: 1 },
+    { field: "quantity", headerName: "Quantity", flex: 1 },
     {
       field: "totalAmount",
       headerName: "Total Amount",
       flex: 1,
-      maxWidth: 150,
     },
     {
       field: "advanceAmount",
       headerName: "Advance Amount",
       flex: 1,
-      maxWidth: 150,
+
       renderCell: (params) => (
         <span className={`${params.value !== "₹0" && "text-green-700"}`}>
           {params.value}
@@ -109,7 +105,6 @@ const ForwardedOrders = () => {
       field: "orderStatus",
       headerName: "Status",
       flex: 1,
-      maxWidth: 150,
       renderCell: (params) => (
         <span
           className={`${
@@ -139,21 +134,23 @@ const ForwardedOrders = () => {
             size={30}
             onClick={() => handleView(params.row.id)}
           />
-          <SquarePen
-            color="green"
-            className="hover:bg-green-100 active:scale-95 transition-all p-1.5 rounded-lg"
-            size={30}
-            onClick={() => handleUpdate(params.row.id)}
-          />
-          <MdOutlineCancel
-            color="red"
-            className="hover:bg-red-100 active:scale-95 transition-all p-1.5 rounded-lg"
-            size={30}
-            onClick={() => {
-              setSingleOrderId(params.row.id);
-              setOpenCancel(true);
-            }}
-          />
+          {user.isActive ? (
+            <MdOutlineCancel
+              color="red"
+              className="hover:bg-red-100 active:scale-95 transition-all p-1.5 rounded-lg"
+              size={30}
+              onClick={() => {
+                setSingleOrderId(params.row.id);
+                setOpenCancel(true);
+              }}
+            />
+          ) : (
+            <MdOutlineCancel
+              color="gray"
+              className="p-1.5 rounded-lg cursor-not-allowed"
+              size={30}
+            />
+          )}
         </div>
       ),
     },
@@ -164,7 +161,7 @@ const ForwardedOrders = () => {
     party: order?.party?.companyName,
     date: format(order?.createdAt, "dd MMM yyyy"),
     product: order?.item?.name,
-    quantity: `${order.quantity}kg`,
+    quantity: `${order.quantity} bags`,
     totalAmount: formatRupee(order.totalAmount),
     advanceAmount: formatRupee(order.advanceAmount),
     dueAmount: formatRupee(order.dueAmount),
@@ -204,7 +201,7 @@ const ForwardedOrders = () => {
             overflowY: "auto",
           },
           "& .MuiDataGrid-main": {
-            maxWidth: "1210px",
+            maxWidth: "100%",
           },
         }}
         disableColumnResize={false}
@@ -219,6 +216,7 @@ const ForwardedOrders = () => {
                 <p className="text-xl font-bold">Order Details</p>
                 {singleOrderFromSalesManager?.orderStatus === "Placed" && (
                   <Button
+                    disabled={!user.isActive}
                     onClick={() =>
                       handleForwardOrder(singleOrderFromSalesManager?._id)
                     }
@@ -233,12 +231,6 @@ const ForwardedOrders = () => {
                   >
                     Forward to Authorizer
                   </Button>
-                )}
-                {singleOrderFromSalesManager?.orderStatus ===
-                  "ForwardedToAuthorizer" && (
-                  <div className="flex items-center gap-2 bg-blue-100 p-1 px-2 rounded-full text-blue-700">
-                    <MdDoneAll /> Forwarded to Authorizer
-                  </div>
                 )}
 
                 <IconButton size="small" onClick={() => setOpenView(false)}>
@@ -312,13 +304,17 @@ const ForwardedOrders = () => {
                     </span>{" "}
                     {singleOrderFromSalesManager?.paymentMode}
                   </div>
-                  <div className="flex items-center justify-between font-semibold">
-                    <span className="text-gray-600 font-normal">Due Date:</span>{" "}
-                    {format(
-                      singleOrderFromSalesManager?.dueDate,
-                      "dd MMM yyyy"
-                    )}
-                  </div>
+                  {singleOrderFromSalesManager?.dueAmount !== 0 && (
+                    <div className="flex items-center justify-between font-semibold">
+                      <span className="text-gray-600 font-normal">
+                        Due Date:
+                      </span>{" "}
+                      {format(
+                        singleOrderFromSalesManager?.dueDate,
+                        "dd MMM yyyy"
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
 

@@ -1,5 +1,6 @@
 const express = require("express");
 const plantHeadRouter = express.Router();
+const multer = require("multer");
 const {
   loginPlantHead,
   getAllOrders,
@@ -36,8 +37,15 @@ plantHeadRouter.put(
   updateProductStock
 );
 
-// Dispatch order he add all transport info also
-plantHeadRouter.put("/dispatch/:orderId", verifyPlanthead, dispatchOrder);
+// Dispatch order, he will add all transport info also
+const storage = multer.memoryStorage();
+const upload = multer({ storage });
+plantHeadRouter.put(
+  "/dispatch/:orderId",
+  verifyPlanthead,
+  upload.single("dispatchDocs"),
+  dispatchOrder
+);
 
 //get all dispatched orders
 plantHeadRouter.get("/dispatched-orders", verifyPlanthead, getDispatchedOrders);

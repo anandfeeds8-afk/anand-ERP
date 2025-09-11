@@ -22,14 +22,6 @@ const WarehouseManagementPage = () => {
   const { planthead, accountant } = useEmployees();
   const [openForm, setOpenForm] = useState(false);
 
-  const approvedWarehouses = warehouses?.filter(
-    (warehouse) => warehouse.approved
-  );
-
-  const pendingWarehouses = warehouses?.filter(
-    (warehouse) => !warehouse.approved
-  );
-
   const stockItems = warehouses?.reduce(
     (acc, curr) => acc + curr.stock?.length,
     0
@@ -65,10 +57,10 @@ const WarehouseManagementPage = () => {
           Add Warehouse
         </Button>
       </div>
-      <div className="grid lg:grid-cols-4 gap-5">
+      <div className="grid lg:grid-cols-2 gap-5">
         <TotalWarehouses total={warehouses?.length} />
-        <ApprovedWarehouses approved={approvedWarehouses} />
-        <PendingWarehouses pending={pendingWarehouses} />
+        {/* <ApprovedWarehouses approved={approvedWarehouses} />
+        <PendingWarehouses pending={pendingWarehouses} /> */}
         <StockItems stockItems={stockItems} />
       </div>
       <div className="mt-5 grid lg:grid-cols-3 gap-5">

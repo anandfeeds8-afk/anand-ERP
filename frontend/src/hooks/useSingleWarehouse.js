@@ -16,7 +16,7 @@ export const useSingleWarehouse = (id) => {
             },
           }
         );
-        // console.log("singleWarehouse", response.data.data);
+        console.log("singleWarehouse", response.data.data);
         return response.data.data;
       },
     }

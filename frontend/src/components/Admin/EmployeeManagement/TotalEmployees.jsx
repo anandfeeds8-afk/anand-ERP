@@ -2,6 +2,7 @@ import React from "react";
 import { LuUsers } from "react-icons/lu";
 
 const TotalEmployees = ({ total }) => {
+  console.log(total);
   return (
     <div className="bg-white rounded-lg p-5 flex items-center justify-between gap-5 shadow hover:shadow-md transition-all">
       <div className="flex flex-col">

@@ -1,22 +1,107 @@
 import { useState } from "react";
-import { Button, CircularProgress, IconButton } from "@mui/material";
-import { Eye, Mail, Phone, SquarePen, Trash2, User } from "lucide-react";
+import { CircularProgress, IconButton, Tooltip } from "@mui/material";
+import { DownloadIcon, Eye, File } from "lucide-react";
 import { format } from "date-fns";
 import { DataGrid } from "@mui/x-data-grid";
 import CloseIcon from "@mui/icons-material/Close";
 import { formatRupee } from "../../../utils/formatRupee.js";
 import { useAdminOrder } from "../../../hooks/useAdminOrders.js";
+import { TbFileInvoice } from "react-icons/tb";
+import autoTable from "jspdf-autotable";
+import jsPDF from "jspdf";
+
+const downloadInvoice = ({
+  accName,
+  accEmail,
+  partyName,
+  partyAddress,
+  partyContact,
+  totalAmount,
+  advanceAmount,
+  dueAmount,
+  dueDate,
+}) => {
+  const invoiceBy = { name: accName, email: accEmail };
+  const partyDetails = {
+    company: partyName,
+    address: partyAddress,
+    contact: partyContact,
+  };
+  const paymentInfo = {
+    total: totalAmount,
+    advance: advanceAmount,
+    due: dueAmount,
+    dueDate: dueDate,
+  };
+
+  const doc = new jsPDF();
+
+  // Title
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(20);
+  doc.setTextColor(44, 62, 80); // dark blue
+  doc.text("INVOICE", 14, 20);
+
+  // Reset color
+  doc.setTextColor(0, 0, 0);
+
+  // Invoice By
+  doc.setFontSize(14);
+  doc.setFont("helvetica", "bold");
+  doc.text("Invoice By:", 14, 35);
+  doc.setFont("helvetica", "normal");
+  doc.text(`Name: ${invoiceBy.name}`, 14, 42);
+  doc.text(`Email: ${invoiceBy.email}`, 14, 49);
+
+  // Party Details
+  doc.setFont("helvetica", "bold");
+  doc.text("Party Details:", 14, 65);
+  doc.setFont("helvetica", "normal");
+  doc.text(`Company Name: ${partyDetails.company}`, 14, 72);
+  doc.text(`Address: ${partyDetails.address}`, 14, 79);
+  doc.text(`Contact Person Number: ${partyDetails.contact}`, 14, 86);
+
+  // Payment Information Table
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(14);
+  doc.setTextColor(231, 76, 60); // red heading
+  doc.text("Payment Information:", 14, 105);
+
+  doc.setTextColor(0, 0, 0); // reset to black
+  autoTable(doc, {
+    startY: 110,
+    theme: "striped",
+    headStyles: {
+      fillColor: [52, 152, 219], // blue header background
+      textColor: 255, // white text
+      fontStyle: "bold",
+    },
+    bodyStyles: {
+      fontSize: 12,
+    },
+    head: [["Total Amount", "Advance Amount", "Due Amount", "Due Date"]],
+    body: [
+      [
+        `${formatRupee(paymentInfo.total)}`,
+        `${formatRupee(paymentInfo.advance)}`,
+        `${formatRupee(paymentInfo.due)}`,
+        paymentInfo.dueDate,
+      ],
+    ],
+  });
+
+  // Save file
+  doc.save("invoice.pdf");
+};
 
 const OrdersTable = () => {
   const [singleOrderId, setSingleOrderId] = useState(null);
   const [openView, setOpenView] = useState(false);
-  const {
-    orders,
-    singleOrder,
-    ordersLoading,
-    singleOrderLoading,
-    approveWarehouse,
-  } = useAdminOrder(singleOrderId);
+  const [openInvoice, setOpenInvoice] = useState(false);
+
+  const { orders, singleOrder, ordersLoading, singleOrderLoading } =
+    useAdminOrder(singleOrderId);
+
   const [paginationModel, setPaginationModel] = useState({
     page: 0,
     pageSize: 5,
@@ -35,17 +120,24 @@ const OrdersTable = () => {
     setOpenView(true);
   };
 
-  const handleUpdate = (id) => {
+  const handleOpenInvoice = (id) => {
     console.log(id);
+    setSingleOrderId(id);
+    setOpenInvoice(true);
   };
 
-  const handleDelete = (id) => {
-    console.log(id);
-  };
-
-  const handleApprove = (id) => {
-    console.log(id);
-    approveWarehouse(id);
+  const handleDownloadInvoice = () => {
+    downloadInvoice({
+      accName: singleOrder?.invoiceDetails?.invoicedBy?.name,
+      accEmail: singleOrder?.invoiceDetails?.invoicedBy?.email,
+      partyName: singleOrder?.party?.companyName,
+      partyAddress: singleOrder?.party?.address,
+      partyContact: singleOrder?.party?.contactPersonNumber,
+      totalAmount: singleOrder?.totalAmount,
+      advanceAmount: singleOrder?.advanceAmount,
+      dueAmount: singleOrder?.dueAmount,
+      dueDate: format(singleOrder?.dueDate, "dd MMM yyyy"),
+    });
   };
 
   if (singleOrderLoading)
@@ -56,21 +148,19 @@ const OrdersTable = () => {
     );
 
   const columns = [
-    { field: "product", headerName: "Product", flex: 1, maxWidth: 150 },
-    { field: "party", headerName: "Party", flex: 1, maxWidth: 150 },
-    { field: "date", headerName: "Date", flex: 1, maxWidth: 150 },
-    { field: "quantity", headerName: "Quantity", flex: 1, maxWidth: 150 },
+    { field: "product", headerName: "Product", flex: 1 },
+    { field: "party", headerName: "Party", flex: 1 },
+    { field: "date", headerName: "Date", flex: 1 },
+    { field: "quantity", headerName: "Quantity", flex: 1 },
     {
       field: "totalAmount",
       headerName: "Total Amount",
       flex: 1,
-      maxWidth: 150,
     },
     {
       field: "advanceAmount",
       headerName: "Advance Amount",
       flex: 1,
-      maxWidth: 150,
       renderCell: (params) => (
         console.log(params.value),
         (
@@ -84,7 +174,6 @@ const OrdersTable = () => {
       field: "dueAmount",
       headerName: "Due Amount",
       flex: 1,
-      maxWidth: 150,
       renderCell: (params) => (
         console.log(params.value),
         (
@@ -98,7 +187,6 @@ const OrdersTable = () => {
       field: "orderStatus",
       headerName: "Status",
       flex: 1,
-      maxWidth: 150,
       renderCell: (params) => (
         <span
           className={`${
@@ -128,18 +216,17 @@ const OrdersTable = () => {
             size={30}
             onClick={() => handleView(params.row.id)}
           />
-          <SquarePen
-            color="green"
-            className="hover:bg-green-100 active:scale-95 transition-all p-1.5 rounded-lg"
-            size={30}
-            onClick={() => handleUpdate(params.row.id)}
-          />
-          <Trash2
-            color="red"
-            className="hover:bg-red-100 active:scale-95 transition-all p-1.5 rounded-lg"
-            size={30}
-            onClick={() => handleDelete(params.row.id)}
-          />
+          <Tooltip title="View invoice" placement="top">
+            {params.row.invoiceGenerated && (
+              <File
+                strokeWidth={2.1}
+                color="teal"
+                className="hover:bg-teal-200 active:scale-95 transition-all p-1.5 rounded-lg"
+                size={30}
+                onClick={() => handleOpenInvoice(params.row.id)}
+              />
+            )}
+          </Tooltip>
         </div>
       ),
     },
@@ -150,11 +237,12 @@ const OrdersTable = () => {
     party: order?.party?.companyName,
     date: format(order?.createdAt, "dd MMM yyyy"),
     product: order?.item?.name,
-    quantity: `${order.quantity}kg`,
+    quantity: `${order.quantity} bags`,
     totalAmount: formatRupee(order.totalAmount),
     advanceAmount: formatRupee(order.advanceAmount),
     dueAmount: formatRupee(order.dueAmount),
     orderStatus: order.orderStatus,
+    invoiceGenerated: order.invoiceGenerated,
   }));
 
   if (ordersLoading)
@@ -197,7 +285,7 @@ const OrdersTable = () => {
             overflowY: "auto",
           },
           "& .MuiDataGrid-main": {
-            maxWidth: "1210px",
+            maxWidth: "100%",
           },
         }}
         disableColumnResize={false}
@@ -206,7 +294,7 @@ const OrdersTable = () => {
       {/* --- View Order Modal --- */}
       {openView && (
         <div className="transition-all bg-black/30 backdrop-blur-sm w-full z-50 h-screen absolute top-0 left-0 flex items-center justify-center">
-          <div className="bg-white relative p-7 rounded-lg w-[50%] h-[70%] overflow-auto">
+          <div className="bg-white relative p-7 rounded-lg w-[50%] max-h-[90%] overflow-auto">
             <div className="mb-5">
               <div className="flex items-center justify-between">
                 <p className="text-xl font-bold">Order Details</p>
@@ -278,10 +366,14 @@ const OrdersTable = () => {
                     </span>{" "}
                     {singleOrder?.paymentMode}
                   </div>
-                  <div className="flex items-center justify-between font-semibold">
-                    <span className="text-gray-600 font-normal">Due Date:</span>{" "}
-                    {format(singleOrder?.dueDate, "dd MMM yyyy")}
-                  </div>
+                  {singleOrder?.dueAmount !== 0 && (
+                    <div className="flex items-center justify-between font-semibold">
+                      <span className="text-gray-600 font-normal">
+                        Due Date:
+                      </span>{" "}
+                      {format(singleOrder?.dueDate, "dd MMM yyyy")}
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -328,7 +420,7 @@ const OrdersTable = () => {
                     <span className="text-gray-600 font-normal">
                       Invoice Generated:
                     </span>{" "}
-                    {singleOrder?.invoiceGenerated === "true" ? (
+                    {singleOrder?.invoiceGenerated ? (
                       <span className="text-green-700 bg-green-100 p-1 px-3 rounded-full text-xs">
                         Yes
                       </span>
@@ -365,29 +457,6 @@ const OrdersTable = () => {
                     <h1 className="font-semibold text-base text-gray-800">
                       Assigned Warehouse
                     </h1>
-                    {singleOrder?.assignedWarehouse &&
-                    singleOrder?.orderStatus === "WarehouseAssigned" ? (
-                      <div className="flex gap-2 items-center">
-                        <button
-                          onClick={() => handleApprove(singleOrder?._id)}
-                          className="text-green-800 hover:bg-green-200 active:scale-95 transition-all bg-green-100 p-1 px-2 rounded-full text-xs"
-                        >
-                          Approve
-                        </button>
-                        <button
-                          // onClick={() => handleCancel(singleOrder?.id)}
-                          className="text-red-800 hover:bg-red-200 active:scale-95 transition-all bg-red-100 p-1 px-2 rounded-full text-xs"
-                        >
-                          Cancel
-                        </button>
-                      </div>
-                    ) : (
-                      <div>
-                        <span className="text-green-700 bg-green-100 p-1 px-3 rounded-full text-xs">
-                          Approved
-                        </span>
-                      </div>
-                    )}
                   </div>
                   <div className="flex items-center justify-between font-semibold">
                     <span className="text-gray-600 font-normal">
@@ -396,9 +465,6 @@ const OrdersTable = () => {
                     {singleOrder?.assignedWarehouse ? (
                       <div className="flex flex-col items-center">
                         {singleOrder?.assignedWarehouse?.name}
-                        <span className="text-xs font-normal text-gray-600">
-                          ({singleOrder?.assignedWarehouse?.location})
-                        </span>
                       </div>
                     ) : (
                       <span className="text-red-700 bg-red-100 p-1 px-3 rounded-full text-xs">
@@ -406,6 +472,135 @@ const OrdersTable = () => {
                       </span>
                     )}
                   </div>
+                  <div className="flex items-center justify-between font-semibold">
+                    <span className="text-gray-600 font-normal">
+                      Warehouse Approval:
+                    </span>
+                    {singleOrder?.approvedBy ? (
+                      <span className="text-green-700 font-semibold bg-green-100 p-1 px-3 rounded-full text-xs">
+                        Approved
+                      </span>
+                    ) : (
+                      <span className="text-red-700 font-semibold bg-red-100 p-1 px-3 rounded-full text-xs">
+                        Pending
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* --- View Invoice Modal --- */}
+      {openInvoice && (
+        <div className="transition-all bg-black/30 backdrop-blur-sm w-full z-50 h-screen absolute top-0 left-0 flex items-center justify-center">
+          <div className="bg-white relative p-7 w-[35%] rounded-lg overflow-auto">
+            <div className="mb-5">
+              <div className="flex items-center justify-between">
+                <p className="text-xl font-bold">Invoice</p>
+                <div className="flex items-center gap-5">
+                  <div className="relative group">
+                    <Tooltip
+                      title="Download Invoice"
+                      placement="top"
+                      enterDelay={500}
+                    >
+                      <DownloadIcon
+                        onClick={handleDownloadInvoice}
+                        className="text-blue-600 hover:bg-blue-100 p-1.5 rounded-lg active:scale-95 transition-all"
+                        size={30}
+                      />
+                    </Tooltip>
+                  </div>
+
+                  <IconButton
+                    size="small"
+                    onClick={() => setOpenInvoice(false)}
+                  >
+                    <CloseIcon />
+                  </IconButton>
+                </div>
+              </div>
+            </div>
+            <div>
+              <div className="flex flex-col gap-2 text-sm">
+                <h1 className="font-semibold text-base text-gray-800">
+                  Invoiced By
+                </h1>
+                <div className="flex items-center justify-between font-semibold">
+                  <span className="text-gray-600 font-normal">Name:</span>
+                  {singleOrder?.invoiceDetails?.invoicedBy?.name}
+                </div>
+                <div className="flex items-center justify-between font-semibold">
+                  <span className="text-gray-600 font-normal">Email:</span>
+                  {singleOrder?.invoiceDetails?.invoicedBy?.email}
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-2 text-sm mt-5">
+                <h1 className="font-semibold text-base text-gray-800">
+                  Party Details
+                </h1>
+                <div className="flex items-center justify-between font-semibold">
+                  <span className="text-gray-600 font-normal">
+                    Company Name:
+                  </span>
+                  {singleOrder?.party?.companyName}
+                </div>
+                <div className="flex items-center justify-between font-semibold">
+                  <span className="text-gray-600 font-normal">Address:</span>
+                  {singleOrder?.party?.address}
+                </div>
+                <div className="flex items-center justify-between font-semibold">
+                  <span className="text-gray-600 font-normal">
+                    Contact Person Number:
+                  </span>
+                  {singleOrder?.party?.contactPersonNumber}
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-2 text-sm mt-5">
+                <h1 className="font-semibold text-base text-gray-800">
+                  Payment Information
+                </h1>
+                <div className="flex items-center justify-between font-semibold">
+                  <span className="text-gray-600 font-normal">
+                    Total Amount:
+                  </span>
+                  {formatRupee(singleOrder?.invoiceDetails?.totalAmount)}
+                </div>
+                <div className="flex items-center justify-between font-semibold text-green-700">
+                  <span className="text-gray-600 font-normal">
+                    Advance Amount:
+                  </span>
+                  {formatRupee(singleOrder?.invoiceDetails?.advanceAmount)}
+                </div>
+                <div className="flex items-center justify-between font-semibold text-red-700">
+                  <span className="text-gray-600 font-normal">Due Amount:</span>
+                  {formatRupee(singleOrder?.invoiceDetails?.dueAmount)}
+                </div>
+                {singleOrder?.invoiceDetails?.dueAmount !== 0 && (
+                  <div className="flex items-center justify-between font-semibold">
+                    <span className="text-gray-600 font-normal">Due Date:</span>
+                    {format(
+                      singleOrder?.invoiceDetails?.dueDate,
+                      "dd MMM yyyy"
+                    )}
+                  </div>
+                )}
+              </div>
+              <hr className="my-3" />
+              <div>
+                <div className="flex items-center justify-between font-semibold text-sm">
+                  <span className="text-gray-600 font-normal">
+                    Invoice Generated on:
+                  </span>
+                  {format(
+                    singleOrder?.invoiceDetails?.generatedAt,
+                    "dd MMM yyyy"
+                  )}
                 </div>
               </div>
             </div>

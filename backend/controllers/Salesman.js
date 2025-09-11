@@ -1,8 +1,11 @@
 const Salesman = require("../models/Salesman");
 const Order = require("../models/Order");
+const Warehouse = require("../models/WareHouse");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
+const Party = require("../models/Party");
 const SECRET_TOKEN = process.env.JWT_SECRET;
+const imagekit = require("../config/imagekit");
 
 const loginSalesman = async (req, res) => {
   try {
@@ -131,9 +134,8 @@ const deleteOrder = async (req, res) => {
 };
 
 const updatePayment = async (req, res) => {
-  const { orderId } = req.params;
-  const { amount, paymentMode } = req.body;
-  const salesmanId = req.user.id; // set by verifySalesmanToken middleware
+  const { amount, paymentMode, orderId } = req.body;
+  const salesmanId = req.user.id;
 
   if (!amount || !paymentMode) {
     return res.status(422).json({
@@ -143,6 +145,15 @@ const updatePayment = async (req, res) => {
   }
 
   try {
+    let duePaymentProof;
+    if (req.file?.buffer) {
+      duePaymentProof = await imagekit.upload({
+        file: req.file?.buffer,
+        fileName: req.file.originalname,
+        folder: "/dueAmountDocs",
+      });
+    }
+
     // Get order
     const order = await Order.findById(orderId);
     if (!order) {
@@ -151,6 +162,17 @@ const updatePayment = async (req, res) => {
         message: "Order not found",
       });
     }
+
+    const warehouse = await Warehouse.findOne(order.assignedWarehouse);
+    if (!warehouse) {
+      return res.status(404).json({
+        success: false,
+        message: "Warehouse not found",
+      });
+    }
+
+    const party = await Party.findById(order.party);
+    if (!party) return res.json({ success: false, message: "Party not found" });
 
     // Validate order belongs to that salesman
     if (order.placedBy.toString() !== salesmanId) {
@@ -169,20 +191,26 @@ const updatePayment = async (req, res) => {
     }
 
     // Update payment info
-    const newDueAmount = order.dueAmount - amount;
+    const newDueAmount = Number(order.dueAmount) - Number(amount);
     order.dueAmount = newDueAmount;
+    order.duePaymentStatus = "SentForApproval";
+
+    let updatedBalance = Number(party.balance) + Number(amount);
+
+    party.balance = Number(updatedBalance);
 
     // Update status
     if (newDueAmount <= 0) {
       order.paymentStatus = "Paid";
-      order.orderStatus = "Delivered";
     } else {
       order.paymentStatus = "Partial";
     }
 
     order.paymentCollectedBy = salesmanId;
-
+    order.duePaymentDoc = duePaymentProof.url;
+    order.duePaymentApprovalSentTo = warehouse.accountant._id;
     await order.save();
+    await party.save();
 
     // Update salesman collection log
     await Salesman.findByIdAndUpdate(
@@ -227,7 +255,7 @@ const getDueOrders = async (req, res) => {
       dueAmount: { $gt: 0 },
       orderStatus: { $ne: "Paid" },
     })
-      .populate("party", "name contact")
+      .populate("party", "companyName contactPersonNumber address")
       .populate("item", "name price description category");
 
     res.status(200).json({
@@ -249,8 +277,8 @@ const getAllOrder = async (req, res) => {
 
   try {
     const orders = await Order.find({ placedBy: salesmanId })
-      .populate("party", "name contact")
       .populate("item", "name price description category")
+      .populate("party", "companyName contactPersonNumber address")
       .sort({ createdAt: -1 });
 
     res.status(200).json({
@@ -273,11 +301,20 @@ const getOrderDetails = async (req, res) => {
   try {
     const order = await Order.findById(orderId)
       .populate("item", "name price category description")
-      .populate("party", "name contact")
+      .populate("party", "companyName address contactPersonNumber")
       .populate("placedBy", "name email")
       .populate("assignedWarehouse", "name location approved")
       .populate("dispatchInfo.dispatchedBy", "name email phone")
-      .populate("invoiceDetails.invoicedBy", "name email phone");
+      .populate("invoiceDetails.invoicedBy", "name email phone")
+      .populate(
+        "invoiceDetails.party",
+        "companyName address contactPersonNumber"
+      )
+      .populate(
+        "dueInvoiceDetails.party",
+        "companyName address contactPersonNumber"
+      )
+      .populate("dueInvoiceDetails.invoicedBy", "name email phone");
 
     if (!order) {
       return res.status(404).json({
@@ -332,6 +369,30 @@ const changeActivityStatus = async (req, res) => {
   }
 };
 
+const deliverOrder = async (req, res) => {
+  try {
+    const salesmanId = req.user.id;
+    const { orderId } = req.body;
+    const order = await Order.findOne({ placedBy: salesmanId, _id: orderId });
+    if (!order) return res.json({ message: "Order not found", success: false });
+
+    order.orderStatus = "Delivered";
+
+    await order.save();
+
+    return res.json({
+      message: "Order delivered successfully",
+      success: true,
+    });
+  } catch (err) {
+    return res.json({
+      message: "Unable to deliver order",
+      error: err.message,
+      success: false,
+    });
+  }
+};
+
 module.exports = {
   deleteOrder,
   loginSalesman,
@@ -340,4 +401,5 @@ module.exports = {
   getAllOrder,
   getOrderDetails,
   changeActivityStatus,
+  deliverOrder,
 };

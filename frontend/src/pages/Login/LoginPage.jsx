@@ -69,7 +69,7 @@ const LoginPage = () => {
               )}
             />
             {errors?.role && (
-              <span className="text-red-500 text-sm mt-1">
+              <span className="text-red-600 text-xs mt-1">
                 {errors.role.message}
               </span>
             )}
@@ -88,7 +88,9 @@ const LoginPage = () => {
             })}
           />
           {errors?.email && (
-            <span className="text-red-500">{errors?.email?.message}</span>
+            <span className="text-red-600 text-xs mt-1">
+              {errors?.email?.message}
+            </span>
           )}
         </div>
         <div>
@@ -104,7 +106,9 @@ const LoginPage = () => {
             })}
           />
           {errors?.password && (
-            <span className="text-red-500">{errors?.password?.message}</span>
+            <span className="text-red-600 text-xs mt-1">
+              {errors?.password?.message}
+            </span>
           )}
         </div>
         <Button disableElevation fullWidth type="submit" variant="contained">

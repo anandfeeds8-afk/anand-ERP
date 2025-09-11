@@ -15,7 +15,10 @@ const {
   changeActivityStatus,
   getAllWarehouse,
 } = require("../controllers/SalesAuthorizer");
-const { cancelOrder } = require("../controllers/Orders");
+const {
+  cancelOrder,
+  approveOrderToWarehouse,
+} = require("../controllers/Orders");
 
 authorizerRouter.post("/login", loginSalesAuthorizer);
 
@@ -60,11 +63,18 @@ authorizerRouter.put(
   changeActivityStatus
 ); // Change activity status
 
-//Get All warehouses (needed to select a warehouse to assign)
+//Get All warehouses (need to select a warehouse to assign)
 authorizerRouter.get(
   "/get-all-warehouses",
   verifySalesauthorizer,
   getAllWarehouse
+);
+
+//approve warehouse for order
+authorizerRouter.patch(
+  "/approve_warehouse",
+  verifySalesauthorizer,
+  approveOrderToWarehouse
 );
 
 module.exports = authorizerRouter;

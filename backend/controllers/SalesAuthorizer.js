@@ -81,13 +81,15 @@ const getForwardedOrders = async (req, res) => {
     const authorizerId = req.user.id;
 
     const orders = await Order.find({
-      orderStatus: "ForwardedToAuthorizer",
+      orderStatus: {
+        $in: ["ForwardedToAuthorizer", "WarehouseAssigned"],
+      },
       forwardedByManager: { $exists: true },
       forwardedByAuthorizer: { $exists: false },
     })
       .populate("item", "name category")
       .populate("placedBy", "name email")
-      .populate("party", "name contact")
+      .populate("party", "companyName address contactPersonNumber")
       .populate("forwardedByManager", "name email");
 
     res.status(200).json({ success: true, data: orders });
@@ -106,7 +108,7 @@ const getOrderDetails = async (req, res) => {
     const order = await Order.findById(orderId)
       .populate("item", "name category")
       .populate("placedBy", "name email")
-      .populate("party", "name contact")
+      .populate("party", "companyName address contactPersonNumber")
       .populate("assignedWarehouse", "name location");
     if (!order)
       return res
@@ -140,10 +142,49 @@ const assignWarehouse = async (req, res) => {
       });
     }
 
+    const warehouse = await Warehouse.findById(warehouseId);
+    if (!warehouse)
+      return res
+        .status(404)
+        .json({ success: false, message: "Warehouse not found" });
+
+    const isItemAvailable = warehouse.stock.some(
+      (item) => item.product._id.toString() === order.item._id.toString()
+    );
+
+    if (!isItemAvailable) {
+      return res.status(400).json({
+        success: false,
+        message: "Ordered item is not available in this warehouse",
+      });
+    }
+
+    let orderedQuantity = order.quantity;
+    let orderedItem = order.item;
+
+    const isStockAvailableAsPerOrderedQuantity = warehouse.stock.some(
+      (item) => item.quantity > orderedQuantity
+    );
+
+    if (!isStockAvailableAsPerOrderedQuantity) {
+      return res.status(400).json({
+        success: false,
+        message: "Not enough stock to place order",
+      });
+    }
+
+    // const item = warehouse.stock.find((item) => {
+    //   return String(item.product._id) === String(orderedItem);
+    // });
+
+    // item.quantity = item.quantity - orderedQuantity;
+
     order.assignedWarehouse = warehouseId;
     order.orderStatus = "WarehouseAssigned";
-    order.forwardedByAuthorizer = authorizerId;
+    order.warehouseAssignedByAuthorizer = authorizerId;
     await order.save();
+
+    // await warehouse.save();
 
     res
       .status(200)
@@ -163,7 +204,7 @@ const getAssignmentHistory = async (req, res) => {
     const authorizerId = req.user.id;
 
     const orders = await Order.find({
-      forwardedByAuthorizer: authorizerId,
+      warehouseAssignedByAuthorizer: authorizerId,
       assignedWarehouse: { $exists: true },
     })
       .populate("assignedWarehouse", "name location")
@@ -181,35 +222,39 @@ const getAssignmentHistory = async (req, res) => {
 
 const checkWarehouseApproval = async (req, res) => {
   try {
-    const orderId = req.params.orderId;
+    const { orderId } = req.params;
 
     const order = await Order.findById(orderId)
-      .select("orderStatus approvedBy assignedWarehouse")
       .populate("approvedBy", "name email")
       .populate("assignedWarehouse", "name location");
 
-    if (!order)
-      return res
-        .status(404)
-        .json({ success: false, message: "Order not found" });
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        message: "Order not found",
+      });
+    }
 
-    const approvedBy = order.orderStatus === "Approved" && order.approvedBy;
-    const approved = Boolean(
-      order.orderStatus === "Approved" && order.approvedBy
-    );
+    console.log("order", order);
+
+    const isApproved =
+      order.orderStatus === "Approved" && !!order.approvedBy?._id;
+
     res.status(200).json({
       success: true,
       data: {
-        approvedBy: approvedBy,
-        warehouseApproved: approved,
+        approvedBy: order.approvedBy,
+        warehouseApproved: isApproved,
         orderStatus: order.orderStatus,
         assignedWarehouse: order.assignedWarehouse,
       },
     });
   } catch (err) {
-    res
-      .status(500)
-      .json({ success: false, message: "Check failed", error: err.message });
+    res.status(500).json({
+      success: false,
+      message: "Check failed",
+      error: err.message,
+    });
   }
 };
 

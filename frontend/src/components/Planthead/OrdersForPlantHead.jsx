@@ -53,34 +53,39 @@ const OrdersForPlantHead = () => {
     setOpenView(true);
   };
 
+  const dispatchDocs = watch("dispatchDocs");
+  const dispatchDocsFile = dispatchDocs ? dispatchDocs[0] : null;
+
   const handleOrderDispatch = (data) => {
-    data.orderId = singleOrderId;
-    dispatchOrder(data);
-    setOpenDispatch(false);
+    const formData = new FormData();
+    formData.append("orderId", singleOrderId);
+    formData.append("vehicleNumber", data.vehicleNumber);
+    formData.append("driverName", data.driverName);
+    formData.append("driverContact", data.driverContact);
+    formData.append("transportCompany", data.transportCompany);
+    formData.append("dispatchDocs", dispatchDocsFile);
+    dispatchOrder(formData, { onSuccess: () => setOpenDispatch(false) });
   };
 
   const handleCancelOrder = (data) => {
     data.orderId = singleOrderId;
-    cancelOrder(data);
-    setOpenCancel(false);
+    cancelOrder(data, { onSuccess: () => setOpenCancel(false) });
   };
 
   const columns = [
-    { field: "product", headerName: "Product", flex: 1, maxWidth: 150 },
-    { field: "party", headerName: "Party", flex: 1, maxWidth: 150 },
-    { field: "date", headerName: "Date", flex: 1, maxWidth: 150 },
-    { field: "quantity", headerName: "Quantity", flex: 1, maxWidth: 150 },
+    { field: "product", headerName: "Product", flex: 1 },
+    { field: "party", headerName: "Party", flex: 1 },
+    { field: "date", headerName: "Date", flex: 1 },
+    { field: "quantity", headerName: "Quantity", flex: 1 },
     {
       field: "totalAmount",
       headerName: "Total Amount",
       flex: 1,
-      maxWidth: 150,
     },
     {
       field: "advanceAmount",
       headerName: "Advance Amount",
       flex: 1,
-      maxWidth: 150,
       renderCell: (params) => (
         <span className={`${params.value !== "₹0" && "text-green-700"}`}>
           {params.value}
@@ -91,7 +96,6 @@ const OrdersForPlantHead = () => {
       field: "dueAmount",
       headerName: "Due Amount",
       flex: 1,
-      maxWidth: 150,
       renderCell: (params) => (
         <span className={`${params.value !== "₹0" && "text-red-600"}`}>
           {params.value}
@@ -102,7 +106,6 @@ const OrdersForPlantHead = () => {
       field: "orderStatus",
       headerName: "Status",
       flex: 1,
-      maxWidth: 150,
       renderCell: (params) => (
         <span
           className={`${
@@ -166,7 +169,7 @@ const OrdersForPlantHead = () => {
     party: order?.party?.companyName,
     date: format(order?.createdAt, "dd MMM yyyy"),
     product: order?.item?.name,
-    quantity: `${order.quantity}kg`,
+    quantity: `${order.quantity} bags`,
     totalAmount: formatRupee(order.totalAmount),
     advanceAmount: formatRupee(order.advanceAmount),
     dueAmount: formatRupee(order.dueAmount),
@@ -218,7 +221,7 @@ const OrdersForPlantHead = () => {
             overflowY: "auto",
           },
           "& .MuiDataGrid-main": {
-            maxWidth: "1210px",
+            maxWidth: "100%",
           },
         }}
         disableColumnResize={false}
@@ -227,7 +230,7 @@ const OrdersForPlantHead = () => {
       {/* --- View Order Modal --- */}
       {openView && (
         <div className="transition-all bg-black/30 backdrop-blur-sm w-full z-50 h-screen absolute top-0 left-0 flex items-center justify-center">
-          <div className="bg-white relative p-7 rounded-lg w-[50%] h-[70%] overflow-auto">
+          <div className="bg-white relative p-7 rounded-lg w-[50%] max-h-[90%] overflow-auto">
             <div className="mb-5">
               <div className="flex items-center justify-between">
                 <p className="text-xl font-bold">Order Details</p>
@@ -299,10 +302,14 @@ const OrdersForPlantHead = () => {
                     </span>{" "}
                     {singleOrderFromPlanthead?.paymentMode}
                   </div>
-                  <div className="flex items-center justify-between font-semibold">
-                    <span className="text-gray-600 font-normal">Due Date:</span>{" "}
-                    {format(singleOrderFromPlanthead?.dueDate, "dd MMM yyyy")}
-                  </div>
+                  {singleOrderFromPlanthead?.dueAmount !== 0 && (
+                    <div className="flex items-center justify-between font-semibold">
+                      <span className="text-gray-600 font-normal">
+                        Due Date:
+                      </span>{" "}
+                      {format(singleOrderFromPlanthead?.dueDate, "dd MMM yyyy")}
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -407,6 +414,20 @@ const OrdersForPlantHead = () => {
                       </span>
                     )}
                   </div>
+                  <div className="flex items-center justify-between font-semibold">
+                    <span className="text-gray-600 font-normal">
+                      Warehouse Approval:
+                    </span>
+                    {singleOrderFromPlanthead?.approvedBy ? (
+                      <span className="text-green-700 font-semibold bg-green-100 p-1 px-3 rounded-full text-xs">
+                        Approved
+                      </span>
+                    ) : (
+                      <span className="text-red-700 font-semibold bg-red-100 p-1 px-3 rounded-full text-xs">
+                        Pending
+                      </span>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
@@ -424,6 +445,16 @@ const OrdersForPlantHead = () => {
                 <CloseIcon />
               </IconButton>
             </div>
+            {/* {singleOrderFromPlanthead?.dueAmount > 0 && (
+              <div className="mt-2">
+                <p className="p-2 text-sm bg-red-50 text-red-600 rounded-lg">
+                  Firsly ask <b>{singleOrderFromPlanthead?.placedBy?.name}</b>{" "}
+                  to clear due amount of{" "}
+                  <b>{formatRupee(singleOrderFromPlanthead?.dueAmount)}</b> to
+                  dispatch the order.
+                </p>
+              </div>
+            )} */}
             <div className="mt-5">
               <form
                 className="space-y-5"
@@ -433,6 +464,7 @@ const OrdersForPlantHead = () => {
                   <TextField
                     fullWidth
                     error={!!errors?.driverName}
+                    // disabled={singleOrderFromPlanthead?.dueAmount > 0}
                     size="small"
                     label="Driver Name"
                     variant="outlined"
@@ -453,7 +485,9 @@ const OrdersForPlantHead = () => {
                   <TextField
                     fullWidth
                     error={!!errors?.driverContact}
+                    // disabled={singleOrderFromPlanthead?.dueAmount > 0}
                     size="small"
+                    type="number"
                     label="Driver Contact"
                     variant="outlined"
                     {...register("driverContact", {
@@ -473,6 +507,7 @@ const OrdersForPlantHead = () => {
                   <TextField
                     fullWidth
                     error={!!errors?.vehicleNumber}
+                    // disabled={singleOrderFromPlanthead?.dueAmount > 0}
                     size="small"
                     label="Vehicle Number"
                     variant="outlined"
@@ -492,6 +527,7 @@ const OrdersForPlantHead = () => {
                 <div>
                   <TextField
                     fullWidth
+                    // disabled={singleOrderFromPlanthead?.dueAmount > 0}
                     error={!!errors?.transportCompany}
                     size="small"
                     label="Transport Company"
@@ -509,6 +545,29 @@ const OrdersForPlantHead = () => {
                     </p>
                   )}
                 </div>
+                <div>
+                  <span className="text-sm mb-1 ms-3 text-gray-600">
+                    Upload Dispatch Documents
+                  </span>
+                  <input
+                    // disabled={singleOrderFromPlanthead?.dueAmount > 0}
+                    className="relative mt-1 block w-full min-w-0 flex-auto rounded border border-solid border-neutral-300 bg-clip-padding px-3 py-[0.32rem] text-base font-normal text-neutral-700 transition duration-300 ease-in-out file:-mx-3 file:-my-[0.32rem] file:overflow-hidden file:rounded-none file:border-0 file:border-solid file:border-inherit file:bg-neutral-100 file:px-3 file:py-[0.32rem] file:text-neutral-700 file:transition file:duration-150 file:ease-in-out file:[border-inline-end-width:1px] file:[margin-inline-end:0.75rem] hover:file:bg-neutral-200 focus:border-primary focus:text-neutral-700 focus:shadow-te-primary focus:outline-none "
+                    type="file"
+                    id="formFileMultiple"
+                    multiple
+                    {...register("dispatchDocs", {
+                      required: {
+                        value: true,
+                        message: "Dispatch Documents are required",
+                      },
+                    })}
+                  />
+                  {errors.dispatchDocs && (
+                    <p className="text-red-600 text-xs mt-1">
+                      {errors.dispatchDocs.message}
+                    </p>
+                  )}
+                </div>
                 <div className="flex items-center justify-end gap-3 mt-5">
                   <Button
                     variant="outlined"
@@ -519,6 +578,7 @@ const OrdersForPlantHead = () => {
                     Cancel
                   </Button>
                   <Button
+                    // disabled={singleOrderFromPlanthead?.dueAmount > 0}
                     loading={isDispatchingOrder}
                     loadingPosition="start"
                     variant="contained"

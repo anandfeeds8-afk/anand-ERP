@@ -4,6 +4,7 @@ const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const SECRET = process.env.JWT_SECRET;
 const Accountant = require("../models/Accountant");
+
 // Login Accountant
 const loginAccountant = async (req, res) => {
   try {
@@ -69,9 +70,61 @@ const loginAccountant = async (req, res) => {
   }
 };
 
+// Get all orders with pending advance payment approval
+const getOrdersToApprovePayment = async (req, res) => {
+  try {
+    const accountantId = req.user.id;
+    const orders = await Order.find({
+      orderStatus: "Approved",
+      advancePaymentStatus: "SentForApproval",
+      advancePaymentApprovalSentTo: accountantId,
+      advanceAmount: { $gt: 0 },
+      advancePaymentDoc: { $ne: null },
+    })
+      .populate("item", "name category")
+      .populate("party", "companyName address contactPersonNumber")
+      .populate("placedBy", "name email");
+
+    res.status(200).json({ success: true, data: orders });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch orders to approve advance payment",
+      error: err.message,
+    });
+  }
+};
+
+// Get all orders with pending due payment approval
+const getOrdersToApproveDuePayment = async (req, res) => {
+  try {
+    const accountantId = req.user.id;
+    const orders = await Order.find({
+      // orderStatus: { $in: ["Dispatched", "Delivered", "Approved"] },
+      duePaymentStatus: { $in: ["SentForApproval", "Approved"] },
+      duePaymentApprovalSentTo: accountantId,
+      dueAmount: { $eq: 0 },
+      duePaymentDoc: { $ne: null },
+    })
+      .populate("item", "name category")
+      .populate("party", "companyName address contactPersonNumber")
+      .populate("placedBy", "name email")
+      .populate("paymentCollectedBy", "name email");
+
+    res.status(200).json({ success: true, data: orders });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch orders to approve due payment",
+      error: err.message,
+    });
+  }
+};
+
 // Get dispatched orders
 const getDispatchedOrders = async (req, res) => {
   try {
+    const AuthorizerId = req.user.id;
     const warehouse = await Warehouse.findOne({ accountant: req.user.id });
     if (!warehouse) {
       return res.status(404).json({
@@ -83,10 +136,9 @@ const getDispatchedOrders = async (req, res) => {
     const orders = await Order.find({
       assignedWarehouse: String(warehouse._id),
       orderStatus: "Dispatched",
-      dueAmount: { $gt: 0 },
     })
       .populate("item", "name category")
-      .populate("party", "name contact")
+      .populate("party", "companyName address contactPersonNumber")
       .populate("placedBy", "name email");
 
     res.status(200).json({ success: true, data: orders });
@@ -99,14 +151,81 @@ const getDispatchedOrders = async (req, res) => {
   }
 };
 
+//approve the advance payment
+const approveOrderPayment = async (req, res) => {
+  try {
+    const { orderId } = req.body;
+    const accountantId = req.user.id;
+    const order = await Order.findById(orderId);
+    if (!order) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Order not found" });
+    }
+    order.orderStatus = "ForwardedToPlantHead";
+    order.advancePaymentStatus = "Approved";
+    order.advancePaymentApprovedBy = accountantId;
+    await order.save();
+    res.status(200).json({
+      success: true,
+      message: "Advance Payment approved successfully",
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Failed to approve advance payment",
+      error: error.message,
+    });
+  }
+};
+
+//approve the due payment
+const approveDuePayment = async (req, res) => {
+  try {
+    const { orderId } = req.body;
+    const accountantId = req.user.id;
+    const order = await Order.findById(orderId);
+    if (!order) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Order not found" });
+    }
+
+    order.duePaymentStatus = "Approved";
+    order.duePaymentApprovedBy = accountantId;
+    await order.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Due Payment approved successfully",
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Failed to approve due payment",
+      error: error.message,
+    });
+  }
+};
+
 const getOrderDetails = async (req, res) => {
   try {
     const order = await Order.findById(req.params.orderId)
-      .populate("party", "name contact")
+      .populate("party", "companyName address contactPersonNumber")
       .populate("placedBy", "name email")
       .populate("assignedWarehouse", "name location")
       .populate("item", "name category")
-      .populate("invoiceDetails.invoicedBy", "name email");
+      .populate("invoiceDetails.invoicedBy", "name email")
+      .populate(
+        "invoiceDetails.party",
+        "companyName address contactPersonNumber"
+      )
+      .populate(
+        "dueInvoiceDetails.party",
+        "companyName address contactPersonNumber"
+      )
+      .populate("dueInvoiceDetails.invoicedBy", "name email")
+      .populate("paymentCollectedBy", "name email");
 
     if (!order) {
       return res
@@ -185,6 +304,64 @@ const generateInvoice = async (req, res) => {
   }
 };
 
+// Generate Invoice for due amount again
+const generateDueInvoice = async (req, res) => {
+  try {
+    const accountantId = req.user.id;
+    const { orderId } = req.params;
+    const { dueDate } = req.body;
+    const warehouse = await Warehouse.findOne({ accountant: accountantId });
+    if (!warehouse) {
+      return res.status(404).json({
+        success: false,
+        message: "Warehouse not found for this accountant",
+      });
+    }
+
+    const order = await Order.findById(orderId);
+    if (!order || String(order.assignedWarehouse) !== String(warehouse._id)) {
+      return res.status(403).json({
+        success: false,
+        message: "Not authorized to invoice this order",
+      });
+    }
+
+    if (order.dueInvoiceGenerated) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Invoice already generated" });
+    }
+
+    order.dueInvoiceGenerated = true;
+    // order.invoicedBy = accountantId;
+    // order.dueDate = dueDate || new Date();
+    order.dueInvoiceDetails = {
+      totalAmount: order.totalAmount,
+      advanceAmount: order.advanceAmount,
+      dueAmount: order.dueAmount,
+      dueDate: dueDate || new Date(),
+      paymentMode: order.paymentMode,
+      party: order.party,
+      invoicedBy: accountantId,
+      generatedAt: new Date(),
+    };
+
+    await order.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Invoice generated successfully",
+      data: order,
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: "Invoice generation failed",
+      error: err.message,
+    });
+  }
+};
+
 // Get Invoice by Order ID
 const getInvoiceDetails = async (req, res) => {
   try {
@@ -204,7 +381,6 @@ const getInvoiceDetails = async (req, res) => {
       .populate("placedBy", "name")
       .populate("assignedWarehouse", "name")
       .populate("dispatchInfo.dispatchedBy", "name");
-    console.log("order", order);
 
     if (
       !order ||
@@ -273,7 +449,12 @@ module.exports = {
   loginAccountant,
   getDispatchedOrders,
   generateInvoice,
+  generateDueInvoice,
   getInvoiceDetails,
   changeActivityStatus,
   getOrderDetails,
+  getOrdersToApprovePayment,
+  getOrdersToApproveDuePayment,
+  approveOrderPayment,
+  approveDuePayment,
 };

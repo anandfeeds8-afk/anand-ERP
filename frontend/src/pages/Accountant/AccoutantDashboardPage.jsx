@@ -1,15 +1,40 @@
-import React from "react";
+import React, { useState } from "react";
 import OrdersForAccountant from "../../components/Accountant/OrdersForAccountant";
+import ApproveAdvancePaymentOrders from "../../components/Accountant/ApproveAdvancePaymentOrders";
+import ApproveDuePaymentOrders from "../../components/Accountant/ApproveDuePaymentOrders";
+import { Button, ButtonGroup } from "@mui/material";
 
 const AccoutantDashboardPage = () => {
+  const orderTypes = ["Dispatched Orders", "Approve Advance", "Approve Due"];
+  const [isActive, setIsActive] = useState("Dispatched Orders");
   return (
     <div>
       <div className="flex items-center justify-between">
-        <h1 className="lg:text-3xl lg:font-bold mb-5">Accountant</h1>
+        <h1 className="lg:text-3xl lg:font-bold mb-5">{isActive}</h1>
+      </div>
+
+      <div className="mb-5">
+        <ButtonGroup aria-label="Medium-sized button group">
+          {orderTypes.map((order) => (
+            <Button
+              key={order}
+              disableElevation
+              variant={isActive === order ? "contained" : "outlined"}
+              sx={{
+                textTransform: "none",
+              }}
+              onClick={() => setIsActive(order)}
+            >
+              {order}
+            </Button>
+          ))}
+        </ButtonGroup>
       </div>
 
       <div>
-        <OrdersForAccountant />
+        {isActive === "Dispatched Orders" && <OrdersForAccountant />}
+        {isActive === "Approve Advance" && <ApproveAdvancePaymentOrders />}
+        {isActive === "Approve Due" && <ApproveDuePaymentOrders />}
       </div>
     </div>
   );

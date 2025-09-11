@@ -13,7 +13,7 @@ export const useAccountantOrder = (id) => {
       queryKey: ["ordersInAccountant"],
       queryFn: async () => {
         const response = await axios.get(
-          "http://localhost:5000/api/accountant/dispatched-orders",
+          BASE_URL + API_PATHS.ACCOUNTANT.GET_DISPATCHED_ORDERS,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -26,6 +26,50 @@ export const useAccountantOrder = (id) => {
         console.log(error);
       },
     });
+
+  // GET all orders to approve payment from accountant
+  const {
+    data: ordersToApprovePayment,
+    isPending: ordersToApprovePaymentLoading,
+  } = useQuery({
+    queryKey: ["ordersToApprovePayment"],
+    queryFn: async () => {
+      const response = await axios.get(
+        BASE_URL + API_PATHS.ACCOUNTANT.GET_ORDERS_TO_APPROVE_PAYMENT,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      return response.data.data;
+    },
+    onError: (error) => {
+      console.log(error);
+    },
+  });
+
+  // GET all orders to approve due payment from accountant
+  const {
+    data: ordersToApproveDuePayment,
+    isPending: ordersToApproveDuePaymentLoading,
+  } = useQuery({
+    queryKey: ["ordersToApproveDuePayment"],
+    queryFn: async () => {
+      const response = await axios.get(
+        BASE_URL + API_PATHS.ACCOUNTANT.GET_ORDERS_TO_APPROVE_DUE_PAYMENT,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      return response.data.data;
+    },
+    onError: (error) => {
+      console.log(error);
+    },
+  });
 
   // GET single dispatched orders by id from accountant
   const {
@@ -69,6 +113,106 @@ export const useAccountantOrder = (id) => {
       onSuccess: (data) => {
         queryClient.invalidateQueries({ queryKey: ["order"] });
         queryClient.invalidateQueries({ queryKey: ["ordersInAccountant"] });
+        queryClient.invalidateQueries({ queryKey: ["ordersToApprovePayment"] });
+        queryClient.invalidateQueries({
+          queryKey: ["singleOrderInAccountant"],
+        });
+        queryClient.invalidateQueries({
+          queryKey: ["ordersToApproveDuePayment"],
+        });
+        console.log(data);
+        toast.success(data.message);
+      },
+      onError: (error) => {
+        console.log(error);
+        toast.error(error.response.data.message);
+      },
+    });
+
+  // GENERATE DUE INVOICE by order id in accountant
+  const { mutate: generateDueInvoice, isPending: isGeneratingDueInvoice } =
+    useMutation({
+      mutationFn: async (data) => {
+        const response = await axios.post(
+          BASE_URL + API_PATHS.ACCOUNTANT.GENERATE_DUE_INVOICE(data.orderId),
+          { dueDate: data.dueDate },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        return response.data;
+      },
+      onSuccess: (data) => {
+        queryClient.invalidateQueries({ queryKey: ["order"] });
+        queryClient.invalidateQueries({ queryKey: ["ordersInAccountant"] });
+        queryClient.invalidateQueries({ queryKey: ["ordersToApprovePayment"] });
+        queryClient.invalidateQueries({
+          queryKey: ["singleOrderInAccountant"],
+        });
+        console.log(data);
+        toast.success(data.message);
+      },
+      onError: (error) => {
+        console.log(error);
+        toast.error(error.response.data.message);
+      },
+    });
+
+  // APPROVE ORDER by order id in accountant
+  const { mutate: approveOrderPayment, isPending: isApprovingOrderPayment } =
+    useMutation({
+      mutationFn: async (orderId) => {
+        const response = await axios.put(
+          BASE_URL + API_PATHS.ACCOUNTANT.APPROVE_ORDER,
+          { orderId },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        return response.data;
+      },
+      onSuccess: (data) => {
+        queryClient.invalidateQueries({ queryKey: ["order"] });
+        queryClient.invalidateQueries({ queryKey: ["ordersInAccountant"] });
+        queryClient.invalidateQueries({ queryKey: ["ordersToApprovePayment"] });
+        queryClient.invalidateQueries({
+          queryKey: ["singleOrderInAccountant"],
+        });
+        console.log(data);
+        toast.success(data.message);
+      },
+      onError: (error) => {
+        console.log(error);
+        toast.error(error.response.data.message);
+      },
+    });
+
+  // APPROVE DUE PAYMENT by order id in accountant
+  const { mutate: approveDuePayment, isPending: isApprovingDuePayment } =
+    useMutation({
+      mutationFn: async (orderId) => {
+        const response = await axios.put(
+          BASE_URL + API_PATHS.ACCOUNTANT.APPROVE_DUE_PAYMENT,
+          { orderId },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        return response.data;
+      },
+      onSuccess: (data) => {
+        queryClient.invalidateQueries({ queryKey: ["order"] });
+        queryClient.invalidateQueries({ queryKey: ["ordersInAccountant"] });
+        queryClient.invalidateQueries({ queryKey: ["ordersToApprovePayment"] });
+        queryClient.invalidateQueries({
+          queryKey: ["singleOrderInAccountant"],
+        });
         console.log(data);
         toast.success(data.message);
       },
@@ -79,37 +223,45 @@ export const useAccountantOrder = (id) => {
     });
 
   // GET INVOICE by order id in accountant
-  const { data: invoice, isPending: isGettingInvoice } = useQuery({
-    queryKey: ["invoice", id],
-    queryFn: async () => {
-      if (!id) return null;
-      const response = await axios.get(
-        BASE_URL + API_PATHS.ACCOUNTANT.GET_INVOICE(id),
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      console.log("invoice in hook", response.data.data);
-      return response.data.data;
-    },
-    onError: (error) => {
-      console.log(error);
-      toast.error(error.response.data.message);
-    },
-  });
+  // const { data: invoice, isPending: isGettingInvoice } = useQuery({
+  //   queryKey: ["invoice", id],
+  //   queryFn: async () => {
+  //     if (!id) return null;
+  //     const response = await axios.get(
+  //       BASE_URL + API_PATHS.ACCOUNTANT.GET_INVOICE(id),
+  //       {
+  //         headers: {
+  //           Authorization: `Bearer ${token}`,
+  //         },
+  //       }
+  //     );
+  //     console.log("invoice in hook", response.data.data);
+  //     return response.data.data;
+  //   },
+  //   onError: (error) => {
+  //     console.log(error);
+  //     toast.error(error.response.data.message);
+  //   },
+  // });
 
   return {
     ordersInAccountant,
     singleOrderInAccountant,
     generateInvoice,
-    invoice,
+    ordersToApprovePayment,
+    approveOrderPayment,
+    ordersToApproveDuePayment,
+    approveDuePayment,
+    generateDueInvoice,
 
     //Loading
+    isApprovingOrderPayment,
+    isGeneratingDueInvoice,
+    isApprovingDuePayment,
     ordersInAccountantLoading,
+    ordersToApprovePaymentLoading,
     singleOrderInAccountantLoading,
+    ordersToApproveDuePaymentLoading,
     isGeneratingInvoice,
-    isGettingInvoice,
   };
 };
