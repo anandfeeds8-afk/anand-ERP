@@ -58,6 +58,7 @@ const OrdersForAuthorizer = () => {
 
   const handleAssignWarehouse = (data) => {
     data.orderId = singleOrderId;
+    console.log(data);
     assignWarehouseToOrder(data);
     setOpenView(false);
   };
@@ -203,10 +204,6 @@ const OrdersForAuthorizer = () => {
     orderStatus: order.orderStatus,
   }));
 
-  console.log("====================================");
-  console.log(singleOrderFromSalesauthorizer);
-  console.log("====================================");
-
   return (
     <div className="transition-all rounded-lg mt-5 max-w-full">
       <DataGrid
@@ -250,10 +247,64 @@ const OrdersForAuthorizer = () => {
 
       {openView && (
         <div className="transition-all bg-black/30 backdrop-blur-sm w-full z-50 h-screen absolute top-0 left-0 flex items-center justify-center">
-          <div className="bg-white relative p-7 rounded-lg min-w-[50%] max-w-[55%] max-h-[90%] overflow-auto">
+          <div className="bg-white relative p-7 rounded-lg min-w-[50%] max-w-[55%] max-h-[95%] overflow-auto">
             <div className="mb-5">
               <div className="flex items-center justify-between">
                 <p className="text-xl font-bold">Order Details</p>
+
+                <div className="w-64">
+                  {singleOrderFromSalesauthorizer?.orderStatus ===
+                    "ForwardedToAuthorizer" && (
+                    <form
+                      className="flex items-center gap-2"
+                      onSubmit={handleSubmit(handleAssignWarehouse)}
+                    >
+                      <FormControl fullWidth size="small">
+                        <InputLabel id="item-label">
+                          Assign Warehouse
+                        </InputLabel>
+                        <Controller
+                          disabled={!user.isActive}
+                          name="warehouseId"
+                          control={control}
+                          rules={{ required: "Warehouse is required" }}
+                          render={({ field }) => (
+                            <Select
+                              {...field}
+                              labelId="warehouse-label"
+                              id="warehouseId"
+                              label="Assign Warehouse"
+                            >
+                              <MenuItem>Select Warehouse</MenuItem>
+                              {allWarehouses?.map((warehouse) => (
+                                <MenuItem
+                                  key={warehouse._id}
+                                  value={warehouse._id}
+                                >
+                                  {warehouse.name}
+                                </MenuItem>
+                              ))}
+                            </Select>
+                          )}
+                        />
+                        {errors?.warehouse && (
+                          <span className="text-red-600 text-xs mt-1">
+                            {errors.warehouse?.message}
+                          </span>
+                        )}
+                      </FormControl>
+                      <Button
+                        disabled={!user.isActive}
+                        size="small"
+                        variant="outlined"
+                        type="submit"
+                      >
+                        Assign
+                      </Button>
+                    </form>
+                  )}
+                </div>
+
                 <IconButton size="small" onClick={() => setOpenView(false)}>
                   <CloseIcon />
                 </IconButton>
@@ -321,7 +372,16 @@ const OrdersForAuthorizer = () => {
                     <span className="text-gray-600 font-normal">
                       Placed Date:
                     </span>
-                    {(singleOrderFromSalesauthorizer?.createdAt, "dd MMM yyyy")}
+                    {format(
+                      singleOrderFromSalesauthorizer?.createdAt,
+                      "dd MMM yyyy"
+                    )}
+                  </div>
+                  <div className="flex items-center justify-between font-semibold">
+                    <span className="text-gray-600 font-normal">
+                      Shipping Address:
+                    </span>
+                    {singleOrderFromSalesauthorizer?.shippingAddress}
                   </div>
                 </div>
                 <div className="flex flex-col gap-2 text-sm">

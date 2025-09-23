@@ -218,7 +218,7 @@ const ForwardedOrders = () => {
       {/* --- View Order Modal --- */}
       {openView && (
         <div className="transition-all bg-black/30 backdrop-blur-sm w-full z-50 h-screen absolute top-0 left-0 flex items-center justify-center">
-          <div className="bg-white relative p-7 rounded-lg max-w-[50%] min-w-[45%] max-h-[95%] overflow-auto">
+          <div className="bg-white relative p-7 rounded-lg max-w-[60%] min-w-[45%] max-h-[95%] overflow-auto">
             <div className="mb-5">
               <div className="flex items-center justify-between">
                 <p className="text-xl font-bold">Order Details</p>
@@ -274,6 +274,10 @@ const ForwardedOrders = () => {
                     Order Information
                   </h1>
                   <div className="flex items-center justify-between font-semibold">
+                    <span className="text-gray-600 font-normal">Order Id:</span>
+                    #{singleOrderFromSalesManager?.orderId}
+                  </div>
+                  <div className="flex items-center justify-between font-semibold">
                     <span className="text-gray-600 font-normal">
                       Placed By:
                     </span>
@@ -287,6 +291,12 @@ const ForwardedOrders = () => {
                       singleOrderFromSalesManager?.createdAt,
                       "dd MMM yyyy"
                     )}
+                  </div>
+                  <div className="flex items-center justify-between font-semibold">
+                    <span className="text-gray-600 font-normal">
+                      Shipping Address:
+                    </span>
+                    {singleOrderFromSalesManager?.shippingAddress}
                   </div>
                 </div>
                 <div className="flex flex-col gap-2 text-sm">

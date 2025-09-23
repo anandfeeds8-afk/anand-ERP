@@ -21,8 +21,8 @@ const Sidebar = ({ isCollapsed, setIsCollapsed }) => {
     <div
       className={`${
         isCollapsed
-          ? "w-16 transition-all duration-500"
-          : "w-[20rem] transition-all duration-500"
+          ? "max-w-16 transition-all duration-500"
+          : "max-w-[20rem] transition-all duration-500"
       } border-r border-neutral-100`}
     >
       <div className="text-xl flex items-center justify-around font-semibold text-center mt-5">

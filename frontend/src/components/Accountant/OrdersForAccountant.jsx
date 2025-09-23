@@ -1,14 +1,6 @@
 import { useState } from "react";
 import { Button, CircularProgress, IconButton, Tooltip } from "@mui/material";
-import {
-  Download,
-  DownloadIcon,
-  Eye,
-  File,
-  FileBox,
-  SquarePen,
-  Trash2,
-} from "lucide-react";
+import { Download, DownloadIcon, Eye, File, FileBox } from "lucide-react";
 import { format } from "date-fns";
 import { DataGrid } from "@mui/x-data-grid";
 import CloseIcon from "@mui/icons-material/Close";
@@ -29,12 +21,14 @@ const downloadInvoice = ({
   advanceAmount,
   dueAmount,
   dueDate,
+  shippingAddress,
 }) => {
   const invoiceBy = { name: accName, email: accEmail };
   const partyDetails = {
     company: partyName,
     address: partyAddress,
     contact: partyContact,
+    shippingAddress: shippingAddress,
   };
   const paymentInfo = {
     total: totalAmount,
@@ -69,6 +63,7 @@ const downloadInvoice = ({
   doc.text(`Company Name: ${partyDetails.company}`, 14, 72);
   doc.text(`Address: ${partyDetails.address}`, 14, 79);
   doc.text(`Contact Person Number: ${partyDetails.contact}`, 14, 86);
+  doc.text(`Shipping Address: ${partyDetails.shippingAddress}`, 14, 93);
 
   // Payment Information Table
   doc.setFont("helvetica", "bold");
@@ -140,7 +135,7 @@ const OrdersForAccountant = () => {
       orderId: singleOrderId,
       dueDate: format(singleOrderInAccountant?.dueDate, "yyyy-MM-dd"),
     };
-    generateInvoice(data);
+    generateInvoice(data, { onSuccess: () => setOpenView(false) });
   };
 
   const handleDownloadInvoice = () => {
@@ -151,6 +146,7 @@ const OrdersForAccountant = () => {
       partyAddress: singleOrderInAccountant?.party?.address,
       partyContact: singleOrderInAccountant?.party?.contactPersonNumber,
       totalAmount: singleOrderInAccountant?.totalAmount,
+      shippingAddress: singleOrderInAccountant?.shippingAddress,
       advanceAmount: singleOrderInAccountant?.advanceAmount,
       dueAmount: singleOrderInAccountant?.dueAmount,
       dueDate: format(singleOrderInAccountant?.dueDate, "dd MMM yyyy"),
@@ -330,7 +326,7 @@ const OrdersForAccountant = () => {
       {/* --- View Order Modal --- */}
       {openView && (
         <div className="transition-all bg-black/30 backdrop-blur-sm w-full z-50 h-screen absolute top-0 left-0 flex items-center justify-center">
-          <div className="bg-white relative p-7 rounded-lg w-[50%] max-h-[90%] overflow-auto">
+          <div className="bg-white relative p-7 rounded-lg w-[50%] max-h-[95%] overflow-auto">
             <div className="mb-5">
               <div className="flex items-center justify-between">
                 <p className="text-xl font-bold">Order Details</p>
@@ -411,6 +407,12 @@ const OrdersForAccountant = () => {
                       Placed Date:
                     </span>
                     {format(singleOrderInAccountant?.createdAt, "dd MMM yyyy")}
+                  </div>
+                  <div className="flex items-center justify-between font-semibold">
+                    <span className="text-gray-600 font-normal">
+                      Shipping Address:
+                    </span>
+                    {singleOrderInAccountant?.shippingAddress}
                   </div>
                 </div>
                 <div className="flex flex-col gap-2 text-sm">
@@ -719,6 +721,12 @@ const OrdersForAccountant = () => {
                     Contact Person Number:
                   </span>
                   {singleOrderInAccountant?.party?.contactPersonNumber}
+                </div>
+                <div className="flex items-center justify-between font-semibold">
+                  <span className="text-gray-600 font-normal">
+                    Shipping Address:
+                  </span>
+                  {singleOrderInAccountant?.shippingAddress}
                 </div>
               </div>
               <div className="flex flex-col gap-2 text-sm mt-5">

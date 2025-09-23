@@ -161,7 +161,7 @@ const AssignmentHistory = () => {
       {/* --- View Order Modal --- */}
       {openView && (
         <div className="transition-all bg-black/30 backdrop-blur-sm w-full z-50 h-screen absolute top-0 left-0 flex items-center justify-center">
-          <div className="bg-white relative p-7 rounded-lg min-w-[50%] max-w-[55%] max-h-[90%] overflow-auto">
+          <div className="bg-white relative p-7 rounded-lg min-w-[50%] max-w-[55%] max-h-[95%] overflow-auto">
             <div className="mb-5">
               <div className="flex items-center justify-between">
                 <p className="text-xl font-bold">Order Details</p>
@@ -236,6 +236,12 @@ const AssignmentHistory = () => {
                       singleOrderFromSalesauthorizer?.createdAt,
                       "dd MMM yyyy"
                     )}
+                  </div>
+                  <div className="flex items-center justify-between font-semibold">
+                    <span className="text-gray-600 font-normal">
+                      Shipping Address:
+                    </span>
+                    {singleOrderFromSalesauthorizer?.shippingAddress}
                   </div>
                 </div>
                 <div className="flex flex-col gap-2 text-sm">

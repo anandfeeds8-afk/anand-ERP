@@ -100,11 +100,11 @@ const getOrdersToApproveDuePayment = async (req, res) => {
   try {
     const accountantId = req.user.id;
     const orders = await Order.find({
-      // orderStatus: { $in: ["Dispatched", "Delivered", "Approved"] },
       duePaymentStatus: { $in: ["SentForApproval", "Approved"] },
       duePaymentApprovalSentTo: accountantId,
-      paymentStatus: { $in: ["Not Paid", "Pending", "Paid"] },
-      dueAmount: { $eq: 0.0 },
+      paymentStatus: { $in: ["ConfirmationPending", "Paid"] },
+      dueAmount: { $eq: 0 },
+      dueInvoiceGenerated: false,
       duePaymentDoc: { $ne: null },
     })
       .populate("items.product", "name category")
@@ -165,6 +165,12 @@ const approveOrderPayment = async (req, res) => {
     }
     order.orderStatus = "ForwardedToPlantHead";
     order.advancePaymentStatus = "Approved";
+    if (order.dueAmount > 0) {
+      order.paymentStatus = "PendingDues";
+    }
+    if (order.dueAmount === 0) {
+      order.paymentStatus = "Paid";
+    }
     order.advancePaymentApprovedBy = accountantId;
     await order.save();
     res.status(200).json({
@@ -193,6 +199,12 @@ const approveDuePayment = async (req, res) => {
     }
 
     order.duePaymentStatus = "Approved";
+    if (
+      order.advanceAmount === 0 ||
+      (order.advancePaymentStatus === "Approved" && order.dueAmount === 0)
+    ) {
+      order.paymentStatus = "Paid";
+    }
     order.duePaymentApprovedBy = accountantId;
     await order.save();
 
@@ -333,14 +345,12 @@ const generateDueInvoice = async (req, res) => {
     }
 
     order.dueInvoiceGenerated = true;
-    // order.invoicedBy = accountantId;
-    // order.dueDate = dueDate || new Date();
     order.dueInvoiceDetails = {
       totalAmount: order.totalAmount,
       advanceAmount: order.advanceAmount,
       dueAmount: order.dueAmount,
       dueDate: dueDate || new Date(),
-      paymentMode: order.paymentMode,
+      duePaymentMode: order.duePaymentMode,
       party: order.party,
       invoicedBy: accountantId,
       generatedAt: new Date(),

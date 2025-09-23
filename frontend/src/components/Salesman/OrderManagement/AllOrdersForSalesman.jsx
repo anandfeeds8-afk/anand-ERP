@@ -36,12 +36,14 @@ const downloadInvoice = ({
   dueAmount,
   dueDate,
   paymentMode,
+  shippingAddress,
 }) => {
   const invoiceBy = { name: accName, email: accEmail };
   const partyDetails = {
     company: partyName,
     address: partyAddress,
     contact: partyContact,
+    shippingAddress: shippingAddress,
   };
   const paymentInfo = {
     total: totalAmount,
@@ -77,6 +79,7 @@ const downloadInvoice = ({
   doc.text(`Company Name: ${partyDetails.company}`, 14, 72);
   doc.text(`Address: ${partyDetails.address}`, 14, 79);
   doc.text(`Contact Person Number: ${partyDetails.contact}`, 14, 86);
+  doc.text(`Shipping Address: ${partyDetails.shippingAddress}`, 14, 86);
 
   // Payment Information Table
   doc.setFont("helvetica", "bold");
@@ -163,7 +166,6 @@ const AllOrdersForSalesman = () => {
   const handleView = (id) => {
     setSingleOrderId(id);
     setOpenView(true);
-    refetchSingleOrder();
   };
 
   const handleOpenInvoice = (id) => {
@@ -229,6 +231,7 @@ const AllOrdersForSalesman = () => {
       partyAddress: singleOrderFromSalesman?.party?.address,
       partyContact: singleOrderFromSalesman?.party?.contactPersonNumber,
       totalAmount: singleOrderFromSalesman?.totalAmount,
+      shippingAddress: singleOrderFromSalesman?.shippingAddress,
       advanceAmount: singleOrderFromSalesman?.advanceAmount,
       dueAmount: singleOrderFromSalesman?.dueAmount,
       dueDate: format(singleOrderFromSalesman?.dueDate, "dd MMM yyyy"),
@@ -271,7 +274,7 @@ const AllOrdersForSalesman = () => {
       headerName: "Advance Amount",
       flex: 1,
       renderCell: (params) => (
-        <span className={`${params.value !== "₹0" && "text-green-700"}`}>
+        <span className={`${params.value !== "₹0.00" && "text-green-700"}`}>
           {params.value}
         </span>
       ),
@@ -281,7 +284,7 @@ const AllOrdersForSalesman = () => {
       headerName: "Due Amount",
       flex: 1,
       renderCell: (params) => (
-        <span className={`${params.value !== "₹0" && "text-red-600"}`}>
+        <span className={`${params.value !== "₹0.00" && "text-red-600"}`}>
           {params.value}
         </span>
       ),
@@ -322,19 +325,22 @@ const AllOrdersForSalesman = () => {
             />
           </Tooltip>
 
-          {params.row.paymentStatus !== "Paid" && (
-            <Tooltip title="Update Payment" placement="top">
-              <CgCreditCard
-                color="purple"
-                className="hover:bg-purple-200 active:scale-95 transition-all p-1.5 rounded-lg"
-                size={30}
-                onClick={() => {
-                  setSingleOrderId(params.row.id);
-                  setOpenUpdatePayment(true);
-                }}
-              />
-            </Tooltip>
-          )}
+          {params.row.paymentStatus !== "Paid" &&
+            params.row.assignedWarehouse &&
+            params.row.approvedBy &&
+            params.row.rawDueAmount > 0 && (
+              <Tooltip title="Update Payment" placement="top">
+                <CgCreditCard
+                  color="purple"
+                  className="hover:bg-purple-200 active:scale-95 transition-all p-1.5 rounded-lg"
+                  size={30}
+                  onClick={() => {
+                    setSingleOrderId(params.row.id);
+                    setOpenUpdatePayment(true);
+                  }}
+                />
+              </Tooltip>
+            )}
 
           {params.row.invoiceGenerated && (
             <Tooltip title="View invoice" placement="top">
@@ -413,11 +419,14 @@ const AllOrdersForSalesman = () => {
     totalAmount: formatRupee(order.totalAmount),
     advanceAmount: formatRupee(order.advanceAmount),
     dueAmount: formatRupee(order.dueAmount),
+    rawDueAmount: order.dueAmount,
     invoiceGenerated: order.invoiceGenerated,
     dueInvoiceGenerated: order.dueInvoiceGenerated,
     paymentStatus: order.paymentStatus,
     orderStatus: order.orderStatus,
     numProducts: order.items.length,
+    assignedWarehouse: order.assignedWarehouse,
+    approvedBy: order.approvedBy,
   }));
 
   if (ordersInSalesmanLoading || singleOrderLoading)
@@ -469,7 +478,7 @@ const AllOrdersForSalesman = () => {
       {/* --- View Order Modal --- */}
       {openView && (
         <div className="transition-all bg-black/30 backdrop-blur-sm w-full z-50 h-screen absolute top-0 left-0 flex items-center justify-center">
-          <div className="bg-white relative p-7 rounded-lg max-w-[50%] min-w-[45%] max-h-[95%] overflow-auto">
+          <div className="bg-white relative p-7 rounded-lg max-w-[60%] min-w-[50%] max-h-[95%] overflow-auto">
             <div className="mb-5">
               <div className="flex items-center justify-between">
                 <p className="text-xl font-bold">Order Details</p>
@@ -499,8 +508,8 @@ const AllOrdersForSalesman = () => {
                   </tr>
                 </thead>
                 <tbody className="text-sm">
-                  {singleOrderFromSalesman?.items?.map((item) => (
-                    <tr className="bg-white border-b border-gray-200">
+                  {singleOrderFromSalesman?.items?.map((item, idx) => (
+                    <tr key={idx} className="bg-white border-b border-gray-200">
                       <th
                         scope="row"
                         className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap"
@@ -536,6 +545,12 @@ const AllOrdersForSalesman = () => {
                     </span>
                     {format(singleOrderFromSalesman?.createdAt, "dd MMM yyyy")}
                   </div>
+                  <div className="flex items-center justify-between font-semibold">
+                    <span className="text-gray-600 font-normal">
+                      Shipping Address:
+                    </span>
+                    {singleOrderFromSalesman?.shippingAddress}
+                  </div>
                 </div>
                 <div className="flex flex-col gap-2 text-sm">
                   <h1 className="font-semibold text-base text-gray-800">
@@ -559,12 +574,83 @@ const AllOrdersForSalesman = () => {
                     </span>
                     {formatRupee(singleOrderFromSalesman?.dueAmount)}
                   </div>
+                  {singleOrderFromSalesman?.advanceAmount > 0 && (
+                    <div className="flex items-center justify-between font-semibold text-red-700">
+                      <span className="text-gray-600 font-normal">
+                        Advance Payment Approval:
+                      </span>
+                      {singleOrderFromSalesman?.advancePaymentStatus ===
+                        "Approved" && (
+                        <span className="text-green-700 font-semibold bg-green-100 p-1 px-3 rounded-full text-xs">
+                          Confirmed
+                        </span>
+                      )}
+                      {singleOrderFromSalesman?.advancePaymentStatus ===
+                        "SentForApproval" && (
+                        <span className="text-indigo-700 font-semibold bg-indigo-100 p-1 px-3 rounded-full text-xs">
+                          Sent For Confirmation
+                        </span>
+                      )}
+                      {singleOrderFromSalesman?.advancePaymentStatus ===
+                        "Pending" && (
+                        <span className="text-yellow-700 font-semibold bg-yellow-100 p-1 px-3 rounded-full text-xs">
+                          Pending
+                        </span>
+                      )}
+                      {singleOrderFromSalesman?.advancePaymentStatus ===
+                        "Rejected" && (
+                        <span className="text-red-700 font-semibold bg-red-100 p-1 px-3 rounded-full text-xs">
+                          Rejected
+                        </span>
+                      )}
+                    </div>
+                  )}
+                  {singleOrderFromSalesman?.duePaymentStatus && (
+                    <div className="flex items-center justify-between font-semibold text-red-700">
+                      <span className="text-gray-600 font-normal">
+                        Due Payment Approval:
+                      </span>
+                      {singleOrderFromSalesman?.duePaymentStatus ===
+                        "Approved" && (
+                        <span className="text-green-700 font-semibold bg-green-100 p-1 px-3 rounded-full text-xs">
+                          Confirmed
+                        </span>
+                      )}
+                      {singleOrderFromSalesman?.duePaymentStatus ===
+                        "SentForApproval" && (
+                        <span className="text-indigo-700 font-semibold bg-indigo-100 p-1 px-3 rounded-full text-xs">
+                          Sent For Confirmation
+                        </span>
+                      )}
+                      {singleOrderFromSalesman?.duePaymentStatus ===
+                        "Pending" && (
+                        <span className="text-yellow-700 font-semibold bg-yellow-100 p-1 px-3 rounded-full text-xs">
+                          Pending
+                        </span>
+                      )}
+                      {singleOrderFromSalesman?.duePaymentStatus ===
+                        "Rejected" && (
+                        <span className="text-red-700 font-semibold bg-red-100 p-1 px-3 rounded-full text-xs">
+                          Rejected
+                        </span>
+                      )}
+                    </div>
+                  )}
+
                   <div className="flex items-center justify-between font-semibold">
                     <span className="text-gray-600 font-normal">
-                      Payment Mode:
+                      Advance Payment Mode:
                     </span>
                     {singleOrderFromSalesman?.paymentMode}
                   </div>
+                  {singleOrderFromSalesman?.duePaymentMode && (
+                    <div className="flex items-center justify-between font-semibold">
+                      <span className="text-gray-600 font-normal">
+                        Due Payment Mode:
+                      </span>
+                      {singleOrderFromSalesman?.duePaymentMode}
+                    </div>
+                  )}
                   {singleOrderFromSalesman?.dueAmount !== 0 && (
                     <div className="flex items-center justify-between font-semibold">
                       <span className="text-gray-600 font-normal">
@@ -639,37 +725,66 @@ const AllOrdersForSalesman = () => {
 
                 <div className="flex flex-col gap-2 text-sm">
                   <h1 className="font-semibold text-base text-gray-800">
-                    Notes
+                    Order Timeline
                   </h1>
-                  <p className="bg-green-50 rounded-lg p-3">
-                    {singleOrderFromSalesman?.notes}
-                  </p>
+                  <div className="flex items-center justify-between font-semibold">
+                    <span className="text-gray-600 font-normal">
+                      Order Date:
+                    </span>
+                    {format(singleOrderFromSalesman?.createdAt, "dd MMM yyyy")}
+                  </div>
+                </div>
+
+                <div className="flex flex-col gap-2 text-sm">
+                  <h1 className="font-semibold text-base text-gray-800">
+                    Assigned Warehouse
+                  </h1>
+                  <div className="flex items-center justify-between font-semibold">
+                    <span className="text-gray-600 font-normal">
+                      Warehouse:
+                    </span>
+                    {singleOrderFromSalesman?.assignedWarehouse ? (
+                      <div className="flex items-center">
+                        <p>
+                          {singleOrderFromSalesman?.assignedWarehouse?.name}
+                        </p>
+                        &nbsp;
+                        <p className="text-xs font-normal text-gray-600">
+                          (
+                          {singleOrderFromSalesman?.assignedWarehouse?.location}
+                          )
+                        </p>
+                      </div>
+                    ) : (
+                      <span className="text-red-700 bg-red-100 p-1 px-3 rounded-full text-xs">
+                        Not Assigned
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex items-center justify-between font-semibold">
+                    <span className="text-gray-600 font-normal">
+                      Warehouse Approval:
+                    </span>
+                    {singleOrderFromSalesman?.approvedBy ? (
+                      <span className="text-green-700 font-semibold bg-green-100 p-1 px-3 rounded-full text-xs">
+                        Approved
+                      </span>
+                    ) : (
+                      <span className="text-red-700 font-semibold bg-red-100 p-1 px-3 rounded-full text-xs">
+                        Pending
+                      </span>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
-            {singleOrderFromSalesman?.assignedWarehouse && (
-              <div className="flex flex-col text-sm my-5">
-                <h1 className="font-semibold text-base text-gray-800">
-                  Assigned Warehouse
-                </h1>
-                <div className="flex items-center justify-between font-semibold">
-                  <span className="text-gray-600 font-normal">Warehouse:</span>
-                  {singleOrderFromSalesman?.assignedWarehouse ? (
-                    <div className="flex items-center">
-                      <p>{singleOrderFromSalesman?.assignedWarehouse?.name}</p>
-                      &nbsp;
-                      <p className="text-xs font-normal text-gray-600">
-                        ({singleOrderFromSalesman?.assignedWarehouse?.location})
-                      </p>
-                    </div>
-                  ) : (
-                    <span className="text-red-700 bg-red-100 p-1 px-3 rounded-full text-xs">
-                      Not Assigned
-                    </span>
-                  )}
-                </div>
-              </div>
-            )}
+
+            <div className="flex flex-col gap-2 text-sm my-5">
+              <h1 className="font-semibold text-base text-gray-800">Notes</h1>
+              <p className="bg-yellow-50 rounded-lg p-3">
+                {singleOrderFromSalesman?.notes}
+              </p>
+            </div>
 
             {singleOrderFromSalesman?.dispatchInfo && (
               <div className="flex flex-col gap-2 text-sm bg-green-50 p-3 rounded-lg mt-5">

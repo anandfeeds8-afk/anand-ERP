@@ -111,7 +111,7 @@ const getAllOrders = async (req, res) => {
 const getOrderDetails = async (req, res) => {
   try {
     const order = await Order.findById(req.params.orderId)
-      .populate("party", "companyName address contactPersonNumber")
+      .populate("party", "companyName address contactPersonNumber subAgents")
       .populate("placedBy", "name email")
       .populate("assignedWarehouse", "name location")
       .populate("items.product", "name category price description")

@@ -4,13 +4,15 @@ const addParty = async (req, res) => {
   try {
     const salesmanId = req.user.id;
     console.log("salesmanId", salesmanId);
-    const { companyName, contactPersonNumber, address, limit } = req.body;
+    const { companyName, contactPersonNumber, address, limit, subAgents } =
+      req.body;
 
     const party = new Party({
       companyName,
       contactPersonNumber,
       address,
       limit,
+      subAgents,
       addedBy: salesmanId,
     });
 

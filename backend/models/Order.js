@@ -19,7 +19,7 @@ const dueInvoiceSchema = new mongoose.Schema({
   advanceAmount: { type: Number, default: 0 },
   dueAmount: { type: Number },
   dueDate: { type: Date },
-  paymentMode: {
+  duePaymentMode: {
     type: String,
     enum: ["UPI", "Cash", "Bank Transfer", "Not Paid"],
   },
@@ -166,6 +166,11 @@ const OrderSchema = new mongoose.Schema({
   party: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Party",
+    required: true,
+  },
+
+  shippingAddress: {
+    type: String,
     required: true,
   },
 

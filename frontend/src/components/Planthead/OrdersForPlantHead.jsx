@@ -43,6 +43,8 @@ const OrdersForPlantHead = () => {
 
   const reason = watch("reason");
 
+  console.log("singleOrderFromPlanthead", singleOrderFromPlanthead);
+
   const [paginationModel, setPaginationModel] = useState({
     page: 0,
     pageSize: 5,
@@ -312,6 +314,12 @@ const OrdersForPlantHead = () => {
                     </span>
                     {format(singleOrderFromPlanthead?.createdAt, "dd MMM yyyy")}
                   </div>
+                  <div className="flex items-center justify-between font-semibold">
+                    <span className="text-gray-600 font-normal">
+                      Shipping Address:
+                    </span>
+                    {singleOrderFromPlanthead?.shippingAddress}
+                  </div>
                 </div>
                 <div className="flex flex-col gap-2 text-sm">
                   <h1 className="font-semibold text-base text-gray-800">
@@ -491,16 +499,6 @@ const OrdersForPlantHead = () => {
                 <CloseIcon />
               </IconButton>
             </div>
-            {/* {singleOrderFromPlanthead?.dueAmount > 0 && (
-              <div className="mt-2">
-                <p className="p-2 text-sm bg-red-50 text-red-600 rounded-lg">
-                  Firsly ask <b>{singleOrderFromPlanthead?.placedBy?.name}</b>{" "}
-                  to clear due amount of{" "}
-                  <b>{formatRupee(singleOrderFromPlanthead?.dueAmount)}</b> to
-                  dispatch the order.
-                </p>
-              </div>
-            )} */}
             <div className="mt-5">
               <form
                 className="space-y-5"
@@ -613,6 +611,14 @@ const OrdersForPlantHead = () => {
                       {errors.dispatchDocs.message}
                     </p>
                   )}
+                </div>
+                <div>
+                  <span className="text-sm text-gray-600">
+                    Shipping Address:{" "}
+                    <span className="text-black">
+                      {singleOrderFromPlanthead?.shippingAddress}
+                    </span>
+                  </span>
                 </div>
                 <div className="flex items-center justify-end gap-3 mt-5">
                   <Button

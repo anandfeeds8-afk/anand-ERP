@@ -269,6 +269,12 @@ const DispatchedOrders = () => {
                     </span>
                     {format(singleOrderFromPlanthead?.createdAt, "dd MMM yyyy")}
                   </div>
+                  <div className="flex items-center justify-between font-semibold">
+                    <span className="text-gray-600 font-normal">
+                      Shipping Address:
+                    </span>
+                    {singleOrderFromPlanthead?.shippingAddress}
+                  </div>
                 </div>
                 <div className="flex flex-col gap-2 text-sm">
                   <h1 className="font-semibold text-base text-gray-800">

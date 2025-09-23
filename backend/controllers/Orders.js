@@ -15,6 +15,7 @@ const createOrder = async (req, res) => {
       notes,
       party,
       discount,
+      shippingAddress,
     } = req.body;
 
     const orderId = await getNextOrderId();
@@ -22,11 +23,14 @@ const createOrder = async (req, res) => {
     const parsedItems = JSON.parse(items);
     const placedBy = req.user.id;
 
+    console.log(parsedParty);
+
     // ✅ Validate party fields
     if (
       !parsedParty?.companyName ||
       !parsedParty?.contactPersonNumber ||
-      !parsedParty?.address
+      !parsedParty?.address ||
+      !parsedParty?.subAgents
     ) {
       return res.status(400).json({
         success: false,
@@ -70,21 +74,23 @@ const createOrder = async (req, res) => {
     let paymentStatus;
     let advancePaymentStatus;
     let duePaymentStatus;
+    let advancePaymentMode;
+    let duePaymentMode;
 
     if (advance === totalAmount && dueAmount === 0) {
       paymentStatus = "ConfirmationPending";
       advancePaymentStatus = "Pending";
+      advancePaymentMode = paymentMode;
     } else if (advance > 0 && advance < totalAmount && dueAmount > 0) {
       paymentStatus = "PendingDues";
       advancePaymentStatus = "Pending";
       duePaymentStatus = "Pending";
+      advancePaymentMode = paymentMode;
     } else if (advance === 0 && dueAmount > 0) {
       paymentStatus = "PendingDues";
-      advancePaymentStatus = "Pending";
+      advancePaymentMode = "Not Paid";
       duePaymentStatus = "Pending";
     }
-
-    let duePaymentMode = dueAmount > 0 ? "Not Paid" : null;
 
     // ✅ Update Party balance (loan/credit limit)
     await Party.findByIdAndUpdate(parsedParty._id, {
@@ -104,9 +110,10 @@ const createOrder = async (req, res) => {
       advanceAmount: advance,
       dueAmount,
       dueDate,
-      paymentMode,
+      paymentMode: advancePaymentMode,
       duePaymentMode,
       notes,
+      shippingAddress,
       paymentStatus,
       advancePaymentStatus,
       duePaymentStatus,
@@ -374,6 +381,7 @@ const approveOrderToWarehouse = async (req, res) => {
 
     if (order.advanceAmount > 0 && order.advancePaymentDoc) {
       order.advancePaymentStatus = "SentForApproval";
+      order.paymentStatus = "ConfirmationPending";
       order.advancePaymentApprovalSentTo = warehouse.accountant;
     }
 

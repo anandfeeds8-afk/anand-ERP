@@ -1,10 +1,21 @@
 const mongoose = require("mongoose");
 
+const subAgentSchema = mongoose.Schema({
+  name: { type: String, required: true },
+  address: { type: String, required: true },
+  phone: { type: String, required: true },
+  email: { type: String, required: true },
+});
+
 const partySchema = new mongoose.Schema({
   companyName: { type: String, required: true },
   contactPersonNumber: { type: String, required: true },
   address: { type: String, required: true },
-  // discount: { type: Number, required: true },
+  subAgents: [
+    {
+      type: subAgentSchema,
+    },
+  ],
   addedBy: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Salesman",

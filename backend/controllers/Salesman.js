@@ -193,24 +193,29 @@ const updatePayment = async (req, res) => {
     // Update payment info
     const newDueAmount = Number(order.dueAmount) - Number(amount);
     order.dueAmount = newDueAmount;
-    order.duePaymentStatus = "SentForApproval";
-    if (order.advanceAmount > 0 && newDueAmount > 0) {
-      order.paymentStatus = "SentForConfirmation";
+
+    if (order.advanceAmount === 0 && newDueAmount === 0) {
+      order.paymentStatus = "ConfirmationPending";
+      order.duePaymentMode = paymentMode;
+      order.duePaymentStatus = "SentForApproval";
     }
-    if (order.advanceAmount === order.totalAmount) {
-      order.paymentStatus = "SentForConfirmation";
+    if (order.advanceAmount > 0 && newDueAmount === 0) {
+      order.paymentStatus = "ConfirmationPending";
+      order.duePaymentMode = paymentMode;
+      order.duePaymentStatus = "SentForApproval";
+    }
+    if (order.advanceAmount > 0 && newDueAmount > 0) {
+      order.paymentStatus = "ConfirmationPending";
+      order.duePaymentMode = paymentMode;
+      order.duePaymentStatus = "SentForApproval";
+      if (order.advancePaymentStatus !== "Approved") {
+        order.advancePaymentStatus = "Pending";
+      }
     }
 
     let updatedLimit = Number(party.limit) + Number(amount);
 
     party.limit = Number(updatedLimit);
-
-    // Update status
-    if (newDueAmount === 0) {
-      order.paymentStatus = "Paid";
-    } else {
-      order.paymentStatus = "PendingDues";
-    }
 
     order.paymentCollectedBy = salesmanId;
     order.duePaymentDoc = duePaymentProof.url;

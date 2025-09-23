@@ -9,9 +9,10 @@ import {
   TextField,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
-import { useForm } from "react-hook-form";
+import { useFieldArray, useForm } from "react-hook-form";
 import { useUser } from "../../hooks/useUser";
 import RejectedParties from "../../components/Salesman/PartyManagement/RejectedParties";
+import { CircleX } from "lucide-react";
 
 const PartyManagementPage = () => {
   const [singleOrderId, setSingleOrderId] = useState(null);
@@ -36,7 +37,17 @@ const PartyManagementPage = () => {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm();
+    control,
+  } = useForm({
+    defaultValues: {
+      subAgents: [{ name: "", address: "", phone: "", email: "" }],
+    },
+  });
+
+  const { fields, append, remove } = useFieldArray({
+    control,
+    name: "subAgents",
+  });
 
   const onSubmit = (data) => {
     console.log(data);
@@ -135,7 +146,7 @@ const PartyManagementPage = () => {
       {/* --- Add Party Modal --- */}
       {openAdd && (
         <div className="transition-all bg-black/30 backdrop-blur-sm w-full z-50 h-screen absolute top-0 left-0 flex items-center justify-center">
-          <div className="bg-white p-7 rounded-lg w-[29rem]">
+          <div className="bg-white p-7 rounded-lg w-[29rem] max-h-[95%] overflow-y-auto">
             <p className="text-xl font-semibold mb-7">Add a new party</p>
             <form className="space-y-5" onSubmit={handleSubmit(onSubmit)}>
               <TextField
@@ -227,6 +238,116 @@ const PartyManagementPage = () => {
                   },
                 })}
               />
+
+              <div>
+                <h1 className="font-semibold text-gray-700 text-sm mb-2">
+                  Sub Agents
+                </h1>
+                {fields.map((field, index) => (
+                  <div
+                    key={field.id}
+                    className="flex flex-col gap-3 border-b-2 pb-5 mb-4"
+                  >
+                    <div className="flex items-center justify-between">
+                      <p className="text-sm font-semibold text-gray-700">
+                        Agent {index + 1}
+                      </p>
+                      <Button
+                        size="small"
+                        variant="text"
+                        color="error"
+                        startIcon={
+                          <CircleX
+                            onClick={() => remove(index)}
+                            size={13}
+                            strokeWidth={1.7}
+                            className="active:scale-95 cursor-pointer transition-all text-red-600"
+                          />
+                        }
+                        disableElevation
+                        sx={{ textTransform: "none" }}
+                        onClick={() => remove(index)}
+                      >
+                        Remove
+                      </Button>
+                    </div>
+                    <TextField
+                      size="small"
+                      fullWidth
+                      id="outlined-basic"
+                      label="Name"
+                      variant="outlined"
+                      error={!!errors.limit}
+                      helperText={
+                        errors.limit && (
+                          <span className="text-red-600 text-xs mt-1">
+                            {errors.limit.message}
+                          </span>
+                        )
+                      }
+                      {...register(`subAgents.${index}.name`)}
+                    />
+                    <TextField
+                      size="small"
+                      fullWidth
+                      id="outlined-basic"
+                      label="Address"
+                      variant="outlined"
+                      error={!!errors.limit}
+                      helperText={
+                        errors.limit && (
+                          <span className="text-red-600 text-xs mt-1">
+                            {errors.limit.message}
+                          </span>
+                        )
+                      }
+                      {...register(`subAgents.${index}.address`)}
+                    />
+                    <TextField
+                      size="small"
+                      fullWidth
+                      id="outlined-basic"
+                      label="Phone"
+                      variant="outlined"
+                      error={!!errors.limit}
+                      helperText={
+                        errors.limit && (
+                          <span className="text-red-600 text-xs mt-1">
+                            {errors.limit.message}
+                          </span>
+                        )
+                      }
+                      {...register(`subAgents.${index}.phone`)}
+                    />
+                    <TextField
+                      size="small"
+                      fullWidth
+                      id="outlined-basic"
+                      label="Email"
+                      variant="outlined"
+                      error={!!errors.limit}
+                      helperText={
+                        errors.limit && (
+                          <span className="text-red-600 text-xs mt-1">
+                            {errors.limit.message}
+                          </span>
+                        )
+                      }
+                      {...register(`subAgents.${index}.email`)}
+                    />
+                  </div>
+                ))}
+                <Button
+                  variant="outlined"
+                  fullWidth
+                  disableElevation
+                  startIcon={<AddIcon />}
+                  sx={{ textTransform: "none" }}
+                  onClick={() => append({})}
+                >
+                  Add Sub Agent
+                </Button>
+              </div>
 
               <div className="flex items-center justify-end gap-3 mt-5">
                 <Button

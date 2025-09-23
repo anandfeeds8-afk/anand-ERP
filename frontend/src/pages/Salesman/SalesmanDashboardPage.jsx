@@ -134,14 +134,18 @@ const SalesmanDashboardPage = () => {
   const onSubmit = (data) => {
     const formData = new FormData();
     formData.append("party", JSON.stringify(selectedParty));
-    formData.append("quantity", data.quantity);
     formData.append("advanceAmount", data.advanceAmount);
     formData.append("dueDate", data.dueDate);
     formData.append("discount", data.discount);
     formData.append("paymentMode", data.paymentMode);
     formData.append("notes", data.notes);
     formData.append("advanceAmountDocs", advanceAmountFile);
+    formData.append("shippingAddress", data.shippingAddress);
     formData.append("items", JSON.stringify(data.items));
+    for (let [key, value] of formData.entries()) {
+      console.log(key, value);
+    }
+
     createOrder(formData, { onSuccess: () => setOpenForm(false) });
   };
 
@@ -235,37 +239,73 @@ const SalesmanDashboardPage = () => {
                       </div>
                     )}
                   </div>
+                  <div className="space-y-5">
+                    <FormControl
+                      fullWidth
+                      size="small"
+                      error={!!errors.party}
+                      className="mb-4"
+                    >
+                      <InputLabel id="party-label">Party</InputLabel>
+                      <Controller
+                        name="party"
+                        control={control}
+                        rules={{ required: "Party is required" }}
+                        render={({ field }) => (
+                          <Select
+                            {...field}
+                            label="Party"
+                            size="small"
+                            fullWidth
+                            variant="outlined"
+                            error={!!errors.party}
+                          >
+                            <MenuItem>Select Party</MenuItem>
+                            {approvedParties?.map((party) => (
+                              <MenuItem key={party._id} value={party._id}>
+                                {party.companyName}
+                              </MenuItem>
+                            ))}
+                          </Select>
+                        )}
+                      />
+                    </FormControl>
 
-                  <FormControl
-                    fullWidth
-                    size="small"
-                    error={!!errors.party}
-                    className="mb-4"
-                  >
-                    <InputLabel id="party-label">Party</InputLabel>
-                    <Controller
-                      name="party"
-                      control={control}
-                      rules={{ required: "Party is required" }}
-                      render={({ field }) => (
-                        <Select
-                          {...field}
-                          label="Party"
-                          size="small"
-                          fullWidth
-                          variant="outlined"
-                          error={!!errors.party}
-                        >
-                          <MenuItem>Select Party</MenuItem>
-                          {approvedParties?.map((party) => (
-                            <MenuItem key={party._id} value={party._id}>
-                              {party.companyName}
-                            </MenuItem>
-                          ))}
-                        </Select>
-                      )}
-                    />
-                  </FormControl>
+                    <FormControl
+                      fullWidth
+                      disabled={!selectedParty}
+                      size="small"
+                      error={!!errors.shippingAddress}
+                      className="mt-4"
+                    >
+                      <InputLabel id="shippingAddress-label">
+                        Shipping Address
+                      </InputLabel>
+                      <Controller
+                        name="shippingAddress"
+                        control={control}
+                        rules={{ required: "Shippment address is required" }}
+                        render={({ field }) => (
+                          <Select
+                            {...field}
+                            label="Shippment address"
+                            size="small"
+                            fullWidth
+                            variant="outlined"
+                            error={!!errors.shippingAddress}
+                          >
+                            <MenuItem>Select Shippment address</MenuItem>
+                            <MenuItem value="Self">Self</MenuItem>
+                            {selectedParty?.subAgents?.map((agent, index) => (
+                              <MenuItem key={index} value={agent?.address}>
+                                {agent?.name} ({agent?.address})
+                              </MenuItem>
+                            ))}
+                          </Select>
+                        )}
+                      />
+                    </FormControl>
+                  </div>
                 </div>
 
                 <div>

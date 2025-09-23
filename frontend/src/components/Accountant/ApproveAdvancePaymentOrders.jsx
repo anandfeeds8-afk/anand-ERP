@@ -206,7 +206,7 @@ const ApproveAdvancePaymentOrders = () => {
                     textTransform: "none",
                   }}
                 >
-                  Approve advance payment
+                  Confirm advance payment
                 </Button>
                 <IconButton size="small" onClick={() => setOpenView(false)}>
                   <CloseIcon />
@@ -273,6 +273,12 @@ const ApproveAdvancePaymentOrders = () => {
                       Placed Date:
                     </span>
                     {format(singleOrderInAccountant?.createdAt, "dd MMM yyyy")}
+                  </div>
+                  <div className="flex items-center justify-between font-semibold">
+                    <span className="text-gray-600 font-normal">
+                      Shipping Address:
+                    </span>
+                    {singleOrderInAccountant?.shippingAddress}
                   </div>
                 </div>
                 <div className="flex flex-col gap-2 text-sm">
