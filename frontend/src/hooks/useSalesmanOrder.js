@@ -20,7 +20,6 @@ export const useSalesmanOrder = (id) => {
             },
           }
         );
-        console.log("salesman orders", response.data.data);
         return response.data.data;
       },
       onError: (error) => {
@@ -41,7 +40,6 @@ export const useSalesmanOrder = (id) => {
             },
           }
         );
-        console.log("salesman due orders", response.data.data);
         return response.data.data;
       },
       onError: (error) => {
@@ -55,7 +53,6 @@ export const useSalesmanOrder = (id) => {
       queryKey: ["singleOrder", id],
       queryFn: async () => {
         if (!id) return null;
-        console.log("id", id);
         const response = await axios.get(
           BASE_URL + API_PATHS.SALESMAN.GET_ORDER(id),
           {
@@ -64,7 +61,6 @@ export const useSalesmanOrder = (id) => {
             },
           }
         );
-        console.log("salesman single order", response.data.data);
         return response.data.data;
       },
       onError: (error) => {
@@ -90,7 +86,8 @@ export const useSalesmanOrder = (id) => {
       queryClient.invalidateQueries({ queryKey: ["order"] });
       queryClient.invalidateQueries({ queryKey: ["ordersInSalesman"] });
       queryClient.invalidateQueries({ queryKey: ["dueOrdersInSalesman"] });
-      // console.log(data);
+      queryClient.invalidateQueries({ queryKey: ["singleOrder", id] });
+      queryClient.invalidateQueries({ queryKey: ["notifications"] });
       toast.success(data.message);
     },
     onError: (error) => {
@@ -102,7 +99,6 @@ export const useSalesmanOrder = (id) => {
   // DELETE Order in Salesman
   const { mutate: deliverOrder, isPending: isDeliveringOrder } = useMutation({
     mutationFn: async (orderId) => {
-      console.log("orderId", orderId);
       const response = await axios.patch(
         "http://localhost:5000/api/salesman/deliver-order",
         { orderId },
@@ -118,7 +114,7 @@ export const useSalesmanOrder = (id) => {
       queryClient.invalidateQueries({ queryKey: ["order"] });
       queryClient.invalidateQueries({ queryKey: ["ordersInSalesman"] });
       queryClient.invalidateQueries({ queryKey: ["dueOrdersInSalesman"] });
-      console.log(data);
+      queryClient.invalidateQueries({ queryKey: ["singleOrder", id] });
       toast.success(data.message);
     },
     onError: (error) => {
@@ -139,14 +135,13 @@ export const useSalesmanOrder = (id) => {
           },
         }
       );
-      // console.log("cancel order response", response.data);
       return response.data;
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["order"] });
       queryClient.invalidateQueries({ queryKey: ["ordersInSalesman"] });
       queryClient.invalidateQueries({ queryKey: ["dueOrdersInSalesman"] });
-      // console.log(data);
+      queryClient.invalidateQueries({ queryKey: ["singleOrder", id] });
       toast.success(data.message);
     },
     onError: (error) => {
@@ -158,7 +153,6 @@ export const useSalesmanOrder = (id) => {
   // update payment in Salesman
   const { mutate: updatePayment, isPending: isUpdatingPayment } = useMutation({
     mutationFn: async (data) => {
-      console.log("data", data);
       const response = await axios.post(
         BASE_URL + API_PATHS.SALESMAN.UPDATE_PAYMENT,
         data,
@@ -174,7 +168,7 @@ export const useSalesmanOrder = (id) => {
       queryClient.invalidateQueries({ queryKey: ["order"] });
       queryClient.invalidateQueries({ queryKey: ["ordersInSalesman"] });
       queryClient.invalidateQueries({ queryKey: ["dueOrdersInSalesman"] });
-      // console.log(data);
+      queryClient.invalidateQueries({ queryKey: ["singleOrder", id] });
       toast.success(data.message);
     },
     onError: (error) => {
@@ -197,7 +191,6 @@ export const useSalesmanOrder = (id) => {
           },
         }
       );
-      // console.log("parties", response.data.data);
       return response.data.data;
     },
     onError: (error) => {
@@ -218,7 +211,6 @@ export const useSalesmanOrder = (id) => {
             },
           }
         );
-        // console.log("approved parties", response.data.data);
         return response.data.data;
       },
       onError: (error) => {
@@ -240,7 +232,6 @@ export const useSalesmanOrder = (id) => {
             },
           }
         );
-        // console.log("approved parties", response.data.data);
         return response.data.data;
       },
       onError: (error) => {
@@ -253,7 +244,6 @@ export const useSalesmanOrder = (id) => {
   const { mutate: sendPartyForApproval, isPending: sendingPartyForApproval } =
     useMutation({
       mutationFn: async (partyId) => {
-        console.log("partyId", partyId);
         if (!partyId) return null;
         const response = await axios.post(
           BASE_URL + API_PATHS.SALESMAN.APPROVE_PARTY,
@@ -264,12 +254,10 @@ export const useSalesmanOrder = (id) => {
             },
           }
         );
-        // console.log("send party for approval response", response.data);
         return response.data;
       },
       onSuccess: (data) => {
         queryClient.invalidateQueries({ queryKey: ["parties"] });
-        // console.log(data);
         toast.success(data.message);
       },
       onError: (error) => {
@@ -281,7 +269,6 @@ export const useSalesmanOrder = (id) => {
   //add party
   const { mutate: addParty, isPending: addingParty } = useMutation({
     mutationFn: async (data) => {
-      console.log("add party data", data);
       const response = await axios.post(
         BASE_URL + API_PATHS.SALESMAN.ADD_PARTY,
         data,
@@ -295,7 +282,6 @@ export const useSalesmanOrder = (id) => {
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["parties"] });
-      // console.log(data);
       toast.success(data.message);
     },
     onError: (error) => {
@@ -307,7 +293,6 @@ export const useSalesmanOrder = (id) => {
   //update party
   const { mutate: updateParty, isPending: updatingParty } = useMutation({
     mutationFn: async (data) => {
-      console.log("update party data", data);
       const response = await axios.put(
         BASE_URL + API_PATHS.SALESMAN.UPDATE_PARTY(data.partyId),
         data,
@@ -321,7 +306,6 @@ export const useSalesmanOrder = (id) => {
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["parties"] });
-      // console.log(data);
       toast.success(data.message);
     },
     onError: (error) => {
@@ -333,7 +317,6 @@ export const useSalesmanOrder = (id) => {
   //delete party
   const { mutate: deleteParty, isPending: deletingParty } = useMutation({
     mutationFn: async (partyId) => {
-      console.log("delete party data", partyId);
       const response = await axios.delete(
         BASE_URL + API_PATHS.SALESMAN.DELETE_PARTY(partyId),
         {
@@ -346,7 +329,6 @@ export const useSalesmanOrder = (id) => {
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["parties"] });
-      // console.log(data);
       toast.success(data.message);
     },
     onError: (error) => {

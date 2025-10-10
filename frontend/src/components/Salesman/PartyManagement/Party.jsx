@@ -54,29 +54,29 @@ const Party = ({ party }) => {
   }
 
   return (
-    <div className="shadow bg-white lg:rounded-lg lg:p-4 lg:flex lg:flex-col justify-between hover:shadow-md transition-all">
+    <div className="shadow bg-white dark:bg-gray-800 lg:rounded-lg lg:p-4 lg:flex lg:flex-col justify-between hover:shadow-md transition-all">
       <div className="flex flex-col gap-2">
         <div className="flex items-center justify-between">
-          <p className="text-left lg:text-lg lg:font-bold">
+          <p className="text-left lg:text-lg lg:font-bold dark:text-gray-300">
             {party.companyName}
           </p>
           {party?.partyStatus === "approved" && (
-            <p className="text-green-700 font-semibold text-xs p-1 px-2 bg-green-100 rounded-full">
+            <p className="text-green-700 dark:text-green-400 dark:bg-green-800 font-semibold text-xs p-1 px-2 bg-green-100 rounded-full">
               Approved
             </p>
           )}
           {party?.partyStatus === "pending" && (
-            <p className="text-orange-700 font-semibold text-xs p-1 px-2 bg-orange-100 rounded-full">
+            <p className="text-orange-700 dark:text-orange-400 dark:bg-orange-800 font-semibold text-xs p-1 px-2 bg-orange-100 rounded-full">
               Pending
             </p>
           )}
           {party?.partyStatus === "sentForApproval" && (
-            <p className="text-violet-700 font-semibold text-xs p-1 px-2 bg-violet-100 rounded-full">
+            <p className="text-violet-700 dark:text-violet-400 dark:bg-violet-800 font-semibold text-xs p-1 px-2 bg-violet-100 rounded-full">
               Sent for approval
             </p>
           )}
           {party?.partyStatus === "rejected" && (
-            <p className="text-red-700 font-semibold text-xs p-1 px-2 bg-red-100 rounded-full">
+            <p className="text-red-700 dark:text-red-400 dark:bg-red-800 font-semibold text-xs p-1 px-2 bg-red-100 rounded-full">
               Rejected
             </p>
           )}
@@ -84,23 +84,27 @@ const Party = ({ party }) => {
         <div className="flex flex-col gap-5 mt-2">
           <div className="flex flex-col gap-2 text-sm">
             <div className="flex items-center justify-between font-semibold">
-              <span className="text-gray-600 font-normal text-right">
+              <span className="text-gray-600 dark:text-gray-400 font-normal text-right">
                 Address:
               </span>
-              <span className="text-right">{party?.address}</span>
+              <span className="dark:text-gray-300">{party?.address}</span>
             </div>
             <div className="flex items-center justify-between font-semibold">
-              <span className="text-gray-600 font-normal text-right">
+              <span className="text-gray-600 dark:text-gray-400 font-normal text-right">
                 Contact Person Number:
               </span>
-              {party?.contactPersonNumber}
+              <span className="dark:text-gray-300">
+                {party?.contactPersonNumber}
+              </span>
             </div>
 
             <div className="flex items-center justify-between font-semibold">
-              <span className="text-gray-600 font-normal text-right">
+              <span className="text-gray-600 dark:text-gray-400 font-normal text-right">
                 Limit:
               </span>
-              {formatRupee(party?.limit)}
+              <span className="dark:text-gray-300">
+                {formatRupee(party?.limit)}
+              </span>
             </div>
           </div>
         </div>
@@ -127,8 +131,7 @@ const Party = ({ party }) => {
         <div className="flex items-center gap-1">
           {user.isActive ? (
             <SquarePen
-              color="green"
-              className="hover:bg-green-100 active:scale-95 transition-all p-1.5 rounded-lg"
+              className="hover:bg-green-100 dark:hover:bg-green-800 dark:hover:text-green-200 text-green-500 active:scale-95 transition-all p-1.5 rounded-lg"
               size={30}
               onClick={() => setOpenEdit(true)}
             />
@@ -141,8 +144,7 @@ const Party = ({ party }) => {
           )}
           {user.isActive ? (
             <Trash2
-              color="red"
-              className="hover:bg-red-100 active:scale-95 transition-all p-1.5 rounded-lg"
+              className="hover:bg-red-100 dark:hover:bg-red-800 dark:hover:text-red-200 text-red-500 active:scale-95 transition-all p-1.5 rounded-lg"
               size={30}
               onClick={() => setOpenDelete(true)}
             />

@@ -20,7 +20,6 @@ export const useAdminOrder = (id) => {
           },
         }
       );
-      // console.log("orders", response.data.data);
       return response.data.data;
     },
     onError: (error) => {
@@ -174,7 +173,6 @@ export const useAdminOrder = (id) => {
   //approve party
   const { mutate: approveParty, isPending: isApprovingParty } = useMutation({
     mutationFn: async (partyId) => {
-      console.log("partyId", partyId);
       const response = await axios.patch(
         BASE_URL + API_PATHS.ADMIN.PARTY.APPROVE,
         { partyId },
@@ -201,7 +199,6 @@ export const useAdminOrder = (id) => {
   //reject party
   const { mutate: rejectParty, isPending: isRejectingParty } = useMutation({
     mutationFn: async (partyId) => {
-      console.log("partyId", partyId);
       const response = await axios.patch(
         BASE_URL + API_PATHS.ADMIN.PARTY.REJECT,
         { partyId },
@@ -228,7 +225,6 @@ export const useAdminOrder = (id) => {
   //update party
   const { mutate: updateParty, isPending: isUpdatingParty } = useMutation({
     mutationFn: async (data) => {
-      console.log("partyId", data.partyId);
       const response = await axios.patch(
         BASE_URL + API_PATHS.ADMIN.PARTY.UPDATE_PARTY(data.partyId),
         data,

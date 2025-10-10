@@ -5,6 +5,9 @@ const PlantHead = require("../models/PlantHead");
 const Order = require("../models/Order");
 const WareHouse = require("../models/WareHouse");
 const imagekit = require("../config/imagekit");
+const Notification = require("../models/Notification");
+const { getIO } = require("../config/socket.js");
+const Admin = require("../models/Admin.js");
 
 const SECRET_TOKEN = process.env.JWT_SECRET;
 
@@ -89,8 +92,9 @@ const getAllOrders = async (req, res) => {
 
     const orders = await Order.find({
       assignedWarehouse: warehouse._id,
+      advancePaymentStatus: { $in: ["Approved", null] },
       orderStatus: {
-        $in: ["ForwardedToPlantHead", "Approved", "WarehouseAssigned"],
+        $in: ["ForwardedToPlantHead", "Approved"],
       },
     })
       .populate("party", "companyName address contactPersonNumber")
@@ -232,7 +236,7 @@ const dispatchOrder = async (req, res) => {
       folder: "/dispatch-docs",
     });
 
-    const order = await Order.findById(orderId);
+    const order = await Order.findById(orderId).populate("placedBy", "name");
     if (!order) {
       return res
         .status(404)
@@ -260,6 +264,60 @@ const dispatchOrder = async (req, res) => {
     order.orderStatus = "Dispatched";
 
     await order.save();
+
+    const admins = await Admin.find().select("_id");
+
+    const adminIds = admins.map((u) => u._id.toString());
+
+    const warehouse = await WareHouse.findOne({ plantHead: plantHeadId });
+
+    const currentUser = await PlantHead.findOne({ _id: plantHeadId });
+
+    const accountantId = warehouse.accountant.toString();
+
+    const message = `Order #${order.orderId} has been dispatched to ${
+      order?.shippingAddress === "Self"
+        ? order?.placedBy?.name
+        : order?.shippingAddress
+    } by ${currentUser?.name}`;
+
+    await Notification.insertOne({
+      orderId: order.orderId,
+      message,
+      type: "dispatched",
+      senderId: plantHeadId,
+      receiverId: accountantId,
+      read: false,
+    });
+
+    const notifications = adminIds.map((r_id) => ({
+      orderId: order.orderId,
+      message,
+      type: "dispatched",
+      senderId: plantHeadId,
+      receiverId: r_id,
+      read: false,
+    }));
+
+    await Notification.insertMany(notifications);
+
+    const io = getIO();
+
+    adminIds.forEach((r_id) => {
+      io.to(r_id).emit("dispatched", {
+        orderId: order.orderId,
+        message,
+        type: "dispatched",
+        senderId: plantHeadId,
+      });
+    });
+
+    io.to(accountantId).emit("dispatched", {
+      orderId: order.orderId,
+      message,
+      type: "dispatched",
+      senderId: plantHeadId,
+    });
 
     res.status(200).json({
       success: true,

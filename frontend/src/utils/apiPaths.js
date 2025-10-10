@@ -170,4 +170,8 @@ export const API_PATHS = {
   ME: {
     GET: "/api/me",
   },
+
+  MESSAGES: {
+    GET_ALL_ADMINS: "/api/messages/get-all-admins",
+  },
 };

@@ -10,8 +10,7 @@ import {
   TextField,
   Tooltip,
 } from "@mui/material";
-import { Eye, File, Trash2 } from "lucide-react";
-import { TbFileInvoice } from "react-icons/tb";
+import { Eye, File } from "lucide-react";
 import { format } from "date-fns";
 import { DataGrid } from "@mui/x-data-grid";
 import CloseIcon from "@mui/icons-material/Close";
@@ -20,8 +19,10 @@ import { useSalesmanOrder } from "../../../hooks/useSalesmanOrder.js";
 import { CgCreditCard } from "react-icons/cg";
 import { Controller, useForm } from "react-hook-form";
 import { MdOutlineCancel } from "react-icons/md";
+import { useTheme } from "../../../context/ThemeContext.jsx";
 
 const DueOrdersForSalesman = () => {
+  const { resolvedTheme } = useTheme();
   const [singleOrderId, setSingleOrderId] = useState(null);
   const [openView, setOpenView] = useState(false);
   const [openInvoice, setOpenInvoice] = useState(false);
@@ -229,28 +230,72 @@ const DueOrdersForSalesman = () => {
         autoHeight
         sx={{
           width: "100%",
-          borderRadius: "8px",
-          minWidth: "100%",
-          "& .MuiDataGrid-cell:focus": {
-            outline: "none",
-            backgroundColor: "none !important",
-          },
-          "& .MuiDataGrid-cell:focus-within": {
-            outline: "none",
-            backgroundColor: "none !important",
-          },
+          borderRadius: "6px",
+          borderColor: resolvedTheme === "dark" ? "transparent" : "#e5e7eb",
+          backgroundColor: resolvedTheme === "dark" ? "#0f172a" : "#fff",
+          color: resolvedTheme === "dark" ? "#e5e7eb" : "#111827",
+
+          // 🔹 Header Row Background
           "& .MuiDataGrid-columnHeaders": {
-            position: "sticky",
-            top: 0,
-            backgroundColor: "#fff",
-            zIndex: 1,
+            backgroundColor:
+              resolvedTheme === "dark"
+                ? "#1e293b !important"
+                : "#f9fafb !important",
+            color: resolvedTheme === "dark" ? "#f1f5f9" : "#000",
           },
-          "& .MuiDataGrid-virtualScroller": {
-            overflowX: "auto !important",
-            overflowY: "auto",
+
+          // 🔹 Header Cell
+          "& .MuiDataGrid-columnHeader": {
+            backgroundColor:
+              resolvedTheme === "dark"
+                ? "#1e293b !important"
+                : "#f9fafb !important",
+            color: resolvedTheme === "dark" ? "#9ca3af" : "#000",
           },
-          "& .MuiDataGrid-main": {
-            maxWidth: "100%",
+
+          "& .MuiDataGrid-columnHeaderTitle": {
+            fontWeight: "600",
+            fontSize: "0.8rem",
+          },
+
+          // 🔹 Cells
+          "& .MuiDataGrid-cell": {
+            borderColor: resolvedTheme === "dark" ? "#374151" : "#e5e7eb",
+            backgroundColor: resolvedTheme === "dark" ? "#0f172a" : "#fff",
+            color: resolvedTheme === "dark" ? "#9ca3af" : "#000",
+          },
+
+          // ❌ Remove blue outline when cell is active/focused
+          "& .MuiDataGrid-cell:focus, & .MuiDataGrid-cell:focus-within": {
+            outline: "none !important",
+          },
+
+          // 🔹 Hover row (lighter shade)
+          "& .MuiDataGrid-row:hover": {
+            backgroundColor:
+              resolvedTheme === "dark"
+                ? "rgba(59,130,246,0.1)"
+                : "rgba(59,130,246,0.05)",
+            transition: "background-color 0.2s ease-in-out",
+          },
+
+          // 🔹 Pagination buttons
+          "& .MuiTablePagination-root": {
+            color: resolvedTheme === "dark" ? "#e5e7eb" : "#111827",
+          },
+
+          "& .MuiPaginationItem-root": {
+            borderRadius: "6px",
+            color: resolvedTheme === "dark" ? "#e5e7eb" : "#111827",
+          },
+
+          "& .MuiPaginationItem-root.Mui-selected": {
+            backgroundColor: resolvedTheme === "dark" ? "#1e40af" : "#2563eb",
+            color: "#fff",
+          },
+
+          "& .MuiPaginationItem-root:hover": {
+            backgroundColor: resolvedTheme === "dark" ? "#1e3a8a" : "#dbeafe",
           },
         }}
         disableColumnResize={false}

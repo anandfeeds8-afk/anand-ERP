@@ -20,7 +20,6 @@ export const useSalesManagerOrder = (id) => {
             },
           }
         );
-        console.log("sales manager orders", response.data.data);
         return response.data.data;
       },
       onError: (error) => {
@@ -43,7 +42,6 @@ export const useSalesManagerOrder = (id) => {
           },
         }
       );
-      console.log("forwarded orders", response.data.data);
       return response.data.data;
     },
     onError: (error) => {
@@ -65,7 +63,6 @@ export const useSalesManagerOrder = (id) => {
             },
           }
         );
-        // console.log("sales manager single order", response.data.data);
         return response.data.data;
       },
       onError: (error) => {
@@ -85,13 +82,11 @@ export const useSalesManagerOrder = (id) => {
           },
         }
       );
-      console.log("forward order response", response.data);
       return response.data;
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["order"] });
       queryClient.invalidateQueries({ queryKey: ["ordersInSalesManager"] });
-      console.log(data);
       toast.success(data.message);
     },
     onError: (error) => {
@@ -112,13 +107,11 @@ export const useSalesManagerOrder = (id) => {
           },
         }
       );
-      console.log("cancel order response", response.data);
       return response.data;
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["order"] });
       queryClient.invalidateQueries({ queryKey: ["ordersInSalesManager"] });
-      console.log(data);
       toast.success(data.message);
     },
     onError: (error) => {

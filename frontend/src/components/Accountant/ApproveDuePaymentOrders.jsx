@@ -132,6 +132,10 @@ const ApproveDuePaymentOrders = () => {
     isGeneratingDueInvoice,
   } = useAccountantOrder(singleOrderId);
 
+  const totalBeforeDiscount =
+    singleOrderInAccountant?.totalAmount /
+    (1 - singleOrderInAccountant?.discount / 100);
+
   const [paginationModel, setPaginationModel] = useState({
     page: 0,
     pageSize: 5,
@@ -346,12 +350,15 @@ const ApproveDuePaymentOrders = () => {
           <div className="bg-white relative p-7 rounded-lg w-[50%] max-h-[90%] overflow-auto">
             <div className="mb-5">
               <div className="flex items-center justify-between">
-                <p className="text-xl font-bold">Order Details</p>
+                <p className="text-xl font-bold">
+                  Order Details - #{singleOrderInAccountant?.orderId}
+                </p>
                 {singleOrderInAccountant?.duePaymentStatus ===
                   "SentForApproval" && (
                   <Button
                     loading={isApprovingDuePayment}
                     onClick={() => approveDuePayment(singleOrderId)}
+                    sx={{ textTransform: "none" }}
                   >
                     Confirm received dues
                   </Button>
@@ -361,6 +368,7 @@ const ApproveDuePaymentOrders = () => {
                     <Button
                       loading={isGeneratingDueInvoice}
                       onClick={handleInvoiceGeneration}
+                      sx={{ textTransform: "none" }}
                     >
                       Generate due invoice
                     </Button>
@@ -417,22 +425,6 @@ const ApproveDuePaymentOrders = () => {
                   </h1>
                   <div className="flex items-center justify-between font-semibold">
                     <span className="text-gray-600 font-normal">
-                      Product Category:
-                    </span>
-                    {singleOrderInAccountant?.item?.category}
-                  </div>
-                  <div className="flex items-center justify-between font-semibold">
-                    <span className="text-gray-600 font-normal">
-                      Product Name:
-                    </span>
-                    {singleOrderInAccountant?.item?.name}
-                  </div>
-                  <div className="flex items-center justify-between font-semibold">
-                    <span className="text-gray-600 font-normal">Quantity:</span>
-                    {singleOrderInAccountant?.quantity} kg
-                  </div>
-                  <div className="flex items-center justify-between font-semibold">
-                    <span className="text-gray-600 font-normal">
                       Placed By:
                     </span>
                     {singleOrderInAccountant?.placedBy?.name}
@@ -443,43 +435,121 @@ const ApproveDuePaymentOrders = () => {
                     </span>
                     {format(singleOrderInAccountant?.createdAt, "dd MMM yyyy")}
                   </div>
-                  <div className="flex items-center justify-between font-semibold">
-                    <span className="text-gray-600 font-normal">
-                      Shipping Address:
-                    </span>
-                    {singleOrderInAccountant?.shippingAddress}
-                  </div>
                 </div>
                 <div className="flex flex-col gap-2 text-sm">
                   <h1 className="font-semibold text-base text-gray-800">
                     Payment Information
                   </h1>
                   <div className="flex items-center justify-between font-semibold">
+                    <span className="text-gray-600 font-normal">Subtotal:</span>
+                    {formatRupee(totalBeforeDiscount)}
+                  </div>
+                  <div className="flex items-center justify-between font-semibold">
                     <span className="text-gray-600 font-normal">
-                      Total Amount:
+                      Discount ({singleOrderInAccountant?.discount}%):
+                    </span>
+                    -
+                    {formatRupee(
+                      totalBeforeDiscount - singleOrderInAccountant?.totalAmount
+                    )}
+                  </div>
+                  <div className="flex items-center justify-between font-semibold">
+                    <span className="text-gray-600 font-normal">
+                      Net Total:
                     </span>
                     {formatRupee(singleOrderInAccountant?.totalAmount)}
                   </div>
                   <div className="flex items-center justify-between font-semibold text-green-700">
                     <span className="text-gray-600 font-normal">
                       Advance Amount:
-                    </span>{" "}
+                    </span>
                     {formatRupee(singleOrderInAccountant?.advanceAmount)}
                   </div>
                   <div className="flex items-center justify-between font-semibold text-red-700">
                     <span className="text-gray-600 font-normal">
                       Due Amount:
-                    </span>{" "}
+                    </span>
                     {formatRupee(singleOrderInAccountant?.dueAmount)}
                   </div>
+                  {singleOrderInAccountant?.advanceAmount > 0 && (
+                    <div className="flex items-center justify-between font-semibold text-red-700">
+                      <span className="text-gray-600 font-normal">
+                        Advance Confirmation:
+                      </span>
+                      {singleOrderInAccountant?.advancePaymentStatus ===
+                        "Approved" && (
+                        <span className="text-green-700 font-semibold bg-green-100 p-1 px-3 rounded-full text-xs">
+                          Confirmed
+                        </span>
+                      )}
+                      {singleOrderInAccountant?.advancePaymentStatus ===
+                        "SentForApproval" && (
+                        <span className="text-indigo-700 font-semibold bg-indigo-100 p-1 px-3 rounded-full text-xs">
+                          Sent For Confirmation
+                        </span>
+                      )}
+                      {singleOrderInAccountant?.advancePaymentStatus ===
+                        "Pending" && (
+                        <span className="text-yellow-700 font-semibold bg-yellow-100 p-1 px-3 rounded-full text-xs">
+                          Pending
+                        </span>
+                      )}
+                      {singleOrderInAccountant?.advancePaymentStatus ===
+                        "Rejected" && (
+                        <span className="text-red-700 font-semibold bg-red-100 p-1 px-3 rounded-full text-xs">
+                          Rejected
+                        </span>
+                      )}
+                    </div>
+                  )}
+                  {singleOrderInAccountant?.duePaymentStatus && (
+                    <div className="flex items-center justify-between font-semibold text-red-700">
+                      <span className="text-gray-600 font-normal">
+                        Due Confirmation:
+                      </span>
+                      {singleOrderInAccountant?.duePaymentStatus ===
+                        "Approved" && (
+                        <span className="text-green-700 font-semibold bg-green-100 p-1 px-3 rounded-full text-xs">
+                          Confirmed
+                        </span>
+                      )}
+                      {singleOrderInAccountant?.duePaymentStatus ===
+                        "SentForApproval" && (
+                        <span className="text-indigo-700 font-semibold bg-indigo-100 p-1 px-3 rounded-full text-xs">
+                          Sent For Confirmation
+                        </span>
+                      )}
+                      {singleOrderInAccountant?.duePaymentStatus ===
+                        "Pending" && (
+                        <span className="text-yellow-700 font-semibold bg-yellow-100 p-1 px-3 rounded-full text-xs">
+                          Pending
+                        </span>
+                      )}
+                      {singleOrderInAccountant?.duePaymentStatus ===
+                        "Rejected" && (
+                        <span className="text-red-700 font-semibold bg-red-100 p-1 px-3 rounded-full text-xs">
+                          Rejected
+                        </span>
+                      )}
+                    </div>
+                  )}
+
                   <div className="flex items-center justify-between font-semibold">
                     <span className="text-gray-600 font-normal">
-                      Payment Mode:
-                    </span>{" "}
+                      Advance Payment Mode:
+                    </span>
                     {singleOrderInAccountant?.paymentMode}
                   </div>
+                  {singleOrderInAccountant?.duePaymentMode && (
+                    <div className="flex items-center justify-between font-semibold">
+                      <span className="text-gray-600 font-normal">
+                        Due Payment Mode:
+                      </span>
+                      {singleOrderInAccountant?.duePaymentMode}
+                    </div>
+                  )}
                   <div className="flex items-center justify-between font-semibold">
-                    <span className="text-gray-600 font-normal">Due Date:</span>{" "}
+                    <span className="text-gray-600 font-normal">Due Date:</span>
                     {format(singleOrderInAccountant?.dueDate, "dd MMM yyyy")}
                   </div>
                 </div>
@@ -493,7 +563,7 @@ const ApproveDuePaymentOrders = () => {
                   <div className="flex items-center justify-between font-semibold">
                     <span className="text-gray-600 font-normal">
                       Order Status:
-                    </span>{" "}
+                    </span>
                     {singleOrderInAccountant?.orderStatus === "Delivered" ? (
                       <span className="text-green-700 bg-green-100 p-1 px-3 rounded-full text-xs">
                         {singleOrderInAccountant?.orderStatus}
@@ -544,22 +614,11 @@ const ApproveDuePaymentOrders = () => {
 
                 <div className="flex flex-col gap-2 text-sm">
                   <h1 className="font-semibold text-base text-gray-800">
-                    Notes
-                  </h1>
-                  <p className="bg-green-50 rounded-lg p-3">
-                    {singleOrderInAccountant?.notes}
-                  </p>
-                </div>
-
-                <div className="flex flex-col gap-2 text-sm">
-                  <h1 className="font-semibold text-base text-gray-800">
-                    Order Timeline
+                    Shipping Details
                   </h1>
                   <div className="flex items-center justify-between font-semibold">
-                    <span className="text-gray-600 font-normal">
-                      Order Placed On:
-                    </span>
-                    {format(singleOrderInAccountant?.createdAt, "dd MMM yyyy")}
+                    <span className="text-gray-600 font-normal">Address:</span>
+                    {singleOrderInAccountant?.shippingAddress}
                   </div>
                 </div>
                 {singleOrderInAccountant?.assignedWarehouse && (
@@ -574,11 +633,10 @@ const ApproveDuePaymentOrders = () => {
                         Warehouse:
                       </span>
                       {singleOrderInAccountant?.assignedWarehouse ? (
-                        <div className="flex items-center">
+                        <div className="flex flex-col items-center">
                           <p>
                             {singleOrderInAccountant?.assignedWarehouse?.name}
                           </p>
-                          &nbsp;
                           <p className="text-xs font-normal text-gray-600">
                             (
                             {
@@ -611,6 +669,12 @@ const ApproveDuePaymentOrders = () => {
                   </div>
                 )}
               </div>
+            </div>
+            <div className="flex flex-col gap-2 text-sm mt-5">
+              <h1 className="font-semibold text-base text-gray-800">Notes</h1>
+              <p className="bg-yellow-50 rounded-lg p-3">
+                {singleOrderInAccountant?.notes}
+              </p>
             </div>
           </div>
         </div>

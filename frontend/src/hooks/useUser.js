@@ -36,9 +36,7 @@ export const useUser = () => {
   //Change Activity Status (role based)
   const { mutate: changeStatus, isPending: changeStatusPending } = useMutation({
     mutationFn: async (role) => {
-      console.log(role);
       const apiPath = ROLES[role];
-      console.log("apiPath", apiPath);
       if (apiPath) {
         const response = await axios.put(
           BASE_URL + apiPath,
@@ -49,12 +47,10 @@ export const useUser = () => {
             },
           }
         );
-        console.log(response.data);
         return response.data;
       }
     },
     onSuccess: (data) => {
-      console.log(data);
       queryClient.invalidateQueries({
         queryKey: ["user"],
       });

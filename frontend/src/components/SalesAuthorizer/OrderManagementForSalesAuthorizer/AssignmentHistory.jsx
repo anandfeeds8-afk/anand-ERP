@@ -27,6 +27,10 @@ const AssignmentHistory = () => {
     pageSize: 5,
   });
 
+  const totalBeforeDiscount =
+    singleOrderFromSalesauthorizer?.totalAmount /
+    (1 - singleOrderFromSalesauthorizer?.discount / 100);
+
   const handleView = (id) => {
     console.log(id);
     setSingleOrderId(id);
@@ -164,7 +168,9 @@ const AssignmentHistory = () => {
           <div className="bg-white relative p-7 rounded-lg min-w-[50%] max-w-[55%] max-h-[95%] overflow-auto">
             <div className="mb-5">
               <div className="flex items-center justify-between">
-                <p className="text-xl font-bold">Order Details</p>
+                <p className="text-xl font-bold">
+                  Order Details - #{singleOrderFromSalesauthorizer?.orderId}
+                </p>
                 <IconButton size="small" onClick={() => setOpenView(false)}>
                   <CloseIcon />
                 </IconButton>
@@ -219,10 +225,6 @@ const AssignmentHistory = () => {
                     Order Information
                   </h1>
                   <div className="flex items-center justify-between font-semibold">
-                    <span className="text-gray-600 font-normal">Order Id:</span>
-                    #{singleOrderFromSalesauthorizer?.orderId}
-                  </div>
-                  <div className="flex items-center justify-between font-semibold">
                     <span className="text-gray-600 font-normal">
                       Placed By:
                     </span>
@@ -237,20 +239,30 @@ const AssignmentHistory = () => {
                       "dd MMM yyyy"
                     )}
                   </div>
-                  <div className="flex items-center justify-between font-semibold">
-                    <span className="text-gray-600 font-normal">
-                      Shipping Address:
-                    </span>
-                    {singleOrderFromSalesauthorizer?.shippingAddress}
-                  </div>
                 </div>
                 <div className="flex flex-col gap-2 text-sm">
                   <h1 className="font-semibold text-base text-gray-800">
                     Payment Information
                   </h1>
                   <div className="flex items-center justify-between font-semibold">
+                    <span className="text-gray-600 font-normal">Subtotal:</span>
+                    {formatRupee(totalBeforeDiscount)}
+                  </div>
+                  <div className="flex items-center justify-between font-semibold">
                     <span className="text-gray-600 font-normal">
-                      Total Amount:
+                      Discount ({singleOrderFromSalesauthorizer?.discount}%):
+                    </span>
+                    -
+                    {formatRupee(
+                      (
+                        totalBeforeDiscount -
+                        singleOrderFromSalesauthorizer?.totalAmount
+                      ).toFixed(2)
+                    )}
+                  </div>
+                  <div className="flex items-center justify-between font-semibold">
+                    <span className="text-gray-600 font-normal">
+                      Net Total:
                     </span>
                     {formatRupee(singleOrderFromSalesauthorizer?.totalAmount)}
                   </div>
@@ -266,12 +278,83 @@ const AssignmentHistory = () => {
                     </span>
                     {formatRupee(singleOrderFromSalesauthorizer?.dueAmount)}
                   </div>
+                  {singleOrderFromSalesauthorizer?.advanceAmount > 0 && (
+                    <div className="flex items-center justify-between font-semibold text-red-700">
+                      <span className="text-gray-600 font-normal">
+                        Advance Payment Approval:
+                      </span>
+                      {singleOrderFromSalesauthorizer?.advancePaymentStatus ===
+                        "Approved" && (
+                        <span className="text-green-700 font-semibold bg-green-100 p-1 px-3 rounded-full text-xs">
+                          Confirmed
+                        </span>
+                      )}
+                      {singleOrderFromSalesauthorizer?.advancePaymentStatus ===
+                        "SentForApproval" && (
+                        <span className="text-indigo-700 font-semibold bg-indigo-100 p-1 px-3 rounded-full text-xs">
+                          Sent For Confirmation
+                        </span>
+                      )}
+                      {singleOrderFromSalesauthorizer?.advancePaymentStatus ===
+                        "Pending" && (
+                        <span className="text-yellow-700 font-semibold bg-yellow-100 p-1 px-3 rounded-full text-xs">
+                          Pending
+                        </span>
+                      )}
+                      {singleOrderFromSalesauthorizer?.advancePaymentStatus ===
+                        "Rejected" && (
+                        <span className="text-red-700 font-semibold bg-red-100 p-1 px-3 rounded-full text-xs">
+                          Rejected
+                        </span>
+                      )}
+                    </div>
+                  )}
+                  {singleOrderFromSalesauthorizer?.duePaymentStatus && (
+                    <div className="flex items-center justify-between font-semibold text-red-700">
+                      <span className="text-gray-600 font-normal">
+                        Due Payment Approval:
+                      </span>
+                      {singleOrderFromSalesauthorizer?.duePaymentStatus ===
+                        "Approved" && (
+                        <span className="text-green-700 font-semibold bg-green-100 p-1 px-3 rounded-full text-xs">
+                          Confirmed
+                        </span>
+                      )}
+                      {singleOrderFromSalesauthorizer?.duePaymentStatus ===
+                        "SentForApproval" && (
+                        <span className="text-indigo-700 font-semibold bg-indigo-100 p-1 px-3 rounded-full text-xs">
+                          Sent For Confirmation
+                        </span>
+                      )}
+                      {singleOrderFromSalesauthorizer?.duePaymentStatus ===
+                        "Pending" && (
+                        <span className="text-yellow-700 font-semibold bg-yellow-100 p-1 px-3 rounded-full text-xs">
+                          Pending
+                        </span>
+                      )}
+                      {singleOrderFromSalesauthorizer?.duePaymentStatus ===
+                        "Rejected" && (
+                        <span className="text-red-700 font-semibold bg-red-100 p-1 px-3 rounded-full text-xs">
+                          Rejected
+                        </span>
+                      )}
+                    </div>
+                  )}
+
                   <div className="flex items-center justify-between font-semibold">
                     <span className="text-gray-600 font-normal">
-                      Payment Mode:
+                      Advance Payment Mode:
                     </span>
                     {singleOrderFromSalesauthorizer?.paymentMode}
                   </div>
+                  {singleOrderFromSalesauthorizer?.duePaymentMode && (
+                    <div className="flex items-center justify-between font-semibold">
+                      <span className="text-gray-600 font-normal">
+                        Due Payment Mode:
+                      </span>
+                      {singleOrderFromSalesauthorizer?.duePaymentMode}
+                    </div>
+                  )}
                   <div className="flex items-center justify-between font-semibold">
                     <span className="text-gray-600 font-normal">Due Date:</span>
                     {format(
@@ -345,21 +428,31 @@ const AssignmentHistory = () => {
                       </span>
                     )}
                   </div>
+                  {singleOrderFromSalesauthorizer?.dueInvoiceGenerated && (
+                    <div className="flex items-center justify-between font-semibold">
+                      <span className="text-gray-600 font-normal">
+                        Due Invoice Generated:
+                      </span>
+                      {singleOrderFromSalesauthorizer?.dueInvoiceGenerated ? (
+                        <span className="text-green-800 bg-green-100 p-1 px-3 rounded-full text-xs">
+                          Yes
+                        </span>
+                      ) : (
+                        <span className="text-red-700 bg-red-100 p-1 px-3 rounded-full text-xs">
+                          No
+                        </span>
+                      )}
+                    </div>
+                  )}
                 </div>
 
-                {/* order timeline */}
                 <div className="flex flex-col gap-2 text-sm">
                   <h1 className="font-semibold text-base text-gray-800">
-                    Order Timeline
+                    Shipping Details
                   </h1>
                   <div className="flex items-center justify-between font-semibold">
-                    <span className="text-gray-600 font-normal">
-                      Order Placed On:
-                    </span>{" "}
-                    {format(
-                      singleOrderFromSalesauthorizer?.createdAt,
-                      "dd MMM yyyy"
-                    )}
+                    <span className="text-gray-600 font-normal">Address:</span>
+                    {singleOrderFromSalesauthorizer?.shippingAddress}
                   </div>
                 </div>
 
@@ -374,14 +467,13 @@ const AssignmentHistory = () => {
                       Warehouse:
                     </span>
                     {singleOrderFromSalesauthorizer?.assignedWarehouse ? (
-                      <div className="flex items-center">
+                      <div className="flex flex-col items-center">
                         <p>
                           {
                             singleOrderFromSalesauthorizer?.assignedWarehouse
                               ?.name
                           }
                         </p>
-                        &nbsp;
                         <p className="text-xs font-normal text-gray-600">
                           (
                           {

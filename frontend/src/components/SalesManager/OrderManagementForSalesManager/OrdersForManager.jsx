@@ -36,6 +36,10 @@ const OrdersForManager = () => {
 
   const reason = watch("reason");
 
+  const totalBeforeDiscount =
+    singleOrderFromSalesManager?.totalAmount /
+    (1 - singleOrderFromSalesManager?.discount / 100);
+
   const [paginationModel, setPaginationModel] = useState({
     page: 0,
     pageSize: 5,
@@ -52,7 +56,6 @@ const OrdersForManager = () => {
 
   const handleCancelOrder = (data) => {
     data.orderId = singleOrderId;
-    console.log(data);
     cancelOrder(data);
     setOpenCancel(false);
   };
@@ -219,7 +222,9 @@ const OrdersForManager = () => {
           <div className="bg-white relative p-7 rounded-lg max-w-[60%] min-w-[45%] max-h-[95%] overflow-auto">
             <div className="mb-5">
               <div className="flex items-center justify-between">
-                <p className="text-xl font-bold">Order Details</p>
+                <p className="text-xl font-bold">
+                  Order Details - #{singleOrderFromSalesManager?.orderId}
+                </p>
                 {singleOrderFromSalesManager?.orderStatus === "Placed" && (
                   <Button
                     disabled={!user.isActive}
@@ -297,10 +302,6 @@ const OrdersForManager = () => {
                     Order Information
                   </h1>
                   <div className="flex items-center justify-between font-semibold">
-                    <span className="text-gray-600 font-normal">Order Id:</span>
-                    #{singleOrderFromSalesManager?.orderId}
-                  </div>
-                  <div className="flex items-center justify-between font-semibold">
                     <span className="text-gray-600 font-normal">
                       Placed By:
                     </span>
@@ -315,20 +316,30 @@ const OrdersForManager = () => {
                       "dd MMM yyyy"
                     )}
                   </div>
-                  <div className="flex items-center justify-between font-semibold">
-                    <span className="text-gray-600 font-normal">
-                      Shipping Address:
-                    </span>
-                    {singleOrderFromSalesManager?.shippingAddress}
-                  </div>
                 </div>
                 <div className="flex flex-col gap-2 text-sm">
                   <h1 className="font-semibold text-base text-gray-800">
                     Payment Information
                   </h1>
                   <div className="flex items-center justify-between font-semibold">
+                    <span className="text-gray-600 font-normal">Subtotal:</span>
+                    {formatRupee(totalBeforeDiscount)}
+                  </div>
+                  <div className="flex items-center justify-between font-semibold">
                     <span className="text-gray-600 font-normal">
-                      Total Amount:
+                      Discount ({singleOrderFromSalesManager?.discount}%):
+                    </span>
+                    -
+                    {formatRupee(
+                      (
+                        totalBeforeDiscount -
+                        singleOrderFromSalesManager?.totalAmount
+                      ).toFixed(2)
+                    )}
+                  </div>
+                  <div className="flex items-center justify-between font-semibold">
+                    <span className="text-gray-600 font-normal">
+                      Net Total:
                     </span>
                     {formatRupee(singleOrderFromSalesManager?.totalAmount)}
                   </div>
@@ -344,12 +355,83 @@ const OrdersForManager = () => {
                     </span>
                     {formatRupee(singleOrderFromSalesManager?.dueAmount)}
                   </div>
+                  {singleOrderFromSalesManager?.advanceAmount > 0 && (
+                    <div className="flex items-center justify-between font-semibold text-red-700">
+                      <span className="text-gray-600 font-normal">
+                        Advance Payment Approval:
+                      </span>
+                      {singleOrderFromSalesManager?.advancePaymentStatus ===
+                        "Approved" && (
+                        <span className="text-green-700 font-semibold bg-green-100 p-1 px-3 rounded-full text-xs">
+                          Confirmed
+                        </span>
+                      )}
+                      {singleOrderFromSalesManager?.advancePaymentStatus ===
+                        "SentForApproval" && (
+                        <span className="text-indigo-700 font-semibold bg-indigo-100 p-1 px-3 rounded-full text-xs">
+                          Sent For Confirmation
+                        </span>
+                      )}
+                      {singleOrderFromSalesManager?.advancePaymentStatus ===
+                        "Pending" && (
+                        <span className="text-yellow-700 font-semibold bg-yellow-100 p-1 px-3 rounded-full text-xs">
+                          Pending
+                        </span>
+                      )}
+                      {singleOrderFromSalesManager?.advancePaymentStatus ===
+                        "Rejected" && (
+                        <span className="text-red-700 font-semibold bg-red-100 p-1 px-3 rounded-full text-xs">
+                          Rejected
+                        </span>
+                      )}
+                    </div>
+                  )}
+                  {singleOrderFromSalesManager?.duePaymentStatus && (
+                    <div className="flex items-center justify-between font-semibold text-red-700">
+                      <span className="text-gray-600 font-normal">
+                        Due Payment Approval:
+                      </span>
+                      {singleOrderFromSalesManager?.duePaymentStatus ===
+                        "Approved" && (
+                        <span className="text-green-700 font-semibold bg-green-100 p-1 px-3 rounded-full text-xs">
+                          Confirmed
+                        </span>
+                      )}
+                      {singleOrderFromSalesManager?.duePaymentStatus ===
+                        "SentForApproval" && (
+                        <span className="text-indigo-700 font-semibold bg-indigo-100 p-1 px-3 rounded-full text-xs">
+                          Sent For Confirmation
+                        </span>
+                      )}
+                      {singleOrderFromSalesManager?.duePaymentStatus ===
+                        "Pending" && (
+                        <span className="text-yellow-700 font-semibold bg-yellow-100 p-1 px-3 rounded-full text-xs">
+                          Pending
+                        </span>
+                      )}
+                      {singleOrderFromSalesManager?.duePaymentStatus ===
+                        "Rejected" && (
+                        <span className="text-red-700 font-semibold bg-red-100 p-1 px-3 rounded-full text-xs">
+                          Rejected
+                        </span>
+                      )}
+                    </div>
+                  )}
+
                   <div className="flex items-center justify-between font-semibold">
                     <span className="text-gray-600 font-normal">
-                      Payment Mode:
+                      Advance Payment Mode:
                     </span>
                     {singleOrderFromSalesManager?.paymentMode}
                   </div>
+                  {singleOrderFromSalesManager?.duePaymentMode && (
+                    <div className="flex items-center justify-between font-semibold">
+                      <span className="text-gray-600 font-normal">
+                        Due Payment Mode:
+                      </span>
+                      {singleOrderFromSalesManager?.duePaymentMode}
+                    </div>
+                  )}
                   {singleOrderFromSalesManager?.dueAmount !== 0 && (
                     <div className="flex items-center justify-between font-semibold">
                       <span className="text-gray-600 font-normal">
@@ -424,6 +506,16 @@ const OrdersForManager = () => {
                         No
                       </span>
                     )}
+                  </div>
+                </div>
+
+                <div className="flex flex-col gap-2 text-sm">
+                  <h1 className="font-semibold text-base text-gray-800">
+                    Shipping Details
+                  </h1>
+                  <div className="flex items-center justify-between font-semibold">
+                    <span className="text-gray-600 font-normal">Address:</span>
+                    {singleOrderFromSalesManager?.shippingAddress}
                   </div>
                 </div>
 

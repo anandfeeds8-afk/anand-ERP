@@ -50,7 +50,6 @@ const PartyManagementPage = () => {
   });
 
   const onSubmit = (data) => {
-    console.log(data);
     addParty(data, {
       onSuccess: () => {
         setOpenAdd(false);
@@ -69,7 +68,9 @@ const PartyManagementPage = () => {
   return (
     <div>
       <div className="flex items-center justify-between">
-        <h1 className="lg:text-3xl lg:font-bold mb-5">{isActive}</h1>
+        <h1 className="lg:text-3xl lg:font-bold mb-5 dark:text-gray-300">
+          {isActive}
+        </h1>
         <Button
           disableElevation
           size="small"

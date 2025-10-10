@@ -31,6 +31,9 @@ const ApproveAdvancePaymentOrders = () => {
     pageSize: 5,
   });
 
+  const totalBeforeDiscount =
+    singleOrderInAccountant?.totalAmount /
+    (1 - singleOrderInAccountant?.discount / 100);
   const handleView = (id) => {
     console.log(id);
     setSingleOrderId(id);
@@ -195,7 +198,9 @@ const ApproveAdvancePaymentOrders = () => {
           <div className="bg-white relative p-7 rounded-lg w-[50%] max-h-[90%] overflow-auto">
             <div className="mb-5">
               <div className="flex items-center justify-between">
-                <p className="text-xl font-bold">Order Details</p>
+                <p className="text-xl font-bold">
+                  Order Details - #{singleOrderInAccountant?.orderId}
+                </p>
                 <Button
                   loading={isApprovingOrderPayment}
                   onClick={() => {
@@ -252,16 +257,13 @@ const ApproveAdvancePaymentOrders = () => {
                 </table>
               </div>
             </div>
+
             <div className="grid grid-cols-2 gap-7">
               <div className="flex flex-col gap-5">
                 <div className="flex flex-col gap-2 text-sm">
                   <h1 className="font-semibold text-base text-gray-800">
                     Order Information
                   </h1>
-                  <div className="flex items-center justify-between font-semibold">
-                    <span className="text-gray-600 font-normal">Order ID:</span>
-                    #{singleOrderInAccountant?.orderId}
-                  </div>
                   <div className="flex items-center justify-between font-semibold">
                     <span className="text-gray-600 font-normal">
                       Placed By:
@@ -274,20 +276,27 @@ const ApproveAdvancePaymentOrders = () => {
                     </span>
                     {format(singleOrderInAccountant?.createdAt, "dd MMM yyyy")}
                   </div>
-                  <div className="flex items-center justify-between font-semibold">
-                    <span className="text-gray-600 font-normal">
-                      Shipping Address:
-                    </span>
-                    {singleOrderInAccountant?.shippingAddress}
-                  </div>
                 </div>
                 <div className="flex flex-col gap-2 text-sm">
                   <h1 className="font-semibold text-base text-gray-800">
                     Payment Information
                   </h1>
                   <div className="flex items-center justify-between font-semibold">
+                    <span className="text-gray-600 font-normal">Subtotal:</span>
+                    {formatRupee(totalBeforeDiscount)}
+                  </div>
+                  <div className="flex items-center justify-between font-semibold">
                     <span className="text-gray-600 font-normal">
-                      Total Amount:
+                      Discount ({singleOrderInAccountant?.discount}%):
+                    </span>
+                    -
+                    {formatRupee(
+                      totalBeforeDiscount - singleOrderInAccountant?.totalAmount
+                    )}
+                  </div>
+                  <div className="flex items-center justify-between font-semibold">
+                    <span className="text-gray-600 font-normal">
+                      Net Total:
                     </span>
                     {formatRupee(singleOrderInAccountant?.totalAmount)}
                   </div>
@@ -303,12 +312,83 @@ const ApproveAdvancePaymentOrders = () => {
                     </span>{" "}
                     {formatRupee(singleOrderInAccountant?.dueAmount)}
                   </div>
+                  {singleOrderInAccountant?.advanceAmount > 0 && (
+                    <div className="flex items-center justify-between font-semibold text-red-700">
+                      <span className="text-gray-600 font-normal">
+                        Advance Confirmation:
+                      </span>
+                      {singleOrderInAccountant?.advancePaymentStatus ===
+                        "Approved" && (
+                        <span className="text-green-700 font-semibold bg-green-100 p-1 px-3 rounded-full text-xs">
+                          Confirmed
+                        </span>
+                      )}
+                      {singleOrderInAccountant?.advancePaymentStatus ===
+                        "SentForApproval" && (
+                        <span className="text-indigo-700 font-semibold bg-indigo-100 p-1 px-3 rounded-full text-xs">
+                          Sent For Confirmation
+                        </span>
+                      )}
+                      {singleOrderInAccountant?.advancePaymentStatus ===
+                        "Pending" && (
+                        <span className="text-yellow-700 font-semibold bg-yellow-100 p-1 px-3 rounded-full text-xs">
+                          Pending
+                        </span>
+                      )}
+                      {singleOrderInAccountant?.advancePaymentStatus ===
+                        "Rejected" && (
+                        <span className="text-red-700 font-semibold bg-red-100 p-1 px-3 rounded-full text-xs">
+                          Rejected
+                        </span>
+                      )}
+                    </div>
+                  )}
+                  {singleOrderInAccountant?.duePaymentStatus && (
+                    <div className="flex items-center justify-between font-semibold text-red-700">
+                      <span className="text-gray-600 font-normal">
+                        Due Confirmation:
+                      </span>
+                      {singleOrderInAccountant?.duePaymentStatus ===
+                        "Approved" && (
+                        <span className="text-green-700 font-semibold bg-green-100 p-1 px-3 rounded-full text-xs">
+                          Confirmed
+                        </span>
+                      )}
+                      {singleOrderInAccountant?.duePaymentStatus ===
+                        "SentForApproval" && (
+                        <span className="text-indigo-700 font-semibold bg-indigo-100 p-1 px-3 rounded-full text-xs">
+                          Sent For Confirmation
+                        </span>
+                      )}
+                      {singleOrderInAccountant?.duePaymentStatus ===
+                        "Pending" && (
+                        <span className="text-yellow-700 font-semibold bg-yellow-100 p-1 px-3 rounded-full text-xs">
+                          Pending
+                        </span>
+                      )}
+                      {singleOrderInAccountant?.duePaymentStatus ===
+                        "Rejected" && (
+                        <span className="text-red-700 font-semibold bg-red-100 p-1 px-3 rounded-full text-xs">
+                          Rejected
+                        </span>
+                      )}
+                    </div>
+                  )}
+
                   <div className="flex items-center justify-between font-semibold">
                     <span className="text-gray-600 font-normal">
-                      Payment Mode:
-                    </span>{" "}
+                      Advance Payment Mode:
+                    </span>
                     {singleOrderInAccountant?.paymentMode}
                   </div>
+                  {singleOrderInAccountant?.duePaymentMode && (
+                    <div className="flex items-center justify-between font-semibold">
+                      <span className="text-gray-600 font-normal">
+                        Due Payment Mode:
+                      </span>
+                      {singleOrderInAccountant?.duePaymentMode}
+                    </div>
+                  )}
                   <div className="flex items-center justify-between font-semibold">
                     <span className="text-gray-600 font-normal">Due Date:</span>{" "}
                     {format(singleOrderInAccountant?.dueDate, "dd MMM yyyy")}
@@ -375,13 +455,11 @@ const ApproveAdvancePaymentOrders = () => {
 
                 <div className="flex flex-col gap-2 text-sm">
                   <h1 className="font-semibold text-base text-gray-800">
-                    Order Timeline
+                    Shipping Details
                   </h1>
                   <div className="flex items-center justify-between font-semibold">
-                    <span className="text-gray-600 font-normal">
-                      Order Placed On:
-                    </span>
-                    {format(singleOrderInAccountant?.createdAt, "dd MMM yyyy")}
+                    <span className="text-gray-600 font-normal">Address:</span>
+                    {singleOrderInAccountant?.shippingAddress}
                   </div>
                 </div>
 
@@ -397,11 +475,10 @@ const ApproveAdvancePaymentOrders = () => {
                         Warehouse:
                       </span>
                       {singleOrderInAccountant?.assignedWarehouse ? (
-                        <div className="flex items-center">
+                        <div className="flex flex-col items-center">
                           <p>
                             {singleOrderInAccountant?.assignedWarehouse?.name}
                           </p>
-                          &nbsp;
                           <p className="text-xs font-normal text-gray-600">
                             (
                             {

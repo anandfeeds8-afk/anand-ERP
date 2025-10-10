@@ -94,7 +94,6 @@ const OrderSchema = new mongoose.Schema({
   paymentStatus: {
     type: String,
     enum: ["Paid", "ConfirmationPending", "PendingDues"],
-    default: "Unpaid",
   },
   invoiceGenerated: { type: Boolean, default: false },
   dueInvoiceGenerated: { type: Boolean, default: false },

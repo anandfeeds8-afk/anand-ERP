@@ -18,7 +18,7 @@ const MainLayout = () => {
         <div className="h-14">
           <Header />
         </div>
-        <div className="p-5 overflow-y-auto flex-1 bg-gray-50">
+        <div className="p-5 overflow-y-auto flex-1 bg-gray-50 dark:bg-gray-950">
           <Outlet />
         </div>
       </div>

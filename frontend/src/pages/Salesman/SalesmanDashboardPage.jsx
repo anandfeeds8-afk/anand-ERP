@@ -29,7 +29,6 @@ const SalesmanDashboardPage = () => {
   const [dueDateError, setDueDateError] = useState("");
   const [duplicateError, setDuplicateError] = useState("");
   const [selectedParty, setSelectedParty] = useState({});
-  console.log(discount);
 
   const { user } = useUser();
 
@@ -73,7 +72,7 @@ const SalesmanDashboardPage = () => {
       return sum + product.price * (Number(item.quantity) || 0);
     }, 0);
 
-    setTotalAmount(total);
+    setTotalAmount(Math.round(total));
   }, [items, allProducts]);
 
   //selected party
@@ -110,11 +109,13 @@ const SalesmanDashboardPage = () => {
     }
   }, [enteredDiscount]);
 
-  let finalTotalAmount = totalAmount - (totalAmount * discount) / 100;
+  let finalTotalAmount = Math.round(
+    totalAmount - (totalAmount * discount) / 100
+  );
 
   //advance amount
   const advanceAmount = watch("advanceAmount");
-  const dueAmount = finalTotalAmount - advanceAmount;
+  const dueAmount = Math.round(finalTotalAmount - advanceAmount);
   useEffect(() => {
     if (advanceAmount > finalTotalAmount) {
       setError("Advance cannot be greater than total amount");
@@ -142,9 +143,9 @@ const SalesmanDashboardPage = () => {
     formData.append("advanceAmountDocs", advanceAmountFile);
     formData.append("shippingAddress", data.shippingAddress);
     formData.append("items", JSON.stringify(data.items));
-    for (let [key, value] of formData.entries()) {
-      console.log(key, value);
-    }
+    // for (let [key, value] of formData.entries()) {
+    //   console.log(key, value);
+    // }
 
     createOrder(formData, { onSuccess: () => setOpenForm(false) });
   };
@@ -159,7 +160,9 @@ const SalesmanDashboardPage = () => {
   return (
     <div>
       <div className="flex items-center justify-between">
-        <h1 className="lg:text-3xl lg:font-bold mb-5">{isActive}</h1>
+        <h1 className="lg:text-3xl lg:font-bold mb-5 dark:text-gray-300">
+          {isActive}
+        </h1>
         <Button
           disabled={!user.isActive}
           disableElevation
@@ -200,9 +203,11 @@ const SalesmanDashboardPage = () => {
 
       {/* Place Order Modal */}
       {openForm && (
-        <div className="transition-all bg-black/30 backdrop-blur-sm w-full z-50 h-screen absolute top-0 left-0 flex items-center justify-center">
-          <div className="bg-white p-7 rounded-lg w-[50%]">
-            <p className="text-xl font-semibold mb-5">Place a new Order</p>
+        <div className="transition-all dark:bg-black/50 bg-black/30 backdrop-blur-sm w-full z-50 h-screen absolute top-0 left-0 flex items-center justify-center">
+          <div className="bg-white p-7 rounded-lg w-[50%] dark:bg-gray-900">
+            <p className="text-xl font-semibold mb-5 dark:text-gray-400">
+              Place a new Order
+            </p>
             <form
               className="grid grid-cols-2 gap-5"
               onSubmit={handleSubmit(onSubmit)}
@@ -210,7 +215,7 @@ const SalesmanDashboardPage = () => {
               <div>
                 <div className="mb-5">
                   <div className="flex items-start justify-between">
-                    <h1 className="font-semibold text-gray-800 mb-3">
+                    <h1 className="font-semibold text-gray-800 mb-3 dark:text-gray-400">
                       Party Information
                     </h1>
 
@@ -218,22 +223,26 @@ const SalesmanDashboardPage = () => {
                       <div>
                         {selectedParty?.limit > 666666 && (
                           <span className="text-green-600 text-sm font-semibold">
-                            Limit: {formatRupee(selectedParty?.limit)}
+                            Limit:{" "}
+                            {formatRupee(Math.round(selectedParty?.limit))}
                           </span>
                         )}
                         {selectedParty?.limit < 666666 && (
                           <span className="text-yellow-600 text-sm font-semibold">
-                            Limit: {formatRupee(selectedParty?.limit)}
+                            Limit:{" "}
+                            {formatRupee(Math.round(selectedParty?.limit))}
                           </span>
                         )}
                         {selectedParty?.limit < 333333 && (
                           <span className="text-orange-600 text-sm font-semibold">
-                            Limit: {formatRupee(selectedParty?.limit)}
+                            Limit:{" "}
+                            {formatRupee(Math.round(selectedParty?.limit))}
                           </span>
                         )}
                         {selectedParty?.limit < 100000 && (
                           <span className="text-red-600 text-sm font-semibold">
-                            Limit: {formatRupee(selectedParty?.limit)}
+                            Limit:{" "}
+                            {formatRupee(Math.round(selectedParty?.limit))}
                           </span>
                         )}
                       </div>
@@ -315,7 +324,7 @@ const SalesmanDashboardPage = () => {
                     </h1>
                     {!isNaN(finalTotalAmount) && (
                       <span className="text-blue-600 text-sm font-semibold">
-                        Total: {formatRupee(finalTotalAmount)}
+                        Total: {formatRupee(Math.round(finalTotalAmount))}
                       </span>
                     )}
                   </div>
@@ -341,7 +350,6 @@ const SalesmanDashboardPage = () => {
                                   const product = allProducts.filter(
                                     (item) => item._id === selectedProduct
                                   );
-                                  console.log(product);
                                   const isDuplicate = fields.some(
                                     (item, i) =>
                                       item.product === selectedProduct &&
@@ -451,7 +459,7 @@ const SalesmanDashboardPage = () => {
                     </h1>
                     {!isNaN(dueAmount) && (
                       <span className="text-red-600 text-sm font-semibold">
-                        Due: {formatRupee(dueAmount)}
+                        Due: {formatRupee(Math.round(dueAmount))}
                       </span>
                     )}
                   </div>

@@ -13,6 +13,7 @@ const Warehouse = require("../models/WareHouse");
 const SECRET_TOKEN = process.env.JWT_SECRET;
 
 const dotenv = require("dotenv");
+const Admin = require("../models/Admin");
 
 dotenv.config();
 

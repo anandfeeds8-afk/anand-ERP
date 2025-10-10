@@ -87,7 +87,6 @@ export const useAccountantOrder = (id) => {
           },
         }
       );
-      console.log("accountant single order", response.data.data);
       return response.data.data;
     },
     onError: (error) => {
@@ -120,7 +119,6 @@ export const useAccountantOrder = (id) => {
         queryClient.invalidateQueries({
           queryKey: ["ordersToApproveDuePayment"],
         });
-        console.log(data);
         toast.success(data.message);
       },
       onError: (error) => {
@@ -149,9 +147,11 @@ export const useAccountantOrder = (id) => {
         queryClient.invalidateQueries({ queryKey: ["ordersInAccountant"] });
         queryClient.invalidateQueries({ queryKey: ["ordersToApprovePayment"] });
         queryClient.invalidateQueries({
+          queryKey: ["ordersToApproveDuePayment"],
+        });
+        queryClient.invalidateQueries({
           queryKey: ["singleOrderInAccountant"],
         });
-        console.log(data);
         toast.success(data.message);
       },
       onError: (error) => {
@@ -180,9 +180,11 @@ export const useAccountantOrder = (id) => {
         queryClient.invalidateQueries({ queryKey: ["ordersInAccountant"] });
         queryClient.invalidateQueries({ queryKey: ["ordersToApprovePayment"] });
         queryClient.invalidateQueries({
+          queryKey: ["ordersToApproveDuePayment"],
+        });
+        queryClient.invalidateQueries({
           queryKey: ["singleOrderInAccountant"],
         });
-        console.log(data);
         toast.success(data.message);
       },
       onError: (error) => {
@@ -211,9 +213,11 @@ export const useAccountantOrder = (id) => {
         queryClient.invalidateQueries({ queryKey: ["ordersInAccountant"] });
         queryClient.invalidateQueries({ queryKey: ["ordersToApprovePayment"] });
         queryClient.invalidateQueries({
+          queryKey: ["ordersToApproveDuePayment"],
+        });
+        queryClient.invalidateQueries({
           queryKey: ["singleOrderInAccountant"],
         });
-        console.log(data);
         toast.success(data.message);
       },
       onError: (error) => {

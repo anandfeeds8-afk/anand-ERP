@@ -20,7 +20,6 @@ export const usePlantheadOrder = (id) => {
             },
           }
         );
-        console.log("planthead orders", response.data.data);
         return response.data.data;
       },
       onError: (error) => {
@@ -43,7 +42,6 @@ export const usePlantheadOrder = (id) => {
           },
         }
       );
-      console.log("planthead dispatched orders", response.data.data);
       return response.data.data;
     },
     onError: (error) => {
@@ -64,7 +62,6 @@ export const usePlantheadOrder = (id) => {
             },
           }
         );
-        console.log("planthead products", response.data.data);
         return response.data.data;
       },
       onError: (error) => {
@@ -92,7 +89,6 @@ export const usePlantheadOrder = (id) => {
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["allProducts"] });
       queryClient.invalidateQueries({ queryKey: ["productsInPlanthead"] });
-      console.log(data);
       toast.success(data.message);
     },
     onError: (error) => {
@@ -115,7 +111,6 @@ export const usePlantheadOrder = (id) => {
             },
           }
         );
-        console.log("planthead single order", response.data.data);
         return response.data.data;
       },
       onError: (error) => {
@@ -126,7 +121,6 @@ export const usePlantheadOrder = (id) => {
   // DISPATCH Order in Planthead
   const { mutate: dispatchOrder, isPending: isDispatchingOrder } = useMutation({
     mutationFn: async (data) => {
-      console.log("data in dispatch", data);
       const response = await axios.put(
         BASE_URL + API_PATHS.PLANT_HEAD.DISPATCH_ORDER(data.orderId),
         data,
@@ -141,7 +135,6 @@ export const usePlantheadOrder = (id) => {
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["order"] });
       queryClient.invalidateQueries({ queryKey: ["ordersInPlanthead"] });
-      console.log(data);
       toast.success(data.message);
     },
     onError: (error) => {
@@ -167,7 +160,6 @@ export const usePlantheadOrder = (id) => {
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["order"] });
       queryClient.invalidateQueries({ queryKey: ["ordersInPlanthead"] });
-      console.log(data);
       toast.success(data.message);
     },
     onError: (error) => {
@@ -193,7 +185,6 @@ export const usePlantheadOrder = (id) => {
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["order"] });
       queryClient.invalidateQueries({ queryKey: ["ordersInPlanthead"] });
-      console.log(data);
       toast.success(data.message);
     },
     onError: (error) => {

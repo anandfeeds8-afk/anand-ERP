@@ -17,7 +17,6 @@ const useFilteredProducts = (category) => {
           },
         }
       );
-      //   console.log("filteredProducts", response.data.data);
       return response.data.data;
     },
     onError: (error) => {

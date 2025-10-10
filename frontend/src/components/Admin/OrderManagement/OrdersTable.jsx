@@ -111,9 +111,6 @@ const OrdersTable = () => {
     (order) => order.orderStatus === "WarehouseAssigned"
   );
 
-  console.log("filteredOrders", filteredOrders);
-  console.log("singleOrder", singleOrder);
-
   const handleView = (id) => {
     console.log(id);
     setSingleOrderId(id);
@@ -139,6 +136,9 @@ const OrdersTable = () => {
       dueDate: format(singleOrder?.dueDate, "dd MMM yyyy"),
     });
   };
+
+  const totalBeforeDiscount =
+    singleOrder?.totalAmount / (1 - singleOrder?.discount / 100);
 
   if (singleOrderLoading)
     return (
@@ -305,12 +305,54 @@ const OrdersTable = () => {
           <div className="bg-white relative p-7 rounded-lg w-[50%] max-h-[90%] overflow-auto">
             <div className="mb-5">
               <div className="flex items-center justify-between">
-                <p className="text-xl font-bold">Order Details</p>
+                <p className="text-xl font-bold">
+                  Order Details - #{singleOrder?.orderId}
+                </p>
                 <IconButton size="small" onClick={() => setOpenView(false)}>
                   <CloseIcon />
                 </IconButton>
               </div>
             </div>
+
+            {/* products table */}
+            <div className="relative overflow-x-auto mb-5 max-h-52">
+              <table className="w-full text-sm text-left text-gray-500 overflow-auto">
+                <thead className="sticky top-0 bg-gray-100 text-gray-800 z-10">
+                  <tr>
+                    <th scope="col" className="px-6 py-3">
+                      Product Name
+                    </th>
+                    <th scope="col" className="px-6 py-3">
+                      Category
+                    </th>
+                    <th scope="col" className="px-6 py-3">
+                      Price/bag
+                    </th>
+                    <th scope="col" className="px-6 py-3">
+                      Quantity
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="text-sm">
+                  {singleOrder?.items?.map((item, idx) => (
+                    <tr key={idx} className="bg-white border-b border-gray-200">
+                      <th
+                        scope="row"
+                        className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap"
+                      >
+                        {item?.product?.name}
+                      </th>
+                      <td className="px-6 py-4">{item?.product?.category}</td>
+                      <td className="px-6 py-4">
+                        {formatRupee(item?.product?.price)}
+                      </td>
+                      <td className="px-6 py-4">{item?.quantity} bags</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
             <div className="grid grid-cols-2 gap-7">
               <div className="flex flex-col gap-5">
                 <div className="flex flex-col gap-2 text-sm">
@@ -319,30 +361,14 @@ const OrdersTable = () => {
                   </h1>
                   <div className="flex items-center justify-between font-semibold">
                     <span className="text-gray-600 font-normal">
-                      Product Category:
-                    </span>{" "}
-                    {singleOrder?.item?.category}
-                  </div>
-                  <div className="flex items-center justify-between font-semibold">
-                    <span className="text-gray-600 font-normal">
-                      Product Name:
-                    </span>{" "}
-                    {singleOrder?.item?.name}
-                  </div>
-                  <div className="flex items-center justify-between font-semibold">
-                    <span className="text-gray-600 font-normal">Quantity:</span>{" "}
-                    {singleOrder?.quantity} kg
-                  </div>
-                  <div className="flex items-center justify-between font-semibold">
-                    <span className="text-gray-600 font-normal">
                       Placed By:
-                    </span>{" "}
+                    </span>
                     {singleOrder?.placedBy?.name}
                   </div>
                   <div className="flex items-center justify-between font-semibold">
                     <span className="text-gray-600 font-normal">
                       Placed Date:
-                    </span>{" "}
+                    </span>
                     {format(singleOrder?.createdAt, "dd MMM yyyy")}
                   </div>
                 </div>
@@ -351,34 +377,111 @@ const OrdersTable = () => {
                     Payment Information
                   </h1>
                   <div className="flex items-center justify-between font-semibold">
+                    <span className="text-gray-600 font-normal">Subtotal:</span>
+                    {formatRupee(totalBeforeDiscount)}
+                  </div>
+                  <div className="flex items-center justify-between font-semibold">
                     <span className="text-gray-600 font-normal">
-                      Total Amount:
+                      Discount ({singleOrder?.discount}%):
+                    </span>
+                    -
+                    {formatRupee(
+                      totalBeforeDiscount - singleOrder?.totalAmount
+                    )}
+                  </div>
+                  <div className="flex items-center justify-between font-semibold">
+                    <span className="text-gray-600 font-normal">
+                      Net Total:
                     </span>
                     {formatRupee(singleOrder?.totalAmount)}
                   </div>
                   <div className="flex items-center justify-between font-semibold text-green-700">
                     <span className="text-gray-600 font-normal">
                       Advance Amount:
-                    </span>{" "}
+                    </span>
                     {formatRupee(singleOrder?.advanceAmount)}
                   </div>
                   <div className="flex items-center justify-between font-semibold text-red-700">
                     <span className="text-gray-600 font-normal">
                       Due Amount:
-                    </span>{" "}
+                    </span>
                     {formatRupee(singleOrder?.dueAmount)}
                   </div>
+                  {singleOrder?.advanceAmount > 0 && (
+                    <div className="flex items-center justify-between font-semibold text-red-700">
+                      <span className="text-gray-600 font-normal">
+                        Advance Confirmation:
+                      </span>
+                      {singleOrder?.advancePaymentStatus === "Approved" && (
+                        <span className="text-green-700 font-semibold bg-green-100 p-1 px-3 rounded-full text-xs">
+                          Confirmed
+                        </span>
+                      )}
+                      {singleOrder?.advancePaymentStatus ===
+                        "SentForApproval" && (
+                        <span className="text-indigo-700 font-semibold bg-indigo-100 p-1 px-3 rounded-full text-xs">
+                          Sent For Confirmation
+                        </span>
+                      )}
+                      {singleOrder?.advancePaymentStatus === "Pending" && (
+                        <span className="text-yellow-700 font-semibold bg-yellow-100 p-1 px-3 rounded-full text-xs">
+                          Pending
+                        </span>
+                      )}
+                      {singleOrder?.advancePaymentStatus === "Rejected" && (
+                        <span className="text-red-700 font-semibold bg-red-100 p-1 px-3 rounded-full text-xs">
+                          Rejected
+                        </span>
+                      )}
+                    </div>
+                  )}
+                  {singleOrder?.duePaymentStatus && (
+                    <div className="flex items-center justify-between font-semibold text-red-700">
+                      <span className="text-gray-600 font-normal">
+                        Due Confirmation:
+                      </span>
+                      {singleOrder?.duePaymentStatus === "Approved" && (
+                        <span className="text-green-700 font-semibold bg-green-100 p-1 px-3 rounded-full text-xs">
+                          Confirmed
+                        </span>
+                      )}
+                      {singleOrder?.duePaymentStatus === "SentForApproval" && (
+                        <span className="text-indigo-700 font-semibold bg-indigo-100 p-1 px-3 rounded-full text-xs">
+                          Sent For Confirmation
+                        </span>
+                      )}
+                      {singleOrder?.duePaymentStatus === "Pending" && (
+                        <span className="text-yellow-700 font-semibold bg-yellow-100 p-1 px-3 rounded-full text-xs">
+                          Pending
+                        </span>
+                      )}
+                      {singleOrder?.duePaymentStatus === "Rejected" && (
+                        <span className="text-red-700 font-semibold bg-red-100 p-1 px-3 rounded-full text-xs">
+                          Rejected
+                        </span>
+                      )}
+                    </div>
+                  )}
+
                   <div className="flex items-center justify-between font-semibold">
                     <span className="text-gray-600 font-normal">
-                      Payment Mode:
-                    </span>{" "}
+                      Advance Payment Mode:
+                    </span>
                     {singleOrder?.paymentMode}
                   </div>
+                  {singleOrder?.duePaymentMode && (
+                    <div className="flex items-center justify-between font-semibold">
+                      <span className="text-gray-600 font-normal">
+                        Due Payment Mode:
+                      </span>
+                      {singleOrder?.duePaymentMode}
+                    </div>
+                  )}
                   {singleOrder?.dueAmount !== 0 && (
                     <div className="flex items-center justify-between font-semibold">
                       <span className="text-gray-600 font-normal">
                         Due Date:
-                      </span>{" "}
+                      </span>
                       {format(singleOrder?.dueDate, "dd MMM yyyy")}
                     </div>
                   )}
@@ -393,9 +496,13 @@ const OrdersTable = () => {
                   <div className="flex items-center justify-between font-semibold">
                     <span className="text-gray-600 font-normal">
                       Order Status:
-                    </span>{" "}
+                    </span>
                     {singleOrder?.orderStatus === "Delivered" ? (
                       <span className="text-green-700 bg-green-100 p-1 px-3 rounded-full text-xs">
+                        {singleOrder?.orderStatus}
+                      </span>
+                    ) : singleOrder?.orderStatus === "Cancelled" ? (
+                      <span className="text-red-700 bg-red-100 p-1 px-3 rounded-full text-xs">
                         {singleOrder?.orderStatus}
                       </span>
                     ) : (
@@ -408,28 +515,28 @@ const OrdersTable = () => {
                     <span className="text-gray-600 font-normal">
                       Payment Status:
                     </span>
-                    {singleOrder?.paymentStatus === "Partial" && (
-                      <span className="text-yellow-700 bg-yellow-100 p-1 px-3 rounded-full text-xs">
-                        {singleOrder?.paymentStatus}
+                    {singleOrder?.paymentStatus === "PendingDues" && (
+                      <span className="text-red-700 bg-red-100 p-1 px-3 rounded-full text-xs">
+                        Pending Dues
                       </span>
                     )}
                     {singleOrder?.paymentStatus === "Paid" && (
                       <span className="text-green-700 bg-green-100 p-1 px-3 rounded-full text-xs">
-                        {singleOrder?.paymentStatus}
+                        Paid
                       </span>
                     )}
-                    {singleOrder?.paymentStatus === "Unpaid" && (
-                      <span className="text-red-700 bg-red-100 p-1 px-3 rounded-full text-xs">
-                        {singleOrder?.paymentStatus}
+                    {singleOrder?.paymentStatus === "ConfirmationPending" && (
+                      <span className="text-yellow-700 bg-yellow-100 p-1 px-3 rounded-full text-xs">
+                        Confirmation Pending
                       </span>
                     )}
                   </div>
                   <div className="flex items-center justify-between font-semibold">
                     <span className="text-gray-600 font-normal">
                       Invoice Generated:
-                    </span>{" "}
+                    </span>
                     {singleOrder?.invoiceGenerated ? (
-                      <span className="text-green-700 bg-green-100 p-1 px-3 rounded-full text-xs">
+                      <span className="text-green-800 bg-green-100 p-1 px-3 rounded-full text-xs">
                         Yes
                       </span>
                     ) : (
@@ -438,41 +545,49 @@ const OrdersTable = () => {
                       </span>
                     )}
                   </div>
+                  {singleOrder?.dueInvoiceGenerated && (
+                    <div className="flex items-center justify-between font-semibold">
+                      <span className="text-gray-600 font-normal">
+                        Due Invoice Generated:
+                      </span>
+                      {singleOrder?.dueInvoiceGenerated ? (
+                        <span className="text-green-800 bg-green-100 p-1 px-3 rounded-full text-xs">
+                          Yes
+                        </span>
+                      ) : (
+                        <span className="text-red-700 bg-red-100 p-1 px-3 rounded-full text-xs">
+                          No
+                        </span>
+                      )}
+                    </div>
+                  )}
                 </div>
 
                 <div className="flex flex-col gap-2 text-sm">
                   <h1 className="font-semibold text-base text-gray-800">
-                    Notes
-                  </h1>
-                  <p className="bg-gray-100 rounded-lg p-3">
-                    {singleOrder?.notes}
-                  </p>
-                </div>
-
-                <div className="flex flex-col gap-2 text-sm">
-                  <h1 className="font-semibold text-base text-gray-800">
-                    Order Timeline
+                    Shipping Details
                   </h1>
                   <div className="flex items-center justify-between font-semibold">
-                    <span className="text-gray-600 font-normal">
-                      Order Placed On:
-                    </span>{" "}
-                    {format(singleOrder?.createdAt, "dd MMM yyyy")}
+                    <span className="text-gray-600 font-normal">Address:</span>
+                    {singleOrder?.shippingAddress}
                   </div>
                 </div>
+
+                {/* assigned warehouse */}
                 <div className="flex flex-col gap-2 text-sm">
-                  <div className="flex justify-between items-center">
-                    <h1 className="font-semibold text-base text-gray-800">
-                      Assigned Warehouse
-                    </h1>
-                  </div>
+                  <h1 className="font-semibold text-base text-gray-800">
+                    Assigned Warehouse
+                  </h1>
                   <div className="flex items-center justify-between font-semibold">
                     <span className="text-gray-600 font-normal">
                       Warehouse:
                     </span>
                     {singleOrder?.assignedWarehouse ? (
                       <div className="flex flex-col items-center">
-                        {singleOrder?.assignedWarehouse?.name}
+                        <p>{singleOrder?.assignedWarehouse?.name}</p>
+                        <p className="text-xs font-normal text-gray-600">
+                          ({singleOrder?.assignedWarehouse?.location})
+                        </p>
                       </div>
                     ) : (
                       <span className="text-red-700 bg-red-100 p-1 px-3 rounded-full text-xs">
@@ -497,6 +612,73 @@ const OrdersTable = () => {
                 </div>
               </div>
             </div>
+            {/* notes */}
+            <div className="flex flex-col gap-2 text-sm my-5">
+              <h1 className="font-semibold text-base text-gray-800">Notes</h1>
+              <p className="bg-yellow-50 rounded-lg p-3">
+                {singleOrder?.notes}
+              </p>
+            </div>
+            {/* dispatch info */}
+            {singleOrder?.dispatchInfo && (
+              <div className="flex flex-col gap-2 text-sm bg-green-50 p-3 rounded-lg mt-5">
+                <h1 className="font-semibold text-base text-gray-800">
+                  Dispatch Info
+                </h1>
+                <div className="grid grid-cols-2 gap-5">
+                  <div className="flex flex-col gap-2 text-sm">
+                    <div className="flex items-center justify-between font-semibold">
+                      <span className="text-gray-600 font-normal">
+                        Driver Name
+                      </span>
+                      {singleOrder?.dispatchInfo?.driverName}
+                    </div>
+                    <div className="flex items-center justify-between font-semibold">
+                      <span className="text-gray-600 font-normal">
+                        Driver Contact
+                      </span>
+                      {singleOrder?.dispatchInfo?.driverContact}
+                    </div>
+                    <div className="flex items-center justify-between font-semibold">
+                      <span className="text-gray-600 font-normal">
+                        Transport Company:
+                      </span>{" "}
+                      {singleOrder?.dispatchInfo?.transportCompany}
+                    </div>
+                    <div className="flex items-center justify-between font-semibold">
+                      <span className="text-gray-600 font-normal">
+                        Vehicle Number:
+                      </span>{" "}
+                      {singleOrder?.dispatchInfo?.vehicleNumber}
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col gap-2 text-sm">
+                    <div className="flex items-center justify-between font-semibold">
+                      <span className="text-gray-600 font-normal">
+                        Dispatched By:
+                      </span>{" "}
+                      {singleOrder?.dispatchInfo?.dispatchedBy?.name}
+                    </div>
+                    <div className="flex items-center justify-between font-semibold">
+                      <span className="text-gray-600 font-normal">
+                        Plant Head Contact:
+                      </span>{" "}
+                      {singleOrder?.dispatchInfo?.dispatchedBy?.phone}
+                    </div>
+                    <div className="flex items-center justify-between font-semibold">
+                      <span className="text-gray-600 font-normal">
+                        Dispatched Date:
+                      </span>{" "}
+                      {format(
+                        singleOrder?.dispatchInfo?.dispatchDate,
+                        "dd MMM yyyy"
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}

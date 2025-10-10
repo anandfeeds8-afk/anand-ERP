@@ -6,6 +6,10 @@ const bcrypt = require("bcrypt");
 const Party = require("../models/Party");
 const SECRET_TOKEN = process.env.JWT_SECRET;
 const imagekit = require("../config/imagekit");
+const Admin = require("../models/Admin");
+const { getIO } = require("../config/socket");
+const { formatRupee } = require("../../frontend/src/utils/formatRupee");
+const Notification = require("../models/Notification");
 
 const loginSalesman = async (req, res) => {
   try {
@@ -218,7 +222,7 @@ const updatePayment = async (req, res) => {
     party.limit = Number(updatedLimit);
 
     order.paymentCollectedBy = salesmanId;
-    order.duePaymentDoc = duePaymentProof.url;
+    order.duePaymentDoc = duePaymentProof?.url;
     order.duePaymentApprovalSentTo = warehouse.accountant._id;
     await order.save();
     await party.save();
@@ -238,6 +242,26 @@ const updatePayment = async (req, res) => {
       },
       { new: true }
     );
+
+    const accountantId = warehouse?.accountant.toString();
+
+    const message = `Check and confirm due payment of ₹${amount} for Order #${order.orderId} from ${party?.companyName}.`;
+    await Notification.insertOne({
+      orderId: order.orderId,
+      message,
+      type: "dueSentForApproval",
+      senderId: salesmanId,
+      receiverId: accountantId,
+    });
+
+    const io = getIO();
+
+    io.to(accountantId).emit("dueSentForApproval", {
+      orderId,
+      message,
+      type: "dueSentForApproval",
+      senderId: salesmanId,
+    });
 
     return res.status(200).json({
       success: true,
@@ -384,12 +408,43 @@ const deliverOrder = async (req, res) => {
   try {
     const salesmanId = req.user.id;
     const { orderId } = req.body;
-    const order = await Order.findOne({ placedBy: salesmanId, _id: orderId });
+    const order = await Order.findOne({
+      placedBy: salesmanId,
+      _id: orderId,
+    }).populate("placedBy", "name");
     if (!order) return res.json({ message: "Order not found", success: false });
 
     order.orderStatus = "Delivered";
 
     await order.save();
+
+    const admins = await Admin.find().select("_id");
+
+    const adminIds = admins.map((u) => u._id.toString());
+
+    const message = `Order #${order?.orderId} has been delivered by ${order?.placedBy?.name}`;
+
+    const notifications = adminIds.map((r_id) => ({
+      orderId: order?.orderId,
+      message,
+      type: "delivered",
+      senderId: salesmanId,
+      receiverId: r_id,
+      read: false,
+    }));
+
+    await Notification.insertMany(notifications);
+
+    const io = getIO();
+
+    adminIds.forEach((r_id) => {
+      io.to(r_id).emit("delivered", {
+        orderId: order?.orderId,
+        message,
+        type: "delivered",
+        senderId: salesmanId,
+      });
+    });
 
     return res.json({
       message: "Order delivered successfully",

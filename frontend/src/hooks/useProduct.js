@@ -20,7 +20,6 @@ export const useProduct = (warehouseId) => {
           },
         }
       );
-      // console.log("allProducts", response.data.data);
       return response.data.data;
     },
     onError: (error) => {
@@ -42,7 +41,6 @@ export const useProduct = (warehouseId) => {
             },
           }
         );
-        // console.log("response", response.data);
         return response.data;
       },
       onSuccess: () => {

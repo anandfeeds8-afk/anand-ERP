@@ -41,6 +41,7 @@ const {
   deleteProduct,
   deleteProductsFromWarehouse,
   getFilteredProducts,
+  getAllAdmins,
 } = require("../controllers/Admin");
 
 const { verifyAdmin } = require("../middleware/verifyAdmin");

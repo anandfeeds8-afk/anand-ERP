@@ -17,7 +17,6 @@ const Product = ({ product }) => {
 
   const onEdit = (data) => {
     data.productId = product._id;
-    console.log(data);
     updateProductPrice(data);
     setOpenEdit(false);
   };

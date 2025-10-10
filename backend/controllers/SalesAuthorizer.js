@@ -1,12 +1,14 @@
 const Salesman = require("../models/Salesman");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
-
+const { getIO } = require("../config/socket.js");
 const Order = require("../models/Order");
 
 const Warehouse = require("../models/WareHouse");
 
 const SalesAuthorizer = require("../models/SalesAuthorizer");
+const Notification = require("../models/Notification");
+const Admin = require("../models/Admin.js");
 
 const SECRET_TOKEN = process.env.JWT_SECRET || "yourSecretKey";
 
@@ -162,26 +164,29 @@ const assignWarehouse = async (req, res) => {
 
     order.items.forEach((orderItem) => {
       const stockItem = warehouse.stock.find(
-        (s) => String(s.product._id) === String(orderItem.product._id)
+        (s) =>
+          s?.product?._id &&
+          orderItem?.product?._id &&
+          String(s.product._id) === String(orderItem.product._id)
       );
 
       if (!stockItem) {
         report.missing.push({
-          product: orderItem.product.name,
+          product: orderItem?.product?.name,
           requested: orderItem.quantity,
           available: 0,
         });
         report.canFulfill = false;
       } else if (stockItem.quantity < orderItem.quantity) {
         report.insufficient.push({
-          product: orderItem.product.name,
+          product: orderItem?.product?.name,
           requested: orderItem.quantity,
           available: stockItem.quantity,
         });
         report.canFulfill = false;
       } else {
         report.available.push({
-          product: orderItem.product.name,
+          product: orderItem?.product?.name,
           requested: orderItem.quantity,
           available: stockItem.quantity,
           remaining: stockItem.quantity - orderItem.quantity,
@@ -202,11 +207,69 @@ const assignWarehouse = async (req, res) => {
     order.assignedWarehouse = warehouseId;
     order.orderStatus = "WarehouseAssigned";
     order.warehouseAssignedByAuthorizer = authorizerId;
+
     await order.save();
+
+    const currentUser = await SalesAuthorizer.findOne({ _id: authorizerId });
+
+    const plantHeadId = warehouse?.plantHead?.toString();
+    if (!plantHeadId) {
+      return res.status(400).json({
+        success: false,
+        message: "Warehouse does not have a plant head assigned",
+      });
+    }
+
+    const admins = await Admin.find().select("_id");
+
+    const adminIds = admins.map((u) => u._id.toString());
+
+    console.log("adminIds", adminIds);
+    console.log("plantheadids", plantHeadId);
+
+    const message = `Order #${order.orderId} has been assigned to ${warehouse.name} by ${currentUser?.name}`;
+
+    await Notification.insertOne({
+      orderId: order.orderId,
+      message,
+      type: "plantAssigned",
+      senderId: authorizerId,
+      receiverId: plantHeadId,
+      read: false,
+    });
+
+    const notifications = adminIds.map((r_id) => ({
+      orderId: order.orderId,
+      message,
+      type: "plantAssigned",
+      senderId: authorizerId,
+      receiverId: r_id,
+      read: false,
+    }));
+
+    await Notification.insertMany(notifications);
+
+    const io = getIO();
+
+    adminIds.forEach((r_id) => {
+      io.to(r_id).emit("plantAssigned", {
+        orderId: order.orderId,
+        message,
+        type: "plantAssigned",
+        senderId: authorizerId,
+      });
+    });
+
+    io.to(plantHeadId).emit("plantAssigned", {
+      orderId: order.orderId,
+      message,
+      type: "plantAssigned",
+      senderId: authorizerId,
+    });
 
     return res.status(200).json({
       success: true,
-      message: "Warehouse assigned successfully",
+      message: "Plant assigned successfully",
       report,
       data: order,
     });

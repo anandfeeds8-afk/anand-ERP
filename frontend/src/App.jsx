@@ -8,7 +8,7 @@ import SalesmanDashboardPage from "./pages/Salesman/SalesmanDashboardPage";
 import ProductManagementPage from "./pages/Admin/ProductManagementPage";
 import EmployeeManagementPage from "./pages/Admin/EmployeeManagementPage";
 import OrderManagementPage from "./pages/Admin/OrderManagementPage";
-import WarehouseManagementPage from "./pages/Admin/WarehouseManagementPage";
+import PlantManagementPage from "./pages/Admin/PlantManagementPage";
 import ProtectedRoutes from "./ui/ProtectedRoutes";
 import SalesAuthorizerDashboardPage from "./pages/SalesAuthorizer/SalesAuthorizerDashboardPage";
 import SalesManagerDashboardPage from "./pages/SalesManager/SalesManagerDashboardPage";
@@ -18,8 +18,10 @@ import ReportsPage from "./pages/Admin/ReportsPage";
 import ProductsManagementPage from "./pages/Planthead/ProductsManagementPage";
 import PartyManagementPage from "./pages/Salesman/PartyManagementPage";
 import PartyManagementPageAdmin from "./pages/Admin/PartyManagementPage";
+import { useUser } from "./hooks/useUser.js";
 
 const App = () => {
+  const { user } = useUser();
   return (
     <Routes>
       <Route
@@ -43,10 +45,7 @@ const App = () => {
             element={<EmployeeManagementPage />}
           />
           <Route path="order-management" element={<OrderManagementPage />} />
-          <Route
-            path="warehouse-management"
-            element={<WarehouseManagementPage />}
-          />
+          <Route path="plant-management" element={<PlantManagementPage />} />
           <Route
             path="party-management"
             element={<PartyManagementPageAdmin />}

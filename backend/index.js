@@ -6,6 +6,8 @@ require("dotenv").config();
 const os = require("os");
 const cluster = require("cluster");
 const cookieParser = require("cookie-parser");
+const http = require("http");
+const { initSocket } = require("./config/socket");
 
 // Import custom route files
 const salesmanRoutes = require("./routes/salesmanRouter");
@@ -14,13 +16,15 @@ const managerRoutes = require("./routes/managerRouter");
 const authorizerRoutes = require("./routes/authorizerRouter");
 const plantHeadRoutes = require("./routes/plantheadRouter");
 const accountantRoutes = require("./routes/accountantRouter");
+const notificationRoutes = require("./routes/notificationRouter");
+const messageRoutes = require("./routes/messageRouter");
 const meRoutes = require("./routes/meRouter");
-
-// Import database connection function
-const connectDatabase = require("./config/db");
 
 // Create Express app instance
 const app = express();
+
+// Import database connection function
+const connectDatabase = require("./config/db");
 
 // Define port from .env or fallback to 5000
 const PORT = process.env.PORT || 5000;
@@ -28,8 +32,9 @@ const PORT = process.env.PORT || 5000;
 // Get the number of CPU cores available
 const numCPUs = os.cpus().length;
 
+// Use clustering only in production; run single-process in development
 // Check if current process is the Master process
-if (cluster.isPrimary) {
+if (cluster.isPrimary && process.env.NODE_ENV === "production") {
   console.log(`🔧 Master process ${process.pid} is running`);
 
   // Fork workers for each CPU core
@@ -57,7 +62,12 @@ if (cluster.isPrimary) {
   connectDatabase();
 
   // Enable CORS and parse JSON body
-  app.use(cors());
+  app.use(
+    cors({
+      origin: "*",
+      credentials: true,
+    })
+  );
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
   app.use(cookieParser());
@@ -69,6 +79,8 @@ if (cluster.isPrimary) {
   app.use("/api/authorizer", authorizerRoutes);
   app.use("/api/planthead", plantHeadRoutes);
   app.use("/api/accountant", accountantRoutes);
+  app.use("/api/notifications", notificationRoutes);
+  app.use("/api/messages", messageRoutes);
   app.use("/api/me", meRoutes);
 
   // Root route (API health check)
@@ -77,7 +89,10 @@ if (cluster.isPrimary) {
   });
 
   // Start Express server
-  app.listen(PORT, () => {
+  const server = http.createServer(app);
+  // IMPORTANT: initialize socket.io on the same server instance that listens, inside the worker
+  initSocket(server);
+  server.listen(PORT, () => {
     console.log(`🚀 Worker ${process.pid} running at http://localhost:${PORT}`);
   });
 }

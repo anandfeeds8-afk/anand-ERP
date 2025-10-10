@@ -221,7 +221,9 @@ const ForwardedOrders = () => {
           <div className="bg-white relative p-7 rounded-lg max-w-[60%] min-w-[45%] max-h-[95%] overflow-auto">
             <div className="mb-5">
               <div className="flex items-center justify-between">
-                <p className="text-xl font-bold">Order Details</p>
+                <p className="text-xl font-bold">
+                  Order Details - #{singleOrderFromSalesManager?.orderId}
+                </p>
                 <IconButton size="small" onClick={() => setOpenView(false)}>
                   <CloseIcon />
                 </IconButton>
@@ -274,10 +276,6 @@ const ForwardedOrders = () => {
                     Order Information
                   </h1>
                   <div className="flex items-center justify-between font-semibold">
-                    <span className="text-gray-600 font-normal">Order Id:</span>
-                    #{singleOrderFromSalesManager?.orderId}
-                  </div>
-                  <div className="flex items-center justify-between font-semibold">
                     <span className="text-gray-600 font-normal">
                       Placed By:
                     </span>
@@ -291,12 +289,6 @@ const ForwardedOrders = () => {
                       singleOrderFromSalesManager?.createdAt,
                       "dd MMM yyyy"
                     )}
-                  </div>
-                  <div className="flex items-center justify-between font-semibold">
-                    <span className="text-gray-600 font-normal">
-                      Shipping Address:
-                    </span>
-                    {singleOrderFromSalesManager?.shippingAddress}
                   </div>
                 </div>
                 <div className="flex flex-col gap-2 text-sm">
@@ -321,12 +313,83 @@ const ForwardedOrders = () => {
                     </span>
                     {formatRupee(singleOrderFromSalesManager?.dueAmount)}
                   </div>
+                  {singleOrderFromSalesManager?.advanceAmount > 0 && (
+                    <div className="flex items-center justify-between font-semibold text-red-700">
+                      <span className="text-gray-600 font-normal">
+                        Advance Payment Approval:
+                      </span>
+                      {singleOrderFromSalesManager?.advancePaymentStatus ===
+                        "Approved" && (
+                        <span className="text-green-700 font-semibold bg-green-100 p-1 px-3 rounded-full text-xs">
+                          Confirmed
+                        </span>
+                      )}
+                      {singleOrderFromSalesManager?.advancePaymentStatus ===
+                        "SentForApproval" && (
+                        <span className="text-indigo-700 font-semibold bg-indigo-100 p-1 px-3 rounded-full text-xs">
+                          Sent For Confirmation
+                        </span>
+                      )}
+                      {singleOrderFromSalesManager?.advancePaymentStatus ===
+                        "Pending" && (
+                        <span className="text-yellow-700 font-semibold bg-yellow-100 p-1 px-3 rounded-full text-xs">
+                          Pending
+                        </span>
+                      )}
+                      {singleOrderFromSalesManager?.advancePaymentStatus ===
+                        "Rejected" && (
+                        <span className="text-red-700 font-semibold bg-red-100 p-1 px-3 rounded-full text-xs">
+                          Rejected
+                        </span>
+                      )}
+                    </div>
+                  )}
+                  {singleOrderFromSalesManager?.duePaymentStatus && (
+                    <div className="flex items-center justify-between font-semibold text-red-700">
+                      <span className="text-gray-600 font-normal">
+                        Due Payment Approval:
+                      </span>
+                      {singleOrderFromSalesManager?.duePaymentStatus ===
+                        "Approved" && (
+                        <span className="text-green-700 font-semibold bg-green-100 p-1 px-3 rounded-full text-xs">
+                          Confirmed
+                        </span>
+                      )}
+                      {singleOrderFromSalesManager?.duePaymentStatus ===
+                        "SentForApproval" && (
+                        <span className="text-indigo-700 font-semibold bg-indigo-100 p-1 px-3 rounded-full text-xs">
+                          Sent For Confirmation
+                        </span>
+                      )}
+                      {singleOrderFromSalesManager?.duePaymentStatus ===
+                        "Pending" && (
+                        <span className="text-yellow-700 font-semibold bg-yellow-100 p-1 px-3 rounded-full text-xs">
+                          Pending
+                        </span>
+                      )}
+                      {singleOrderFromSalesManager?.duePaymentStatus ===
+                        "Rejected" && (
+                        <span className="text-red-700 font-semibold bg-red-100 p-1 px-3 rounded-full text-xs">
+                          Rejected
+                        </span>
+                      )}
+                    </div>
+                  )}
+
                   <div className="flex items-center justify-between font-semibold">
                     <span className="text-gray-600 font-normal">
-                      Payment Mode:
+                      Advance Payment Mode:
                     </span>
                     {singleOrderFromSalesManager?.paymentMode}
                   </div>
+                  {singleOrderFromSalesManager?.duePaymentMode && (
+                    <div className="flex items-center justify-between font-semibold">
+                      <span className="text-gray-600 font-normal">
+                        Due Payment Mode:
+                      </span>
+                      {singleOrderFromSalesManager?.duePaymentMode}
+                    </div>
+                  )}
                   {singleOrderFromSalesManager?.dueAmount !== 0 && (
                     <div className="flex items-center justify-between font-semibold">
                       <span className="text-gray-600 font-normal">
@@ -406,44 +469,66 @@ const ForwardedOrders = () => {
 
                 <div className="flex flex-col gap-2 text-sm">
                   <h1 className="font-semibold text-base text-gray-800">
-                    Notes
+                    Shipping Details
                   </h1>
-                  <p className="bg-green-50 rounded-lg p-3">
-                    {singleOrderFromSalesManager?.notes}
-                  </p>
+                  <div className="flex items-center justify-between font-semibold">
+                    <span className="text-gray-600 font-normal">Address:</span>
+                    {singleOrderFromSalesManager?.shippingAddress}
+                  </div>
+                </div>
+
+                <div className="flex flex-col gap-2 text-sm">
+                  <h1 className="font-semibold text-base text-gray-800">
+                    Assigned Warehouse
+                  </h1>
+                  <div className="flex items-center justify-between font-semibold">
+                    <span className="text-gray-600 font-normal">
+                      Warehouse:
+                    </span>
+                    {singleOrderFromSalesManager?.assignedWarehouse ? (
+                      <div className="flex flex-col items-center">
+                        <p>
+                          {singleOrderFromSalesManager?.assignedWarehouse?.name}
+                        </p>
+
+                        <p className="text-xs font-normal text-gray-600">
+                          (
+                          {
+                            singleOrderFromSalesManager?.assignedWarehouse
+                              ?.location
+                          }
+                          )
+                        </p>
+                      </div>
+                    ) : (
+                      <span className="text-red-700 bg-red-100 p-1 px-3 rounded-full text-xs">
+                        Not Assigned
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex items-center justify-between font-semibold">
+                    <span className="text-gray-600 font-normal">
+                      Warehouse Approval:
+                    </span>
+                    {singleOrderFromSalesManager?.approvedBy ? (
+                      <span className="text-green-700 font-semibold bg-green-100 p-1 px-3 rounded-full text-xs">
+                        Approved
+                      </span>
+                    ) : (
+                      <span className="text-red-700 font-semibold bg-red-100 p-1 px-3 rounded-full text-xs">
+                        Pending
+                      </span>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
-            {singleOrderFromSalesManager?.assignedWarehouse && (
-              <div className="flex flex-col text-sm my-5">
-                <h1 className="font-semibold text-base text-gray-800">
-                  Assigned Warehouse
-                </h1>
-                <div className="flex items-center justify-between font-semibold">
-                  <span className="text-gray-600 font-normal">Warehouse:</span>
-                  {singleOrderFromSalesManager?.assignedWarehouse ? (
-                    <div className="flex items-center">
-                      <p>
-                        {singleOrderFromSalesManager?.assignedWarehouse?.name}
-                      </p>
-                      &nbsp;
-                      <p className="text-xs font-normal text-gray-600">
-                        (
-                        {
-                          singleOrderFromSalesManager?.assignedWarehouse
-                            ?.location
-                        }
-                        )
-                      </p>
-                    </div>
-                  ) : (
-                    <span className="text-red-700 bg-red-100 p-1 px-3 rounded-full text-xs">
-                      Not Assigned
-                    </span>
-                  )}
-                </div>
-              </div>
-            )}
+            <div className="flex flex-col gap-2 text-sm my-5">
+              <h1 className="font-semibold text-base text-gray-800">Notes</h1>
+              <p className="bg-green-50 rounded-lg p-3">
+                {singleOrderFromSalesManager?.notes}
+              </p>
+            </div>
             {singleOrderFromSalesManager?.dispatchInfo && (
               <div className="flex flex-col gap-2 text-sm bg-green-50 p-3 rounded-lg mt-5">
                 <h1 className="font-semibold text-base text-gray-800">

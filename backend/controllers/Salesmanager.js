@@ -3,6 +3,10 @@ const Order = require("../models/Order");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const SECRET_TOKEN = process.env.JWT_SECRET;
+const SalesAuthorizer = require("../models/SalesAuthorizer");
+const Notification = require("../models/Notification.js");
+const { getIO } = require("../config/socket.js");
+const Admin = require("../models/Admin.js");
 
 const loginSalesManager = async (req, res) => {
   try {
@@ -150,6 +154,43 @@ const forwardOrderToAuthorizer = async (req, res) => {
     order.forwardedByManager = salesManagerId;
 
     await order.save();
+
+    const currentUser = await SalesManager.findOne({ _id: salesManagerId });
+
+    const authorizers = await SalesAuthorizer.find().select("_id");
+
+    const authorizerIds = authorizers.map((u) => u._id.toString());
+
+    const filteredAuthorizers = authorizerIds.filter(
+      (id) => id !== currentUser?._id.toString()
+    );
+
+    const admins = await Admin.find().select("_id");
+
+    const adminIds = admins.map((u) => u._id.toString());
+
+    const message = `Order #${order.orderId} forwarded to Authorizer by ${currentUser?.name}`;
+    const notifications = [...filteredAuthorizers, ...adminIds].map((r_id) => ({
+      orderId: order.orderId,
+      message,
+      type: "orderForwardedToAuthorizer",
+      senderId: salesManagerId,
+      receiverId: r_id,
+      read: false,
+    }));
+
+    await Notification.insertMany(notifications);
+
+    const io = getIO();
+
+    [...filteredAuthorizers, ...adminIds].forEach((r_id) => {
+      io.to(r_id).emit("forwardedToAuthorizer", {
+        orderId: order.orderId,
+        message,
+        type: "orderForwardedToAuthorizer",
+        senderId: salesManagerId,
+      });
+    });
 
     res.status(200).json({
       success: true,

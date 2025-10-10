@@ -13,10 +13,8 @@ const useLogin = () => {
   } = useMutation({
     mutationFn: async (data) => {
       const role = data.role.toUpperCase();
-      console.log(role);
 
       const response = await axios.post(BASE_URL + API_PATHS[role].LOGIN, data);
-      console.log("data", response.data);
       localStorage.setItem("token", response.data.data.token);
       return response.data;
     },
@@ -29,7 +27,6 @@ const useLogin = () => {
       if (data.data.role === "Accountant") navigate("/accountant");
     },
     onError: (error) => {
-      console.log(error.response.data.message);
       toast.error(error.response.data.message);
     },
   });

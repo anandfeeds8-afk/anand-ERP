@@ -24,6 +24,7 @@ import { MdOutlineCancel } from "react-icons/md";
 import { PackageCheck } from "lucide-react";
 import { FileClock } from "lucide-react";
 import { useUser } from "../../../hooks/useUser.js";
+import { useTheme } from "../../../context/ThemeContext.jsx";
 
 const downloadInvoice = ({
   accName,
@@ -90,7 +91,7 @@ const downloadInvoice = ({
   doc.setTextColor(0, 0, 0); // reset to black
   autoTable(doc, {
     startY: 110,
-    theme: "striped",
+    resolvedTheme: "striped",
     headStyles: {
       fillColor: [52, 152, 219], // blue header background
       textColor: 255, // white text
@@ -124,6 +125,7 @@ const downloadInvoice = ({
 };
 
 const AllOrdersForSalesman = () => {
+  const { resolvedTheme } = useTheme();
   const [singleOrderId, setSingleOrderId] = useState(null);
   const [openView, setOpenView] = useState(false);
   const [openInvoice, setOpenInvoice] = useState(false);
@@ -190,6 +192,10 @@ const AllOrdersForSalesman = () => {
 
   const dueAmountDocs = watch("dueAmountDocs");
   const dueAmountDocsFile = dueAmountDocs ? dueAmountDocs[0] : null;
+
+  const totalBeforeDiscount =
+    singleOrderFromSalesman?.totalAmount /
+    (1 - singleOrderFromSalesman?.discount / 100);
 
   const handleUpdatePayment = (data) => {
     data.orderId = singleOrderId;
@@ -446,33 +452,77 @@ const AllOrdersForSalesman = () => {
         pageSizeOptions={[5, 10, 20, 50, 100]}
         pagination
         autoHeight
+        disableColumnResize={false}
         sx={{
           width: "100%",
-          borderRadius: "8px",
-          minWidth: "100%",
-          "& .MuiDataGrid-cell:focus": {
-            outline: "none",
-            backgroundColor: "none !important",
-          },
-          "& .MuiDataGrid-cell:focus-within": {
-            outline: "none",
-            backgroundColor: "none !important",
-          },
+          borderRadius: "6px",
+          borderColor: resolvedTheme === "dark" ? "transparent" : "#e5e7eb",
+          backgroundColor: resolvedTheme === "dark" ? "#0f172a" : "#fff",
+          color: resolvedTheme === "dark" ? "#e5e7eb" : "#111827",
+
+          // 🔹 Header Row Background
           "& .MuiDataGrid-columnHeaders": {
-            position: "sticky",
-            top: 0,
-            backgroundColor: "#fff",
-            zIndex: 1,
+            backgroundColor:
+              resolvedTheme === "dark"
+                ? "#1e293b !important"
+                : "#f9fafb !important",
+            color: resolvedTheme === "dark" ? "#f1f5f9" : "#000",
           },
-          "& .MuiDataGrid-virtualScroller": {
-            overflowX: "auto !important",
-            overflowY: "auto",
+
+          // 🔹 Header Cell
+          "& .MuiDataGrid-columnHeader": {
+            backgroundColor:
+              resolvedTheme === "dark"
+                ? "#1e293b !important"
+                : "#f9fafb !important",
+            color: resolvedTheme === "dark" ? "#9ca3af" : "#000",
           },
-          "& .MuiDataGrid-main": {
-            maxWidth: "100%",
+
+          "& .MuiDataGrid-columnHeaderTitle": {
+            fontWeight: "600",
+            // fontSize: "0.8rem",
+          },
+
+          // 🔹 Cells
+          "& .MuiDataGrid-cell": {
+            borderColor: resolvedTheme === "dark" ? "#374151" : "#e5e7eb",
+            backgroundColor: resolvedTheme === "dark" ? "#0f172a" : "#fff",
+            color: resolvedTheme === "dark" ? "#9ca3af" : "#000",
+          },
+
+          // ❌ Remove blue outline when cell is active/focused
+          "& .MuiDataGrid-cell:focus, & .MuiDataGrid-cell:focus-within": {
+            outline: "none !important",
+          },
+
+          // 🔹 Hover row (lighter shade)
+          "& .MuiDataGrid-row:hover": {
+            backgroundColor:
+              resolvedTheme === "dark"
+                ? "rgba(59,130,246,0.1)"
+                : "rgba(59,130,246,0.05)",
+            transition: "background-color 0.2s ease-in-out",
+          },
+
+          // 🔹 Pagination buttons
+          "& .MuiTablePagination-root": {
+            color: resolvedTheme === "dark" ? "#e5e7eb" : "#111827",
+          },
+
+          "& .MuiPaginationItem-root": {
+            borderRadius: "6px",
+            color: resolvedTheme === "dark" ? "#e5e7eb" : "#111827",
+          },
+
+          "& .MuiPaginationItem-root.Mui-selected": {
+            backgroundColor: resolvedTheme === "dark" ? "#1e40af" : "#2563eb",
+            color: "#fff",
+          },
+
+          "& .MuiPaginationItem-root:hover": {
+            backgroundColor: resolvedTheme === "dark" ? "#1e3a8a" : "#dbeafe",
           },
         }}
-        disableColumnResize={false}
       />
 
       {/* --- View Order Modal --- */}
@@ -481,7 +531,9 @@ const AllOrdersForSalesman = () => {
           <div className="bg-white relative p-7 rounded-lg max-w-[60%] min-w-[50%] max-h-[95%] overflow-auto">
             <div className="mb-5">
               <div className="flex items-center justify-between">
-                <p className="text-xl font-bold">Order Details</p>
+                <p className="text-xl font-bold">
+                  Order Details - #{singleOrderFromSalesman?.orderId}
+                </p>
                 <IconButton size="small" onClick={() => setOpenView(false)}>
                   <CloseIcon />
                 </IconButton>
@@ -545,20 +597,27 @@ const AllOrdersForSalesman = () => {
                     </span>
                     {format(singleOrderFromSalesman?.createdAt, "dd MMM yyyy")}
                   </div>
-                  <div className="flex items-center justify-between font-semibold">
-                    <span className="text-gray-600 font-normal">
-                      Shipping Address:
-                    </span>
-                    {singleOrderFromSalesman?.shippingAddress}
-                  </div>
                 </div>
                 <div className="flex flex-col gap-2 text-sm">
                   <h1 className="font-semibold text-base text-gray-800">
                     Payment Information
                   </h1>
                   <div className="flex items-center justify-between font-semibold">
+                    <span className="text-gray-600 font-normal">Subtotal:</span>
+                    {formatRupee(totalBeforeDiscount)}
+                  </div>
+                  <div className="flex items-center justify-between font-semibold">
                     <span className="text-gray-600 font-normal">
-                      Total Amount:
+                      Discount ({singleOrderFromSalesman?.discount}%):
+                    </span>
+                    -
+                    {formatRupee(
+                      totalBeforeDiscount - singleOrderFromSalesman?.totalAmount
+                    )}
+                  </div>
+                  <div className="flex items-center justify-between font-semibold">
+                    <span className="text-gray-600 font-normal">
+                      Net Total:
                     </span>
                     {formatRupee(singleOrderFromSalesman?.totalAmount)}
                   </div>
@@ -577,7 +636,7 @@ const AllOrdersForSalesman = () => {
                   {singleOrderFromSalesman?.advanceAmount > 0 && (
                     <div className="flex items-center justify-between font-semibold text-red-700">
                       <span className="text-gray-600 font-normal">
-                        Advance Payment Approval:
+                        Advance Confirmation:
                       </span>
                       {singleOrderFromSalesman?.advancePaymentStatus ===
                         "Approved" && (
@@ -608,7 +667,7 @@ const AllOrdersForSalesman = () => {
                   {singleOrderFromSalesman?.duePaymentStatus && (
                     <div className="flex items-center justify-between font-semibold text-red-700">
                       <span className="text-gray-600 font-normal">
-                        Due Payment Approval:
+                        Due Confirmation:
                       </span>
                       {singleOrderFromSalesman?.duePaymentStatus ===
                         "Approved" && (
@@ -721,20 +780,35 @@ const AllOrdersForSalesman = () => {
                       </span>
                     )}
                   </div>
+                  {singleOrderFromSalesman?.dueInvoiceGenerated && (
+                    <div className="flex items-center justify-between font-semibold">
+                      <span className="text-gray-600 font-normal">
+                        Due Invoice Generated:
+                      </span>
+                      {singleOrderFromSalesman?.dueInvoiceGenerated ? (
+                        <span className="text-green-800 bg-green-100 p-1 px-3 rounded-full text-xs">
+                          Yes
+                        </span>
+                      ) : (
+                        <span className="text-red-700 bg-red-100 p-1 px-3 rounded-full text-xs">
+                          No
+                        </span>
+                      )}
+                    </div>
+                  )}
                 </div>
 
                 <div className="flex flex-col gap-2 text-sm">
                   <h1 className="font-semibold text-base text-gray-800">
-                    Order Timeline
+                    Shipping Details
                   </h1>
                   <div className="flex items-center justify-between font-semibold">
-                    <span className="text-gray-600 font-normal">
-                      Order Date:
-                    </span>
-                    {format(singleOrderFromSalesman?.createdAt, "dd MMM yyyy")}
+                    <span className="text-gray-600 font-normal">Address:</span>
+                    {singleOrderFromSalesman?.shippingAddress}
                   </div>
                 </div>
 
+                {/* assigned warehouse */}
                 <div className="flex flex-col gap-2 text-sm">
                   <h1 className="font-semibold text-base text-gray-800">
                     Assigned Warehouse
@@ -744,11 +818,10 @@ const AllOrdersForSalesman = () => {
                       Warehouse:
                     </span>
                     {singleOrderFromSalesman?.assignedWarehouse ? (
-                      <div className="flex items-center">
+                      <div className="flex flex-col items-center">
                         <p>
                           {singleOrderFromSalesman?.assignedWarehouse?.name}
                         </p>
-                        &nbsp;
                         <p className="text-xs font-normal text-gray-600">
                           (
                           {singleOrderFromSalesman?.assignedWarehouse?.location}
@@ -779,13 +852,14 @@ const AllOrdersForSalesman = () => {
               </div>
             </div>
 
+            {/* notes */}
             <div className="flex flex-col gap-2 text-sm my-5">
               <h1 className="font-semibold text-base text-gray-800">Notes</h1>
               <p className="bg-yellow-50 rounded-lg p-3">
                 {singleOrderFromSalesman?.notes}
               </p>
             </div>
-
+            {/* dispatch info */}
             {singleOrderFromSalesman?.dispatchInfo && (
               <div className="flex flex-col gap-2 text-sm bg-green-50 p-3 rounded-lg mt-5">
                 <h1 className="font-semibold text-base text-gray-800">

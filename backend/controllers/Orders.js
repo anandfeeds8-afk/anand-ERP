@@ -4,6 +4,13 @@ const Product = require("../models/Product");
 const Party = require("../models/Party.js");
 const WareHouse = require("../models/WareHouse.js");
 const getNextOrderId = require("../helper/getNextOrderId");
+const { getIO } = require("../config/socket.js");
+const Admin = require("../models/Admin");
+
+const SalesManager = require("../models/SalesManager");
+const Notification = require("../models/Notification.js");
+const Salesman = require("../models/Salesman.js");
+const SalesAuthorizer = require("../models/SalesAuthorizer.js");
 
 const createOrder = async (req, res) => {
   try {
@@ -22,8 +29,6 @@ const createOrder = async (req, res) => {
     const parsedParty = JSON.parse(party);
     const parsedItems = JSON.parse(items);
     const placedBy = req.user.id;
-
-    console.log(parsedParty);
 
     // ✅ Validate party fields
     if (
@@ -67,20 +72,20 @@ const createOrder = async (req, res) => {
     }
 
     // ✅ Calculate advance + due
-    const advance = Number(advanceAmount) || 0;
-    const dueAmount = Number(totalAmount) - advance;
+    const advance = Math.round(Number(advanceAmount)) || 0;
+    const dueAmount = Math.round(Number(totalAmount)) - advance;
 
     // ✅ Determine payment statuses
-    let paymentStatus;
-    let advancePaymentStatus;
-    let duePaymentStatus;
-    let advancePaymentMode;
-    let duePaymentMode;
+    let paymentStatus = "Unknown";
+    let advancePaymentStatus = null;
+    let advancePaymentMode = null;
+    let duePaymentStatus = null;
 
     if (advance === totalAmount && dueAmount === 0) {
       paymentStatus = "ConfirmationPending";
       advancePaymentStatus = "Pending";
       advancePaymentMode = paymentMode;
+      duePaymentStatus = null;
     } else if (advance > 0 && advance < totalAmount && dueAmount > 0) {
       paymentStatus = "PendingDues";
       advancePaymentStatus = "Pending";
@@ -97,8 +102,6 @@ const createOrder = async (req, res) => {
       limit: Number(parsedParty.limit) - Number(dueAmount),
     });
 
-    console.log(paymentMode);
-
     // ✅ Build Order object
     const orderItems = {
       orderId,
@@ -106,12 +109,11 @@ const createOrder = async (req, res) => {
         product: i.product,
         quantity: i.quantity,
       })),
-      totalAmount,
+      totalAmount: Math.round(totalAmount),
       advanceAmount: advance,
-      dueAmount,
+      dueAmount: Math.round(dueAmount),
       dueDate,
       paymentMode: advancePaymentMode,
-      duePaymentMode,
       notes,
       shippingAddress,
       paymentStatus,
@@ -126,9 +128,43 @@ const createOrder = async (req, res) => {
       orderItems.advancePaymentDoc = advancePaymentProof.url;
     }
 
-    console.log(orderItems);
-
     const newOrder = await orderModel.create(orderItems);
+
+    const managers = await SalesManager.find().select("_id");
+
+    const managerIds = managers.map((u) => u._id.toString());
+
+    const filteredManagers = managerIds.filter(
+      (id) => id !== placedBy.toString()
+    );
+
+    const currentUser = await Salesman.findById(placedBy);
+    const admins = await Admin.find().select("_id");
+
+    const adminIds = admins.map((u) => u._id.toString());
+
+    const message = `New order #${newOrder.orderId} created by ${currentUser.name}`;
+    const notifications = [...filteredManagers, ...adminIds].map((r_id) => ({
+      orderId: newOrder.orderId,
+      message,
+      type: "orderCreated",
+      senderId: placedBy,
+      receiverId: r_id,
+      read: false,
+    }));
+
+    await Notification.insertMany(notifications);
+
+    const io = getIO();
+
+    [...filteredManagers, ...adminIds].forEach((r_id) => {
+      io.to(r_id).emit("orderCreated", {
+        orderId: newOrder.orderId,
+        message,
+        type: "orderCreated",
+        senderId: placedBy,
+      });
+    });
 
     res.status(201).json({
       success: true,
@@ -153,10 +189,11 @@ const orderPopulateFields = [
   { path: "approvedBy", select: "name email role" },
   { path: "forwardedByManager", select: "name email role" },
   { path: "forwardedByAuthorizer", select: "name email role" },
-  { path: "dispatchInfo.dispatchedBy", select: "name email role" },
+  { path: "dispatchInfo.dispatchedBy", select: "name email role phone" },
   { path: "assignedWarehouse", select: "name location" },
   { path: "invoiceDetails.invoicedBy", select: "name email role" },
   { path: "paymentCollectedBy", select: "name email role" },
+  { path: "canceledBy.user", select: "name email role" },
   { path: "canceledBy.user", select: "name email role" },
 ];
 
@@ -378,25 +415,88 @@ const approveOrderToWarehouse = async (req, res) => {
     // Step 3: Approve order
     order.orderStatus = "Approved";
     order.approvedBy = AuthorizerId;
+    const accountantId = warehouse.accountant.toString();
 
     if (order.advanceAmount > 0 && order.advancePaymentDoc) {
       order.advancePaymentStatus = "SentForApproval";
       order.paymentStatus = "ConfirmationPending";
       order.advancePaymentApprovalSentTo = warehouse.accountant;
+
+      const message = `Check and Confirm advance payment of order #${order.orderId}`;
+      await Notification.insertOne({
+        orderId: order.orderId,
+        message,
+        type: "advancePaymentSentForApproval",
+        senderId: AuthorizerId,
+        receiverId: accountantId,
+      });
+
+      const io = getIO();
+
+      io.to(accountantId).emit("advancePaymentSentForApproval", {
+        orderId,
+        message,
+        type: "advancePaymentSentForApproval",
+        senderId: AuthorizerId,
+      });
     }
 
     await warehouse.save();
     await order.save();
 
+    const admins = await Admin.find().select("_id");
+    const salesAuthorizer = await SalesAuthorizer.findById(AuthorizerId);
+
+    const adminIds = admins.map((u) => u._id.toString());
+    const plantheadId = warehouse.plantHead.toString();
+
+    const message = `${warehouse?.name} has been approved by ${salesAuthorizer?.name} for order #${order.orderId}`;
+    await Notification.insertOne({
+      orderId: order.orderId,
+      message,
+      type: "plantApproved",
+      senderId: AuthorizerId,
+      receiverId: plantheadId,
+    });
+
+    const notifications = adminIds.map((r_id) => ({
+      orderId: order.orderId,
+      message,
+      type: "plantApproved",
+      senderId: AuthorizerId,
+      receiverId: r_id,
+      read: false,
+    }));
+
+    await Notification.insertMany(notifications);
+
+    const io = getIO();
+
+    adminIds.forEach((r_id) => {
+      io.to(r_id).emit("plantApproved", {
+        orderId: order.orderId,
+        message,
+        type: "plantApproved",
+        senderId: AuthorizerId,
+      });
+    });
+
+    io.to(accountantId).emit("plantApproved", {
+      orderId,
+      message,
+      type: "plantApproved",
+      senderId: AuthorizerId,
+    });
+
     res.status(200).json({
       success: true,
-      message: "Order approved successfully",
+      message: "Plant approved successfully",
       data: order,
     });
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: "Error approving the warehouse for this order",
+      message: "Error approving the plant for this order",
       error: error.message,
     });
   }

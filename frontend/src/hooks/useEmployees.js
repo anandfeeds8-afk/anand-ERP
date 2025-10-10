@@ -24,7 +24,6 @@ const useEmployees = () => {
           },
         }
       );
-      // console.log("salesman", response.data.data);
       return response.data.data;
     },
     onError: (error) => {
@@ -281,7 +280,6 @@ const useEmployees = () => {
             },
           }
         );
-        console.log(response.data);
         return response.data;
       },
       onSuccess: () => {
@@ -380,8 +378,6 @@ const useEmployees = () => {
   const { mutate: updateSalesman, isPending: isUpdatingSalesman } = useMutation(
     {
       mutationFn: async (data) => {
-        console.log("update", data);
-
         const response = await axios.put(
           BASE_URL + API_PATHS.ADMIN.SALESMAN.UPDATE(data.id),
           data,
@@ -391,7 +387,6 @@ const useEmployees = () => {
             },
           }
         );
-        console.log(response.data);
         return response.data;
       },
       onSuccess: () => {
@@ -411,8 +406,6 @@ const useEmployees = () => {
   const { mutate: updateSalesManager, isPending: isUpdatingSalesManager } =
     useMutation({
       mutationFn: async (data) => {
-        console.log("update", data);
-
         const response = await axios.put(
           BASE_URL + API_PATHS.ADMIN.SALES_MANAGER.UPDATE(data.id),
           data,
@@ -422,7 +415,6 @@ const useEmployees = () => {
             },
           }
         );
-        console.log(response.data);
         return response.data;
       },
       onSuccess: () => {
@@ -443,8 +435,6 @@ const useEmployees = () => {
     isPending: isUpdatingSalesAuthorizer,
   } = useMutation({
     mutationFn: async (data) => {
-      console.log("update", data);
-
       const response = await axios.put(
         BASE_URL + API_PATHS.ADMIN.SALES_AUTHORIZER.UPDATE(data.id),
         data,
@@ -454,7 +444,6 @@ const useEmployees = () => {
           },
         }
       );
-      console.log(response.data);
       return response.data;
     },
     onSuccess: () => {
@@ -473,8 +462,6 @@ const useEmployees = () => {
   const { mutate: updatePlantHead, isPending: isUpdatingPlantHead } =
     useMutation({
       mutationFn: async (data) => {
-        console.log("update", data);
-
         const response = await axios.put(
           BASE_URL + API_PATHS.ADMIN.PLANT_HEAD.UPDATE(data.id),
           data,
@@ -484,7 +471,6 @@ const useEmployees = () => {
             },
           }
         );
-        console.log(response.data);
         return response.data;
       },
       onSuccess: () => {
@@ -503,8 +489,6 @@ const useEmployees = () => {
   const { mutate: updateAccountant, isPending: isUpdatingAccountant } =
     useMutation({
       mutationFn: async (data) => {
-        console.log("update", data);
-
         const response = await axios.put(
           BASE_URL + API_PATHS.ADMIN.ACCOUNTANT.UPDATE(data.id),
           data,
@@ -514,7 +498,6 @@ const useEmployees = () => {
             },
           }
         );
-        console.log(response.data);
         return response.data;
       },
       onSuccess: () => {

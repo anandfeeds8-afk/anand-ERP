@@ -20,7 +20,6 @@ const useWarehouse = () => {
           },
         }
       );
-      console.log("warehouses", response.data.data);
       return response.data.data;
     },
     onError: (error) => {
