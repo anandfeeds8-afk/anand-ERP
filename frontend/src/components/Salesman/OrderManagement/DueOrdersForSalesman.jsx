@@ -303,7 +303,7 @@ const DueOrdersForSalesman = () => {
 
       {/* --- View Order Modal --- */}
       {openView && (
-        <div className="transition-all bg-black/30 backdrop-blur-sm w-full z-50 h-screen absolute top-0 left-0 flex items-center justify-center">
+        <div className="transition-all bg-gradient-to-b from-black/20 to-black/60 backdrop-blur-sm w-full z-50 h-screen absolute top-0 left-0 flex items-center justify-center">
           <div className="bg-white relative p-7 rounded-lg w-[50%] overflow-auto">
             <div className="mb-5">
               <div className="flex items-center justify-between">
@@ -464,12 +464,10 @@ const DueOrdersForSalesman = () => {
                 </div>
                 <div className="flex flex-col gap-2 text-sm">
                   <h1 className="font-semibold text-base text-gray-800">
-                    Assigned Warehouse
+                    Assigned Plant
                   </h1>
                   <div className="flex items-center justify-between font-semibold">
-                    <span className="text-gray-600 font-normal">
-                      Warehouse:
-                    </span>
+                    <span className="text-gray-600 font-normal">Plant:</span>
                     {singleOrderFromSalesman?.assignedWarehouse ? (
                       <div className="flex flex-col items-center">
                         {singleOrderFromSalesman?.assignedWarehouse?.name}
@@ -559,7 +557,7 @@ const DueOrdersForSalesman = () => {
 
       {/* --- View Invoice Modal --- */}
       {openInvoice && (
-        <div className="transition-all bg-black/30 backdrop-blur-sm w-full z-50 h-screen absolute top-0 left-0 flex items-center justify-center">
+        <div className="transition-all bg-gradient-to-b from-black/20 to-black/60 backdrop-blur-sm w-full z-50 h-screen absolute top-0 left-0 flex items-center justify-center">
           <div className="bg-white relative p-7 w-[35%] rounded-lg overflow-auto">
             <div className="mb-5">
               <div className="flex items-center justify-between">
@@ -645,46 +643,9 @@ const DueOrdersForSalesman = () => {
         </div>
       )}
 
-      {/* Delete Order Modal */}
-      {/* {openDelete && (
-        <div className="transition-all bg-black/30 backdrop-blur-sm w-full z-50 h-screen absolute top-0 left-0 flex items-center justify-center">
-          <div className="bg-white p-7 rounded-lg w-[29rem]">
-            <p className="text-lg font-semibold">
-              Are you sure you want to delete "
-              {singleOrderFromSalesman?.item?.name}"?
-            </p>
-            <p className="text-gray-500 text-sm">
-              This action cannot be undone.{" "}
-              {singleOrderFromSalesman?.item?.name}'s data will be permanently
-              removed.
-            </p>
-            <div className="flex items-center justify-end gap-3 mt-5">
-              <Button
-                variant="outlined"
-                disableElevation
-                color="error"
-                sx={{ textTransform: "none" }}
-                onClick={() => setOpenDelete(false)}
-              >
-                Cancel
-              </Button>
-              <Button
-                variant="contained"
-                disableElevation
-                color="error"
-                sx={{ textTransform: "none" }}
-                onClick={handleDelete}
-              >
-                Delete
-              </Button>
-            </div>
-          </div>
-        </div>
-      )} */}
-
       {/* --- Update Payment Modal --- */}
       {openUpdatePayment && (
-        <div className="transition-all bg-black/30 backdrop-blur-sm w-full z-50 h-screen absolute top-0 left-0 flex items-center justify-center">
+        <div className="transition-all bg-gradient-to-b from-black/20 to-black/60 backdrop-blur-sm w-full z-50 h-screen absolute top-0 left-0 flex items-center justify-center">
           <div className="bg-white relative p-7 w-[25%] rounded-lg overflow-auto">
             <div className="mb-5">
               <div className="flex items-center justify-between">
@@ -775,7 +736,7 @@ const DueOrdersForSalesman = () => {
 
       {/* Cancel Order Modal */}
       {openCancel && (
-        <div className="transition-all bg-black/30 backdrop-blur-sm w-full z-50 h-screen absolute top-0 left-0 flex items-center justify-center">
+        <div className="transition-all bg-gradient-to-b from-black/20 to-black/60 backdrop-blur-sm w-full z-50 h-screen absolute top-0 left-0 flex items-center justify-center">
           <div className="bg-white p-7 rounded-lg w-[29rem]">
             <p className="text-lg font-semibold">
               Are you sure you want to cancel "

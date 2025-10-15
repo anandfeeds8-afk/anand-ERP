@@ -346,7 +346,7 @@ const ApproveDuePaymentOrders = () => {
       />
       {/* --- View Order Modal --- */}
       {openView && (
-        <div className="transition-all bg-black/30 backdrop-blur-sm w-full z-50 h-screen absolute top-0 left-0 flex items-center justify-center">
+        <div className="transition-all bg-gradient-to-b from-black/20 to-black/60 backdrop-blur-sm w-full z-50 h-screen absolute top-0 left-0 flex items-center justify-center">
           <div className="bg-white relative p-7 rounded-lg w-[50%] max-h-[90%] overflow-auto">
             <div className="mb-5">
               <div className="flex items-center justify-between">
@@ -625,13 +625,11 @@ const ApproveDuePaymentOrders = () => {
                   <div className="flex flex-col gap-2 text-sm">
                     <div className="flex justify-between text-sm">
                       <h1 className="font-semibold text-base text-gray-800">
-                        Assigned Warehouse
+                        Assigned Plant
                       </h1>
                     </div>
                     <div className="flex items-center justify-between font-semibold">
-                      <span className="text-gray-600 font-normal">
-                        Warehouse:
-                      </span>
+                      <span className="text-gray-600 font-normal">Plant:</span>
                       {singleOrderInAccountant?.assignedWarehouse ? (
                         <div className="flex flex-col items-center">
                           <p>
@@ -654,7 +652,7 @@ const ApproveDuePaymentOrders = () => {
                     </div>
                     <div className="flex items-center justify-between font-semibold">
                       <span className="text-gray-600 font-normal">
-                        Warehouse Approval:
+                        Plant Approval:
                       </span>
                       {singleOrderInAccountant?.approvedBy ? (
                         <span className="text-green-700 font-semibold bg-green-100 p-1 px-3 rounded-full text-xs">
@@ -682,7 +680,7 @@ const ApproveDuePaymentOrders = () => {
 
       {/* Open Invoice Modal */}
       {openInvoice && (
-        <div className="transition-all bg-black/30 backdrop-blur-sm w-full z-50 h-screen absolute top-0 left-0 flex items-center justify-center">
+        <div className="transition-all bg-gradient-to-b from-black/20 to-black/60 backdrop-blur-sm w-full z-50 h-screen absolute top-0 left-0 flex items-center justify-center">
           <div className="bg-white relative p-7 rounded-lg max-w-[60%] min-w-[35%] max-h-[90%] overflow-auto">
             <div className="mb-5">
               <div className="flex items-center justify-between">
@@ -794,7 +792,7 @@ const ApproveDuePaymentOrders = () => {
 
       {/* --- View Invoice Modal --- */}
       {openDueInvoice && (
-        <div className="transition-all bg-black/30 backdrop-blur-sm w-full z-50 h-screen absolute top-0 left-0 flex items-center justify-center">
+        <div className="transition-all bg-gradient-to-b from-black/20 to-black/60 backdrop-blur-sm w-full z-50 h-screen absolute top-0 left-0 flex items-center justify-center">
           <div className="bg-white relative p-7 w-[35%] rounded-lg overflow-auto">
             <div className="mb-5">
               <div className="flex items-center justify-between">

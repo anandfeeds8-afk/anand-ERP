@@ -3,3 +3,27 @@
 body {
     font-family: 'Inter', sans-serif;
 }
+
+/* Hide scrollbar buttons (for Webkit browsers like Chrome, Edge, Safari) */
+.custom-scrollbar::-webkit-scrollbar-button {
+    display: none;
+}
+
+/* Optional: style the thumb and track */
+.custom-scrollbar::-webkit-scrollbar {
+    width: 5px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background-color: #bbbbbb;
+    border-radius: 2px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background-color: #a09f9f;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+    background-color: transparent;
+    border-radius: 2px;
+}

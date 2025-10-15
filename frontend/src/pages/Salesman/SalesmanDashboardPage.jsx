@@ -116,6 +116,7 @@ const SalesmanDashboardPage = () => {
   //advance amount
   const advanceAmount = watch("advanceAmount");
   const dueAmount = Math.round(finalTotalAmount - advanceAmount);
+
   useEffect(() => {
     if (advanceAmount > finalTotalAmount) {
       setError("Advance cannot be greater than total amount");
@@ -203,7 +204,7 @@ const SalesmanDashboardPage = () => {
 
       {/* Place Order Modal */}
       {openForm && (
-        <div className="transition-all dark:bg-black/50 bg-black/30 backdrop-blur-sm w-full z-50 h-screen absolute top-0 left-0 flex items-center justify-center">
+        <div className="transition-all bg-gradient-to-b from-black/20 to-black/60 backdrop-blur-sm w-full z-50 h-screen absolute top-0 left-0 flex items-center justify-center">
           <div className="bg-white p-7 rounded-lg w-[50%] dark:bg-gray-900">
             <p className="text-xl font-semibold mb-5 dark:text-gray-400">
               Place a new Order

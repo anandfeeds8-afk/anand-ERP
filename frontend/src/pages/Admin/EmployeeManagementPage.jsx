@@ -243,7 +243,7 @@ const EmployeeManagementPage = () => {
 
       {/* --- Add Employee Form --- */}
       {openForm && (
-        <div className="transition-all bg-black/30 backdrop-blur-sm w-full z-50 h-screen absolute top-0 left-0 flex items-center justify-center">
+        <div className="transition-all bg-gradient-to-b from-black/20 to-black/60 backdrop-blur-sm w-full z-50 h-screen absolute top-0 left-0 flex items-center justify-center">
           <div className="bg-white p-7 rounded-lg w-[29rem]">
             <p className="text-lg font-semibold mb-5">Add Employee</p>
             <form className="space-y-5" onSubmit={handleSubmit(onSubmit)}>

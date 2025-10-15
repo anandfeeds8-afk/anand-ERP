@@ -218,7 +218,7 @@ const OrdersForManager = () => {
 
       {/* --- View Order Modal --- */}
       {openView && (
-        <div className="transition-all bg-black/30 backdrop-blur-sm w-full z-50 h-screen absolute top-0 left-0 flex items-center justify-center">
+        <div className="transition-all bg-gradient-to-b from-black/20 to-black/60 backdrop-blur-sm w-full z-50 h-screen absolute top-0 left-0 flex items-center justify-center">
           <div className="bg-white relative p-7 rounded-lg max-w-[60%] min-w-[45%] max-h-[95%] overflow-auto">
             <div className="mb-5">
               <div className="flex items-center justify-between">
@@ -532,10 +532,10 @@ const OrdersForManager = () => {
             {singleOrderFromSalesManager?.assignedWarehouse && (
               <div className="flex flex-col text-sm my-5">
                 <h1 className="font-semibold text-base text-gray-800">
-                  Assigned Warehouse
+                  Assigned Plant
                 </h1>
                 <div className="flex items-center justify-between font-semibold">
-                  <span className="text-gray-600 font-normal">Warehouse:</span>
+                  <span className="text-gray-600 font-normal">Plant:</span>
                   {singleOrderFromSalesManager?.assignedWarehouse ? (
                     <div className="flex items-center">
                       <p>
@@ -565,7 +565,7 @@ const OrdersForManager = () => {
 
       {/* Cancel Order Modal */}
       {openCancel && (
-        <div className="transition-all bg-black/30 backdrop-blur-sm w-full z-50 h-screen absolute top-0 left-0 flex items-center justify-center">
+        <div className="transition-all bg-gradient-to-b from-black/20 to-black/60 backdrop-blur-sm w-full z-50 h-screen absolute top-0 left-0 flex items-center justify-center">
           <div className="bg-white p-7 rounded-lg w-[29rem]">
             <p className="text-lg font-semibold">
               Are you sure you want to cancel "

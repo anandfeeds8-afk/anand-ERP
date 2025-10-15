@@ -253,7 +253,7 @@ const getOrderDetails = async (req, res) => {
 //cancel order
 const cancelOrder = async (req, res) => {
   const { orderId } = req.params;
-  const { role, id: userId } = req.user; // from middleware
+  const { role, id: userId } = req.user;
   const { reason } = req.body;
 
   if (!reason) {
@@ -280,6 +280,18 @@ const cancelOrder = async (req, res) => {
       });
     }
 
+    let cancelledBy = null;
+
+    if (role === "Salesman") {
+      cancelledBy = await Salesman.findById(userId);
+    } else if (role === "SalesManager") {
+      cancelledBy = await SalesManager.findById(userId);
+    } else if (role === "SalesAuthorizer") {
+      cancelledBy = await SalesAuthorizer.findById(userId);
+    } else if (role === "Planthead") {
+      cancelledBy = await Planthead.findById(userId);
+    }
+
     // Set cancellation data
     order.orderStatus = "Cancelled";
     order.canceledBy = {
@@ -290,6 +302,33 @@ const cancelOrder = async (req, res) => {
     };
 
     await order.save();
+
+    const admins = await Admin.find().select("_id");
+
+    const adminIds = admins.map((u) => u._id.toString());
+
+    const message = `Order #${order?.orderId} cancelled by ${cancelledBy?.name} (${role})`;
+    const notifications = adminIds.map((r_id) => ({
+      orderId: order.orderId,
+      message,
+      type: "orderCancelled",
+      senderId: userId,
+      receiverId: r_id,
+      read: false,
+    }));
+
+    await Notification.insertMany(notifications);
+
+    const io = getIO();
+
+    adminIds.forEach((r_id) => {
+      io.to(r_id).emit("orderCancelled", {
+        orderId: order.orderId,
+        message,
+        type: "orderCancelled",
+        senderId: userId,
+      });
+    });
 
     res.status(200).json({
       success: true,
@@ -481,7 +520,7 @@ const approveOrderToWarehouse = async (req, res) => {
       });
     });
 
-    io.to(accountantId).emit("plantApproved", {
+    io.to(plantheadId).emit("plantApproved", {
       orderId,
       message,
       type: "plantApproved",

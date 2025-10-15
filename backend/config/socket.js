@@ -39,15 +39,9 @@ const initSocket = (server) => {
         // Save message to database
         const message = new Message(data);
         await message.save();
-        console.log("✅ Message saved to database");
 
-        // Emit to both sender and receiver rooms
-        io.to(data.receiverId).emit("receiveMessage", data);
         io.to(data.senderId).emit("receiveMessage", data);
-
-        console.log(
-          `✅ Message emitted to rooms: ${data.receiverId}, ${data.senderId}`
-        );
+        io.to(data.receiverId).emit("receiveMessage", data);
       } catch (error) {
         console.error("❌ Error handling message:", error);
         socket.emit("error", { message: "Failed to send message" });

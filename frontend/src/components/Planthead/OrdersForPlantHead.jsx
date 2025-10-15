@@ -243,7 +243,7 @@ const OrdersForPlantHead = () => {
 
       {/* --- View Order Modal --- */}
       {openView && (
-        <div className="transition-all bg-black/30 backdrop-blur-sm w-full z-50 h-screen absolute top-0 left-0 flex items-center justify-center">
+        <div className="transition-all bg-gradient-to-b from-black/20 to-black/60 backdrop-blur-sm w-full z-50 h-screen absolute top-0 left-0 flex items-center justify-center">
           <div className="bg-white relative p-7 rounded-lg w-[50%] max-h-[90%] overflow-auto">
             <div className="mb-5">
               <div className="flex items-center justify-between">
@@ -515,12 +515,10 @@ const OrdersForPlantHead = () => {
                 {/* assigned warehouse */}
                 <div className="flex flex-col gap-2 text-sm">
                   <h1 className="font-semibold text-base text-gray-800">
-                    Assigned Warehouse
+                    Assigned Plant
                   </h1>
                   <div className="flex items-center justify-between font-semibold">
-                    <span className="text-gray-600 font-normal">
-                      Warehouse:
-                    </span>
+                    <span className="text-gray-600 font-normal">Plant:</span>
                     {singleOrderFromPlanthead?.assignedWarehouse ? (
                       <div className="flex flex-col items-center">
                         {singleOrderFromPlanthead?.assignedWarehouse?.name}
@@ -541,7 +539,7 @@ const OrdersForPlantHead = () => {
                   </div>
                   <div className="flex items-center justify-between font-semibold">
                     <span className="text-gray-600 font-normal">
-                      Warehouse Approval:
+                      Plant Approval:
                     </span>
                     {singleOrderFromPlanthead?.approvedBy ? (
                       <span className="text-green-700 font-semibold bg-green-100 p-1 px-3 rounded-full text-xs">
@@ -572,7 +570,7 @@ const OrdersForPlantHead = () => {
 
       {/* --- Dispatch Order Modal --- */}
       {openDispatch && (
-        <div className="transition-all bg-black/30 backdrop-blur-sm w-full z-50 h-screen absolute top-0 left-0 flex items-center justify-center">
+        <div className="transition-all bg-gradient-to-b from-black/20 to-black/60 backdrop-blur-sm w-full z-50 h-screen absolute top-0 left-0 flex items-center justify-center">
           <div className="bg-white relative p-7 rounded-lg w-[30%] overflow-auto">
             <div className="flex items-center justify-between">
               <p className="text-xl font-bold">Dispatch Order</p>
@@ -730,7 +728,7 @@ const OrdersForPlantHead = () => {
 
       {/* Cancel Order Modal */}
       {openCancel && (
-        <div className="transition-all bg-black/30 backdrop-blur-sm w-full z-50 h-screen absolute top-0 left-0 flex items-center justify-center">
+        <div className="transition-all bg-gradient-to-b from-black/20 to-black/60 backdrop-blur-sm w-full z-50 h-screen absolute top-0 left-0 flex items-center justify-center">
           <div className="bg-white p-7 rounded-lg w-[29rem]">
             <p className="text-lg font-semibold">
               Are you sure you want to cancel "

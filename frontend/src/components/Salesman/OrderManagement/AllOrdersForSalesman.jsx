@@ -256,16 +256,6 @@ const AllOrdersForSalesman = () => {
       field: "product",
       headerName: "Product",
       flex: 1,
-      renderCell: (params) => {
-        return (
-          <div className="relative flex items-center">
-            <span>{params.value}</span>
-            <span className="absolute right-0 bg-gray-500 text-xs text-white h-5 w-5 rounded-full flex items-center justify-center">
-              {params.row.numProducts}
-            </span>
-          </div>
-        );
-      },
     },
     { field: "party", headerName: "Party", flex: 1 },
     { field: "date", headerName: "Date", flex: 1 },
@@ -280,7 +270,7 @@ const AllOrdersForSalesman = () => {
       headerName: "Advance Amount",
       flex: 1,
       renderCell: (params) => (
-        <span className={`${params.value !== "₹0.00" && "text-green-700"}`}>
+        <span className={`${params.value !== "₹0" && "text-green-700"}`}>
           {params.value}
         </span>
       ),
@@ -290,7 +280,7 @@ const AllOrdersForSalesman = () => {
       headerName: "Due Amount",
       flex: 1,
       renderCell: (params) => (
-        <span className={`${params.value !== "₹0.00" && "text-red-600"}`}>
+        <span className={`${params.value !== "₹0" && "text-red-600"}`}>
           {params.value}
         </span>
       ),
@@ -527,7 +517,7 @@ const AllOrdersForSalesman = () => {
 
       {/* --- View Order Modal --- */}
       {openView && (
-        <div className="transition-all bg-black/30 backdrop-blur-sm w-full z-50 h-screen absolute top-0 left-0 flex items-center justify-center">
+        <div className="transition-all bg-gradient-to-b from-black/20 to-black/60 backdrop-blur-sm w-full z-50 h-screen absolute top-0 left-0 flex items-center justify-center">
           <div className="bg-white relative p-7 rounded-lg max-w-[60%] min-w-[50%] max-h-[95%] overflow-auto">
             <div className="mb-5">
               <div className="flex items-center justify-between">
@@ -811,12 +801,10 @@ const AllOrdersForSalesman = () => {
                 {/* assigned warehouse */}
                 <div className="flex flex-col gap-2 text-sm">
                   <h1 className="font-semibold text-base text-gray-800">
-                    Assigned Warehouse
+                    Assigned Plant
                   </h1>
                   <div className="flex items-center justify-between font-semibold">
-                    <span className="text-gray-600 font-normal">
-                      Warehouse:
-                    </span>
+                    <span className="text-gray-600 font-normal">Plant:</span>
                     {singleOrderFromSalesman?.assignedWarehouse ? (
                       <div className="flex flex-col items-center">
                         <p>
@@ -836,7 +824,7 @@ const AllOrdersForSalesman = () => {
                   </div>
                   <div className="flex items-center justify-between font-semibold">
                     <span className="text-gray-600 font-normal">
-                      Warehouse Approval:
+                      Plant Approval:
                     </span>
                     {singleOrderFromSalesman?.approvedBy ? (
                       <span className="text-green-700 font-semibold bg-green-100 p-1 px-3 rounded-full text-xs">
@@ -931,7 +919,7 @@ const AllOrdersForSalesman = () => {
 
       {/* --- View Invoice Modal --- */}
       {openInvoice && (
-        <div className="transition-all bg-black/30 backdrop-blur-sm w-full z-50 h-screen absolute top-0 left-0 flex items-center justify-center">
+        <div className="transition-all bg-gradient-to-b from-black/20 to-black/60 backdrop-blur-sm w-full z-50 h-screen absolute top-0 left-0 flex items-center justify-center">
           <div className="bg-white relative p-7 w-[35%] rounded-lg overflow-auto">
             <div className="mb-5">
               <div className="flex items-center justify-between">
@@ -1060,7 +1048,7 @@ const AllOrdersForSalesman = () => {
 
       {/* --- View Invoice Modal --- */}
       {openDuePaymentInvoice && (
-        <div className="transition-all bg-black/30 backdrop-blur-sm w-full z-50 h-screen absolute top-0 left-0 flex items-center justify-center">
+        <div className="transition-all bg-gradient-to-b from-black/20 to-black/60 backdrop-blur-sm w-full z-50 h-screen absolute top-0 left-0 flex items-center justify-center">
           <div className="bg-white relative p-7 w-[35%] rounded-lg overflow-auto">
             <div className="mb-5">
               <div className="flex items-center justify-between">
@@ -1201,7 +1189,7 @@ const AllOrdersForSalesman = () => {
 
       {/* Deliver Order Modal */}
       {openDeliver && (
-        <div className="transition-all bg-black/30 backdrop-blur-sm w-full z-50 h-screen absolute top-0 left-0 flex items-center justify-center">
+        <div className="transition-all bg-gradient-to-b from-black/20 to-black/60 backdrop-blur-sm w-full z-50 h-screen absolute top-0 left-0 flex items-center justify-center">
           <div className="bg-white p-7 rounded-lg w-[35rem]">
             <p className="text-lg font-semibold">
               Are you sure you want to mark this order Delivered?
@@ -1237,7 +1225,7 @@ const AllOrdersForSalesman = () => {
 
       {/* --- Update Payment Modal --- */}
       {openUpdatePayment && (
-        <div className="transition-all bg-black/30 backdrop-blur-sm w-full z-50 h-screen absolute top-0 left-0 flex items-center justify-center">
+        <div className="transition-all bg-gradient-to-b from-black/20 to-black/60 backdrop-blur-sm w-full z-50 h-screen absolute top-0 left-0 flex items-center justify-center">
           <div className="bg-white relative p-7 w-[25%] rounded-lg overflow-auto">
             <div className="mb-5">
               <div className="flex items-center justify-between">
@@ -1352,7 +1340,7 @@ const AllOrdersForSalesman = () => {
 
       {/* Cancel Order Modal */}
       {openCancel && (
-        <div className="transition-all bg-black/30 backdrop-blur-sm w-full z-50 h-screen absolute top-0 left-0 flex items-center justify-center">
+        <div className="transition-all bg-gradient-to-b from-black/20 to-black/60 backdrop-blur-sm w-full z-50 h-screen absolute top-0 left-0 flex items-center justify-center">
           <div className="bg-white p-7 rounded-lg w-[29rem]">
             <p className="text-lg font-semibold">
               Are you sure you want to cancel "

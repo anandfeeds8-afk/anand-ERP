@@ -250,7 +250,7 @@ const OrdersForAuthorizer = () => {
       {/* --- View Order Modal --- */}
 
       {openView && (
-        <div className="transition-all bg-black/30 backdrop-blur-sm w-full z-50 h-screen absolute top-0 left-0 flex items-center justify-center">
+        <div className="transition-all bg-gradient-to-b from-black/20 to-black/60 backdrop-blur-sm w-full z-50 h-screen absolute top-0 left-0 flex items-center justify-center">
           <div className="bg-white relative p-7 rounded-lg min-w-[50%] max-w-[55%] max-h-[95%] overflow-auto">
             <div className="mb-5">
               <div className="flex items-center justify-between">
@@ -266,9 +266,7 @@ const OrdersForAuthorizer = () => {
                       onSubmit={handleSubmit(handleAssignWarehouse)}
                     >
                       <FormControl fullWidth size="small">
-                        <InputLabel id="item-label">
-                          Assign Warehouse
-                        </InputLabel>
+                        <InputLabel id="item-label">Assign Plant</InputLabel>
                         <Controller
                           disabled={!user.isActive}
                           name="warehouseId"
@@ -601,7 +599,7 @@ const OrdersForAuthorizer = () => {
                 <div className="flex flex-col gap-2 text-sm">
                   <div className="flex justify-between text-sm">
                     <h1 className="font-semibold text-base text-gray-800">
-                      Assigned Warehouse
+                      Assigned Plant
                     </h1>
                     {singleOrderFromSalesauthorizer?.orderStatus ===
                       "WarehouseAssigned" && (
@@ -643,9 +641,7 @@ const OrdersForAuthorizer = () => {
                     )}
                   </div>
                   <div className="flex items-center justify-between font-semibold">
-                    <span className="text-gray-600 font-normal">
-                      Warehouse:
-                    </span>
+                    <span className="text-gray-600 font-normal">Plant:</span>
                     {singleOrderFromSalesauthorizer?.assignedWarehouse ? (
                       <div className="flex flex-col items-center">
                         <p>
@@ -671,7 +667,7 @@ const OrdersForAuthorizer = () => {
                   </div>
                   <div className="flex items-center justify-between font-semibold">
                     <span className="text-gray-600 font-normal">
-                      Warehouse Approval:
+                      Plant Approval:
                     </span>
                     {singleOrderFromSalesauthorizer?.approvedBy ? (
                       <span className="text-green-700 font-semibold bg-green-100 p-1 px-3 rounded-full text-xs">
@@ -779,7 +775,7 @@ const OrdersForAuthorizer = () => {
 
       {/* Cancel Order Modal */}
       {openCancel && (
-        <div className="transition-all bg-black/30 backdrop-blur-sm w-full z-50 h-screen absolute top-0 left-0 flex items-center justify-center">
+        <div className="transition-all bg-gradient-to-b from-black/20 to-black/60 backdrop-blur-sm w-full z-50 h-screen absolute top-0 left-0 flex items-center justify-center">
           <div className="bg-white p-7 rounded-lg w-[29rem]">
             <p className="text-lg font-semibold">
               Are you sure you want to cancel "

@@ -37,9 +37,15 @@ const Header = () => {
         </IconButton>
 
         {isOpenNotification && (
-          <div>
-            {user?.role === "Admin" ? <AdminNotification /> : <Notification />}
-          </div>
+          <>
+            {user?.role === "Admin" ? (
+              <AdminNotification
+                setIsOpenNotification={setIsOpenNotification}
+              />
+            ) : (
+              <Notification setIsOpenNotification={setIsOpenNotification} />
+            )}
+          </>
         )}
 
         <div className="rounded-full p-1 dark:bg-gray-500 flex items-center bg-gray-300">

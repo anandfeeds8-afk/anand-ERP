@@ -2,21 +2,29 @@ const Admin = require("../models/Admin.js");
 const Message = require("../models/Message.js");
 
 const getAllMessages = async (req, res) => {
-  const { userId, adminId } = req.params;
-  const messages = await Message.find({
-    senderId: adminId,
-    receiverId: userId,
-  });
+  try {
+    const { userId, adminId } = req.params;
 
-  if (!messages) {
-    return res.status(404).json({ message: "No messages found" });
+    // Fetch conversation both ways and sort by timestamp
+    const messages = await Message.find({
+      $or: [
+        { senderId: adminId, receiverId: userId },
+        { senderId: userId, receiverId: adminId },
+      ],
+    }).sort({ timestamp: 1 });
+
+    return res.status(200).json({
+      data: messages,
+      success: true,
+      message: "Messages fetched successfully",
+    });
+  } catch (err) {
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch messages",
+      error: err.message,
+    });
   }
-
-  res.status(200).json({
-    data: messages,
-    success: true,
-    message: "Messages fetched successfully",
-  });
 };
 
 const getAllAdmins = async (req, res) => {

@@ -184,7 +184,7 @@ const forwardOrderToAuthorizer = async (req, res) => {
     const io = getIO();
 
     [...filteredAuthorizers, ...adminIds].forEach((r_id) => {
-      io.to(r_id).emit("forwardedToAuthorizer", {
+      io.to(r_id).emit("orderForwardedToAuthorizer", {
         orderId: order.orderId,
         message,
         type: "orderForwardedToAuthorizer",

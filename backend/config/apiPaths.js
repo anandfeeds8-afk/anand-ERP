@@ -80,6 +80,16 @@ export const API_PATHS = {
       CANCEL: (id) => `/api/admin/cancel_order/${id}`,
       APPROVE: "/api/admin/approve_warehouse",
     },
+
+    PARTY: {
+      GET_ALL_PARTIES: "/api/admin/get-all-parties",
+      GET_APPROVED_PARTIES: "/api/admin/get-approved-parties",
+      GET_REJECTED_PARTIES: "/api/admin/get-rejected-parties",
+      GET_PARTIES_TO_APPROVE: "/api/admin/get-parties-to-approve",
+      APPROVE: "/api/admin/approve-party",
+      REJECT: "/api/admin/reject-party",
+      UPDATE_PARTY: (partyId) => `/api/admin/update-party/${partyId}`,
+    },
   },
 
   SALESMAN: {
@@ -89,8 +99,17 @@ export const API_PATHS = {
     GET_ALL_ORDERS: "/api/salesman/get_allorder",
     GET_ORDER: (orderId) => `/api/salesman/orders/${orderId}`,
     GET_DUE_ORDERS: "/api/salesman/orders/due",
-    UPDATE_PAYMENT: (orderId) => `/api/salesman/orders/pay/${orderId}`,
+    UPDATE_PAYMENT: `/api/salesman/orders/pay`,
     CHANGE_ACTIVITY_STATUS: "/api/salesman/change-activity-status",
+    CANCEL_ORDER: (orderId) => `/api/salesman/cancel_order/${orderId}`,
+    ADD_PARTY: "/api/salesman/add-party",
+    UPDATE_PARTY: (partyId) => `/api/salesman/update-party/${partyId}`,
+    DELETE_PARTY: (partyId) => `/api/salesman/delete-party/${partyId}`,
+    GET_ALL_PARTIES: "/api/salesman/get-all-parties",
+    GET_APPROVED_PARTIES: "/api/salesman/get-approved-parties",
+    GET_REJECTED_PARTIES: "/api/salesman/get-rejected-parties",
+    APPROVE_PARTY: "/api/salesman/send-party-for-approval",
+    DELIVER_ORDER: "api/salesman/deliver-order",
   },
 
   MANAGER: {
@@ -115,6 +134,7 @@ export const API_PATHS = {
       `/api/authorizer/warehouse-status/${orderId}`,
     CHANGE_ACTIVITY_STATUS: "/api/authorizer/change-activity-status",
     CANCEL_ORDER: (orderId) => `/api/authorizer/cancel_order/${orderId}`,
+    APPROVE_WAREHOUSE: "/api/authorizer/approve_warehouse",
   },
 
   PLANT_HEAD: {
@@ -136,11 +156,22 @@ export const API_PATHS = {
     GET_ORDER: (orderId) => `/api/accountant/order/${orderId}`,
     GENERATE_INVOICE: (orderId) =>
       `/api/accountant/generate-invoice/${orderId}`,
+    GENERATE_DUE_INVOICE: (orderId) =>
+      `/api/accountant/generate-due-invoice/${orderId}`,
     GET_INVOICE: (orderId) => `/api/accountant/invoice/${orderId}`,
     CHANGE_ACTIVITY_STATUS: "/api/accountant/change-activity-status",
+    GET_ORDERS_TO_APPROVE_PAYMENT: "/api/accountant/orders-to-approve-payment",
+    GET_ORDERS_TO_APPROVE_DUE_PAYMENT:
+      "/api/accountant/orders-to-approve-due-payment",
+    APPROVE_ORDER: "/api/accountant/approve-advance-payment/",
+    APPROVE_DUE_PAYMENT: "/api/accountant/approve-due-payment/",
   },
 
   ME: {
     GET: "/api/me",
+  },
+
+  MESSAGES: {
+    GET_ALL_ADMINS: "/api/messages/get-all-admins",
   },
 };

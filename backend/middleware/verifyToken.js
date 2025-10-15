@@ -7,14 +7,16 @@ const verifyToken = async (req, res, next) => {
   if (!token)
     return res
       .status(401)
-      .json({ msg: "From middleware: No token, authorization denied" });
+      .json({ msg: "No token, authorization denied", success: false });
 
   try {
     const decodedUser = jwt.verify(token, SECRET);
     req.user = decodedUser;
     next();
   } catch (err) {
-    res.status(401).json({ msg: "From middleware: Token is not valid" });
+    res
+      .status(401)
+      .json({ msg: "From middleware: Token is not valid", success: false });
   }
 };
 

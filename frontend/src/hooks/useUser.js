@@ -3,10 +3,12 @@ import axios from "axios";
 import { BASE_URL, API_PATHS } from "../utils/apiPaths";
 import { toast } from "react-hot-toast";
 import { useQueryClient } from "@tanstack/react-query";
+import { useNavigate } from "react-router-dom";
 
 export const useUser = () => {
   const token = localStorage.getItem("token");
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
 
   //Current Logged in user data
   const {
@@ -16,12 +18,19 @@ export const useUser = () => {
   } = useQuery({
     queryKey: ["user"],
     queryFn: async () => {
-      const response = await axios.get(BASE_URL + API_PATHS.ME.GET, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      return response.data.data;
+      try {
+        const response = await axios.get(BASE_URL + API_PATHS.ME.GET, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        return response.data.data;
+      } catch (err) {
+        console.log(err);
+        if (err.response.data.success === false) {
+          navigate("/login");
+        }
+      }
     },
   });
 

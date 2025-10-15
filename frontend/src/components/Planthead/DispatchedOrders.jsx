@@ -38,6 +38,10 @@ const DispatchedOrders = () => {
     setOpenView(true);
   };
 
+  const totalBeforeDiscount =
+    singleOrderFromPlanthead?.totalAmount /
+    (1 - singleOrderFromPlanthead?.discount / 100);
+
   const columns = [
     {
       field: "orderId",
@@ -194,7 +198,7 @@ const DispatchedOrders = () => {
 
       {/* --- View Order Modal --- */}
       {openView && (
-        <div className="transition-all bg-black/30 backdrop-blur-sm w-full z-50 h-screen absolute top-0 left-0 flex items-center justify-center">
+        <div className="transition-all bg-gradient-to-b from-black/20 to-black/60 backdrop-blur-sm w-full z-50 h-screen absolute top-0 left-0 flex items-center justify-center">
           <div className="bg-white relative p-7 rounded-lg w-[50%] max-h-[90%] overflow-auto">
             <div className="mb-5">
               <div className="flex items-center justify-between">
@@ -254,10 +258,6 @@ const DispatchedOrders = () => {
                     Order Information
                   </h1>
                   <div className="flex items-center justify-between font-semibold">
-                    <span className="text-gray-600 font-normal">Order Id:</span>
-                    #{singleOrderFromPlanthead?.orderId}
-                  </div>
-                  <div className="flex items-center justify-between font-semibold">
                     <span className="text-gray-600 font-normal">
                       Placed By:
                     </span>
@@ -269,46 +269,125 @@ const DispatchedOrders = () => {
                     </span>
                     {format(singleOrderFromPlanthead?.createdAt, "dd MMM yyyy")}
                   </div>
-                  <div className="flex items-center justify-between font-semibold">
-                    <span className="text-gray-600 font-normal">
-                      Shipping Address:
-                    </span>
-                    {singleOrderFromPlanthead?.shippingAddress}
-                  </div>
                 </div>
                 <div className="flex flex-col gap-2 text-sm">
                   <h1 className="font-semibold text-base text-gray-800">
                     Payment Information
                   </h1>
                   <div className="flex items-center justify-between font-semibold">
+                    <span className="text-gray-600 font-normal">Subtotal:</span>
+                    {formatRupee(totalBeforeDiscount)}
+                  </div>
+                  <div className="flex items-center justify-between font-semibold">
                     <span className="text-gray-600 font-normal">
-                      Total Amount:
+                      Discount ({singleOrderFromPlanthead?.discount}%):
+                    </span>
+                    -
+                    {formatRupee(
+                      totalBeforeDiscount -
+                        singleOrderFromPlanthead?.totalAmount
+                    )}
+                  </div>
+                  <div className="flex items-center justify-between font-semibold">
+                    <span className="text-gray-600 font-normal">
+                      Net Total:
                     </span>
                     {formatRupee(singleOrderFromPlanthead?.totalAmount)}
                   </div>
                   <div className="flex items-center justify-between font-semibold text-green-700">
                     <span className="text-gray-600 font-normal">
                       Advance Amount:
-                    </span>{" "}
+                    </span>
                     {formatRupee(singleOrderFromPlanthead?.advanceAmount)}
                   </div>
                   <div className="flex items-center justify-between font-semibold text-red-700">
                     <span className="text-gray-600 font-normal">
                       Due Amount:
-                    </span>{" "}
+                    </span>
                     {formatRupee(singleOrderFromPlanthead?.dueAmount)}
                   </div>
+                  {singleOrderFromPlanthead?.advanceAmount > 0 && (
+                    <div className="flex items-center justify-between font-semibold text-red-700">
+                      <span className="text-gray-600 font-normal">
+                        Advance Confirmation:
+                      </span>
+                      {singleOrderFromPlanthead?.advancePaymentStatus ===
+                        "Approved" && (
+                        <span className="text-green-700 font-semibold bg-green-100 p-1 px-3 rounded-full text-xs">
+                          Confirmed
+                        </span>
+                      )}
+                      {singleOrderFromPlanthead?.advancePaymentStatus ===
+                        "SentForApproval" && (
+                        <span className="text-indigo-700 font-semibold bg-indigo-100 p-1 px-3 rounded-full text-xs">
+                          Sent For Confirmation
+                        </span>
+                      )}
+                      {singleOrderFromPlanthead?.advancePaymentStatus ===
+                        "Pending" && (
+                        <span className="text-yellow-700 font-semibold bg-yellow-100 p-1 px-3 rounded-full text-xs">
+                          Pending
+                        </span>
+                      )}
+                      {singleOrderFromPlanthead?.advancePaymentStatus ===
+                        "Rejected" && (
+                        <span className="text-red-700 font-semibold bg-red-100 p-1 px-3 rounded-full text-xs">
+                          Rejected
+                        </span>
+                      )}
+                    </div>
+                  )}
+                  {singleOrderFromPlanthead?.duePaymentStatus && (
+                    <div className="flex items-center justify-between font-semibold text-red-700">
+                      <span className="text-gray-600 font-normal">
+                        Due Confirmation:
+                      </span>
+                      {singleOrderFromPlanthead?.duePaymentStatus ===
+                        "Approved" && (
+                        <span className="text-green-700 font-semibold bg-green-100 p-1 px-3 rounded-full text-xs">
+                          Confirmed
+                        </span>
+                      )}
+                      {singleOrderFromPlanthead?.duePaymentStatus ===
+                        "SentForApproval" && (
+                        <span className="text-indigo-700 font-semibold bg-indigo-100 p-1 px-3 rounded-full text-xs">
+                          Sent For Confirmation
+                        </span>
+                      )}
+                      {singleOrderFromPlanthead?.duePaymentStatus ===
+                        "Pending" && (
+                        <span className="text-yellow-700 font-semibold bg-yellow-100 p-1 px-3 rounded-full text-xs">
+                          Pending
+                        </span>
+                      )}
+                      {singleOrderFromPlanthead?.duePaymentStatus ===
+                        "Rejected" && (
+                        <span className="text-red-700 font-semibold bg-red-100 p-1 px-3 rounded-full text-xs">
+                          Rejected
+                        </span>
+                      )}
+                    </div>
+                  )}
+
                   <div className="flex items-center justify-between font-semibold">
                     <span className="text-gray-600 font-normal">
-                      Payment Mode:
-                    </span>{" "}
+                      Advance Payment Mode:
+                    </span>
                     {singleOrderFromPlanthead?.paymentMode}
                   </div>
+                  {singleOrderFromPlanthead?.duePaymentMode && (
+                    <div className="flex items-center justify-between font-semibold">
+                      <span className="text-gray-600 font-normal">
+                        Due Payment Mode:
+                      </span>
+                      {singleOrderFromPlanthead?.duePaymentMode}
+                    </div>
+                  )}
                   {singleOrderFromPlanthead?.dueAmount !== 0 && (
                     <div className="flex items-center justify-between font-semibold">
                       <span className="text-gray-600 font-normal">
                         Due Date:
-                      </span>{" "}
+                      </span>
                       {format(singleOrderFromPlanthead?.dueDate, "dd MMM yyyy")}
                     </div>
                   )}
@@ -323,9 +402,14 @@ const DispatchedOrders = () => {
                   <div className="flex items-center justify-between font-semibold">
                     <span className="text-gray-600 font-normal">
                       Order Status:
-                    </span>{" "}
+                    </span>
                     {singleOrderFromPlanthead?.orderStatus === "Delivered" ? (
                       <span className="text-green-700 bg-green-100 p-1 px-3 rounded-full text-xs">
+                        {singleOrderFromPlanthead?.orderStatus}
+                      </span>
+                    ) : singleOrderFromPlanthead?.orderStatus ===
+                      "Cancelled" ? (
+                      <span className="text-red-700 bg-red-100 p-1 px-3 rounded-full text-xs">
                         {singleOrderFromPlanthead?.orderStatus}
                       </span>
                     ) : (
@@ -356,13 +440,12 @@ const DispatchedOrders = () => {
                       </span>
                     )}
                   </div>
-
                   <div className="flex items-center justify-between font-semibold">
                     <span className="text-gray-600 font-normal">
                       Invoice Generated:
-                    </span>{" "}
-                    {singleOrderFromPlanthead?.invoiceGenerated === "true" ? (
-                      <span className="text-green-700 bg-green-100 p-1 px-3 rounded-full text-xs">
+                    </span>
+                    {singleOrderFromPlanthead?.invoiceGenerated ? (
+                      <span className="text-green-800 bg-green-100 p-1 px-3 rounded-full text-xs">
                         Yes
                       </span>
                     ) : (
@@ -371,41 +454,54 @@ const DispatchedOrders = () => {
                       </span>
                     )}
                   </div>
+                  {singleOrderFromPlanthead?.dueInvoiceGenerated && (
+                    <div className="flex items-center justify-between font-semibold">
+                      <span className="text-gray-600 font-normal">
+                        Due Invoice Generated:
+                      </span>
+                      {singleOrderFromPlanthead?.dueInvoiceGenerated ? (
+                        <span className="text-green-800 bg-green-100 p-1 px-3 rounded-full text-xs">
+                          Yes
+                        </span>
+                      ) : (
+                        <span className="text-red-700 bg-red-100 p-1 px-3 rounded-full text-xs">
+                          No
+                        </span>
+                      )}
+                    </div>
+                  )}
                 </div>
 
-                {/* order timeline */}
                 <div className="flex flex-col gap-2 text-sm">
                   <h1 className="font-semibold text-base text-gray-800">
-                    Order Timeline
+                    Shipping Details
                   </h1>
                   <div className="flex items-center justify-between font-semibold">
-                    <span className="text-gray-600 font-normal">
-                      Order Placed On:
-                    </span>{" "}
-                    {format(singleOrderFromPlanthead?.createdAt, "dd MMM yyyy")}
+                    <span className="text-gray-600 font-normal">Address:</span>
+                    {singleOrderFromPlanthead?.shippingAddress}
                   </div>
                 </div>
 
                 {/* assigned warehouse */}
                 <div className="flex flex-col gap-2 text-sm">
                   <h1 className="font-semibold text-base text-gray-800">
-                    Assigned Warehouse
+                    Assigned Plant
                   </h1>
                   <div className="flex items-center justify-between font-semibold">
-                    <span className="text-gray-600 font-normal">
-                      Warehouse:
-                    </span>
+                    <span className="text-gray-600 font-normal">Plant:</span>
                     {singleOrderFromPlanthead?.assignedWarehouse ? (
                       <div className="flex flex-col items-center">
-                        {singleOrderFromPlanthead?.assignedWarehouse?.name}
-                        <span className="text-xs font-normal text-gray-600">
+                        <p>
+                          {singleOrderFromPlanthead?.assignedWarehouse?.name}
+                        </p>
+                        <p className="text-xs font-normal text-gray-600">
                           (
                           {
                             singleOrderFromPlanthead?.assignedWarehouse
                               ?.location
                           }
                           )
-                        </span>
+                        </p>
                       </div>
                     ) : (
                       <span className="text-red-700 bg-red-100 p-1 px-3 rounded-full text-xs">
@@ -415,7 +511,7 @@ const DispatchedOrders = () => {
                   </div>
                   <div className="flex items-center justify-between font-semibold">
                     <span className="text-gray-600 font-normal">
-                      Warehouse Approval:
+                      Plant Approval:
                     </span>
                     {singleOrderFromPlanthead?.approvedBy ? (
                       <span className="text-green-700 font-semibold bg-green-100 p-1 px-3 rounded-full text-xs">
@@ -446,7 +542,7 @@ const DispatchedOrders = () => {
 
       {/* Open Invoice Modal */}
       {openInvoice && (
-        <div className="transition-all bg-black/30 backdrop-blur-sm w-full z-50 h-screen absolute top-0 left-0 flex items-center justify-center">
+        <div className="transition-all bg-gradient-to-b from-black/20 to-black/60 backdrop-blur-sm w-full z-50 h-screen absolute top-0 left-0 flex items-center justify-center">
           <div className="bg-white relative p-7 rounded-lg max-w-[60%] min-w-[35%] max-h-[90%] overflow-auto">
             <div className="mb-5">
               <div className="flex items-center justify-between">
