@@ -102,7 +102,24 @@ const AdminNotification = ({ setIsOpenNotification }) => {
       ...data,
       createdAt: data?.createdAt || data?.timestamp || new Date().toISOString(),
     };
-    setNotifications((prev) => [normalized, ...prev]);
+    setNotifications((prev) => {
+      const exists = prev.some(
+        (n) =>
+          n._id === normalized._id ||
+          (n.message === normalized.message &&
+            Math.abs(
+              new Date(n.createdAt).getTime() -
+                new Date(normalized.createdAt).getTime()
+            ) < 1000)
+      );
+
+      if (exists) {
+        console.log("Duplicate notification prevented");
+        return prev;
+      }
+
+      return [normalized, ...prev];
+    });
   }, []);
 
   const handleMessage = useCallback(
@@ -240,6 +257,12 @@ const AdminNotification = ({ setIsOpenNotification }) => {
       "dueInvoiceGenerated",
       "delivered",
     ];
+
+    //will remove any listener first
+    notificationEvents.forEach((event) => {
+      socket.off(event);
+    });
+    socket.off("receiveMessage");
 
     // Attach listeners
     notificationEvents.forEach((event) => {
