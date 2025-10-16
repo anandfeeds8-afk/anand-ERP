@@ -1,4 +1,3 @@
-import React from "react";
 import "./App.css";
 import { Routes, Route, Navigate } from "react-router-dom";
 import AdminDashboardPage from "./pages/Admin/AdminDashboardPage";
@@ -18,10 +17,8 @@ import ReportsPage from "./pages/Admin/ReportsPage";
 import ProductsManagementPage from "./pages/Planthead/ProductsManagementPage";
 import PartyManagementPage from "./pages/Salesman/PartyManagementPage";
 import PartyManagementPageAdmin from "./pages/Admin/PartyManagementPage";
-import { useUser } from "./hooks/useUser.js";
 
 const App = () => {
-  const { user } = useUser();
   return (
     <Routes>
       <Route
