@@ -287,9 +287,9 @@ const Notification = ({ setIsOpenNotification }) => {
         </div>
         {/* Notifications Tab */}
         {activeTab === "notifications" && (
-          <div>
+          <div className="w-full flex flex-col flex-1 min-h-0">
             {loading ? (
-              <div className="flex items-center justify-center w-full h-[450px]">
+              <div className="flex items-center justify-center w-full flex-1">
                 <div className="flex items-center justify-center gap-3 bg-blue-50 p-2 rounded-lg">
                   <CircularProgress size={14} />
                   <p className="text-sm text-[#1976D2]">
@@ -338,7 +338,7 @@ const Notification = ({ setIsOpenNotification }) => {
                     ))}
                   </div>
                 ) : (
-                  <div className="w-full dark:text-gray-400 text-gray-500 h-[450px] flex items-center justify-center">
+                  <div className="w-full dark:text-gray-400 text-gray-500 h-full flex items-center justify-center">
                     No notifications
                   </div>
                 )}
