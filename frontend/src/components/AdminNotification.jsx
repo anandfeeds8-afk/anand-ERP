@@ -446,7 +446,7 @@ const AdminNotification = ({ setIsOpenNotification }) => {
                   {!loading ? (
                     <div>
                       {sortedNotifications?.length === 0 ? (
-                        <div className="w-full dark:text-gray-400 h-[500px] text-gray-500 flex items-center justify-center">
+                        <div className="w-full dark:text-gray-400 h-[450px] text-gray-500 flex items-center justify-center">
                           No notifications
                         </div>
                       ) : (
@@ -696,16 +696,6 @@ const AdminNotification = ({ setIsOpenNotification }) => {
                     </div>
                   )}
 
-                  {/* Emoji Picker - Absolute positioned */}
-                  {openEmoji && (
-                    <div className="absolute bottom-20 left-[215px] z-50">
-                      <MyEmojiPicker
-                        onEmojiSelect={handleEmojiSelect}
-                        onClose={() => setOpenEmoji(false)}
-                      />
-                    </div>
-                  )}
-
                   {/* Input Area - Fixed */}
                   <div className="w-full bg-gray-100 py-2 relative flex-shrink-0 dark:bg-gray-800 dark:border-t dark:border-gray-700">
                     <Smile
@@ -732,6 +722,14 @@ const AdminNotification = ({ setIsOpenNotification }) => {
                         <SendHorizontal size={20} />
                       </button>
                     </form>
+                    {openEmoji && (
+                      <div className="absolute bottom-14 left-0 z-50">
+                        <MyEmojiPicker
+                          onEmojiSelect={handleEmojiSelect}
+                          onClose={() => setOpenEmoji(false)}
+                        />
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
