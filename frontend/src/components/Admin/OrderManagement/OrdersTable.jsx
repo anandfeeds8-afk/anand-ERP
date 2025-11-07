@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { CircularProgress, IconButton, Tooltip } from "@mui/material";
-import { DownloadIcon, Eye, File } from "lucide-react";
+import { DownloadIcon, Eye, File, FileClock } from "lucide-react";
 import { format } from "date-fns";
 import { DataGrid } from "@mui/x-data-grid";
 import CloseIcon from "@mui/icons-material/Close";
@@ -9,6 +9,7 @@ import { useAdminOrder } from "../../../hooks/useAdminOrders.js";
 import { TbFileInvoice } from "react-icons/tb";
 import autoTable from "jspdf-autotable";
 import jsPDF from "jspdf";
+import { useTheme } from "../../../context/ThemeContext.jsx";
 
 const downloadInvoice = ({
   accName,
@@ -95,9 +96,11 @@ const downloadInvoice = ({
 };
 
 const OrdersTable = () => {
+  const { resolvedTheme } = useTheme();
   const [singleOrderId, setSingleOrderId] = useState(null);
   const [openView, setOpenView] = useState(false);
   const [openInvoice, setOpenInvoice] = useState(false);
+  const [openDuePaymentInvoice, setOpenDuePaymentInvoice] = useState(false);
 
   const { orders, singleOrder, ordersLoading, singleOrderLoading } =
     useAdminOrder(singleOrderId);
@@ -110,6 +113,11 @@ const OrdersTable = () => {
   const filteredOrders = orders?.filter(
     (order) => order.orderStatus === "WarehouseAssigned"
   );
+
+  const handleOpenDuePaymentInvoice = (id) => {
+    setSingleOrderId(id);
+    setOpenDuePaymentInvoice(true);
+  };
 
   const handleView = (id) => {
     console.log(id);
@@ -147,6 +155,20 @@ const OrdersTable = () => {
       </div>
     );
 
+  const handleDownloadDueInvoice = () => {
+    downloadInvoice({
+      accName: singleOrder?.dueInvoiceDetails?.invoicedBy?.name,
+      accEmail: singleOrder?.dueInvoiceDetails?.invoicedBy?.email,
+      partyName: singleOrder?.dueInvoiceDetails?.party?.companyName,
+      partyAddress: singleOrder?.dueInvoiceDetails?.party?.address,
+      partyContact: singleOrder?.dueInvoiceDetails?.party?.contactPersonNumber,
+      totalAmount: singleOrder?.dueInvoiceDetails?.totalAmount,
+      advanceAmount: singleOrder?.dueInvoiceDetails?.advanceAmount,
+      dueAmount: singleOrder?.dueInvoiceDetails?.dueAmount,
+      dueDate: format(singleOrder?.dueInvoiceDetails?.dueDate, "dd MMM yyyy"),
+      paymentMode: singleOrder?.dueInvoiceDetails?.paymentMode,
+    });
+  };
   const columns = [
     {
       field: "orderId",
@@ -155,23 +177,29 @@ const OrdersTable = () => {
       minWidth: 80,
       maxWidth: 100,
     },
-    { field: "product", headerName: "Product", flex: 1 },
-    { field: "party", headerName: "Party", flex: 1 },
-    { field: "date", headerName: "Date", flex: 1 },
-    { field: "quantity", headerName: "Quantity", flex: 1 },
+    { field: "product", headerName: "Product", flex: 1, minWidth: 120 },
+    { field: "party", headerName: "Party", flex: 1, minWidth: 100 },
+    { field: "date", headerName: "Date", flex: 1, minWidth: 100 },
+    { field: "quantity", headerName: "Quantity", flex: 1, minWidth: 100 },
     {
       field: "totalAmount",
       headerName: "Total Amount",
       flex: 1,
+      minWidth: 100,
     },
     {
       field: "advanceAmount",
       headerName: "Advance Amount",
       flex: 1,
+      minWidth: 100,
       renderCell: (params) => (
         console.log(params.value),
         (
-          <span className={`${params.value !== "₹0" && "text-green-700"}`}>
+          <span
+            className={`${
+              params.value !== "₹0" && "text-green-700 dark:text-green-500"
+            }`}
+          >
             {params.value}
           </span>
         )
@@ -181,10 +209,15 @@ const OrdersTable = () => {
       field: "dueAmount",
       headerName: "Due Amount",
       flex: 1,
+      minWidth: 100,
       renderCell: (params) => (
         console.log(params.value),
         (
-          <span className={`${params.value !== "₹0" && "text-red-600"}`}>
+          <span
+            className={`${
+              params.value !== "₹0" && "text-red-600 dark:text-red-500"
+            }`}
+          >
             {params.value}
           </span>
         )
@@ -194,14 +227,15 @@ const OrdersTable = () => {
       field: "orderStatus",
       headerName: "Status",
       flex: 1,
+      minWidth: 100,
       renderCell: (params) => (
         <span
           className={`${
             params.value === "Cancelled"
-              ? "text-red-800 bg-red-100 p-1 px-3 rounded-full"
+              ? "text-red-800 bg-red-100 p-1 px-3 rounded-full dark:bg-red-800 dark:text-red-200"
               : params.value === "Delivered"
-              ? "text-green-800 bg-green-100 p-1 px-3 rounded-full"
-              : "text-gray-800 bg-gray-200 p-1 px-3 rounded-full"
+              ? "text-green-800 bg-green-100 dark:bg-green-800 dark:text-green-200 p-1 px-3 rounded-full"
+              : "text-gray-800 bg-gray-200 dark:bg-gray-800 dark:text-gray-400 p-1 px-3 rounded-full"
           }`}
         >
           {params.value}
@@ -234,6 +268,18 @@ const OrdersTable = () => {
               />
             )}
           </Tooltip>
+
+          {params.row.dueInvoiceGenerated && (
+            <Tooltip title="View due payment invoice" placement="top">
+              <FileClock
+                strokeWidth={2.1}
+                color="teal"
+                className="hover:bg-teal-200 active:scale-95 transition-all p-1.5 rounded-lg"
+                size={30}
+                onClick={() => handleOpenDuePaymentInvoice(params.row.id)}
+              />
+            </Tooltip>
+          )}
         </div>
       ),
     },
@@ -251,6 +297,7 @@ const OrdersTable = () => {
     dueAmount: formatRupee(order.dueAmount),
     orderStatus: order.orderStatus,
     invoiceGenerated: order.invoiceGenerated,
+    dueInvoiceGenerated: order.dueInvoiceGenerated,
   }));
 
   if (ordersLoading)
@@ -270,42 +317,86 @@ const OrdersTable = () => {
         pageSizeOptions={[5, 10, 20, 50, 100]}
         pagination
         autoHeight
+        disableColumnResize={false}
         sx={{
           width: "100%",
-          borderRadius: "8px",
-          minWidth: "100%",
-          "& .MuiDataGrid-cell:focus": {
-            outline: "none",
-            backgroundColor: "none !important",
-          },
-          "& .MuiDataGrid-cell:focus-within": {
-            outline: "none",
-            backgroundColor: "none !important",
-          },
+          borderRadius: "6px",
+          borderColor: resolvedTheme === "dark" ? "transparent" : "#e5e7eb",
+          backgroundColor: resolvedTheme === "dark" ? "#0f172a" : "#fff",
+          color: resolvedTheme === "dark" ? "#e5e7eb" : "#111827",
+
+          // 🔹 Header Row Background
           "& .MuiDataGrid-columnHeaders": {
-            position: "sticky",
-            top: 0,
-            backgroundColor: "#fff",
-            zIndex: 1,
+            backgroundColor:
+              resolvedTheme === "dark"
+                ? "#1e293b !important"
+                : "#f9fafb !important",
+            color: resolvedTheme === "dark" ? "#f1f5f9" : "#000",
           },
-          "& .MuiDataGrid-virtualScroller": {
-            overflowX: "auto !important",
-            overflowY: "auto",
+
+          // 🔹 Header Cell
+          "& .MuiDataGrid-columnHeader": {
+            backgroundColor:
+              resolvedTheme === "dark"
+                ? "#1e293b !important"
+                : "#f9fafb !important",
+            color: resolvedTheme === "dark" ? "#9ca3af" : "#000",
           },
-          "& .MuiDataGrid-main": {
-            maxWidth: "100%",
+
+          "& .MuiDataGrid-columnHeaderTitle": {
+            fontWeight: "600",
+            // fontSize: "0.8rem",
+          },
+
+          // 🔹 Cells
+          "& .MuiDataGrid-cell": {
+            borderColor: resolvedTheme === "dark" ? "#374151" : "#e5e7eb",
+            backgroundColor: resolvedTheme === "dark" ? "#0f172a" : "#fff",
+            color: resolvedTheme === "dark" ? "#9ca3af" : "#000",
+          },
+
+          // ❌ Remove blue outline when cell is active/focused
+          "& .MuiDataGrid-cell:focus, & .MuiDataGrid-cell:focus-within": {
+            outline: "none !important",
+          },
+
+          // 🔹 Hover row (lighter shade)
+          "& .MuiDataGrid-row:hover": {
+            backgroundColor:
+              resolvedTheme === "dark"
+                ? "rgba(59,130,246,0.1)"
+                : "rgba(59,130,246,0.05)",
+            transition: "background-color 0.2s ease-in-out",
+          },
+
+          // 🔹 Pagination buttons
+          "& .MuiTablePagination-root": {
+            color: resolvedTheme === "dark" ? "#e5e7eb" : "#111827",
+          },
+
+          "& .MuiPaginationItem-root": {
+            borderRadius: "6px",
+            color: resolvedTheme === "dark" ? "#e5e7eb" : "#111827",
+          },
+
+          "& .MuiPaginationItem-root.Mui-selected": {
+            backgroundColor: resolvedTheme === "dark" ? "#1e40af" : "#2563eb",
+            color: "#fff",
+          },
+
+          "& .MuiPaginationItem-root:hover": {
+            backgroundColor: resolvedTheme === "dark" ? "#1e3a8a" : "#dbeafe",
           },
         }}
-        disableColumnResize={false}
       />
 
       {/* --- View Order Modal --- */}
       {openView && (
         <div className="transition-all bg-gradient-to-b from-black/20 to-black/60 backdrop-blur-sm w-full z-50 h-screen absolute top-0 left-0 flex items-center justify-center">
-          <div className="bg-white relative p-7 rounded-lg w-[50%] max-h-[90%] overflow-auto">
+          <div className="bg-white dark:bg-gray-800 relative lg:p-7 p-5 rounded-lg lg:max-w-[60%] lg:min-w-[50%] lg:max-h-[95%] w-[95%] max-h-[95%] md:w-[80%] overflow-auto">
             <div className="mb-5">
               <div className="flex items-center justify-between">
-                <p className="text-xl font-bold">
+                <p className="lg:text-xl text-base font-bold dark:text-gray-300">
                   Order Details - #{singleOrder?.orderId}
                 </p>
                 <IconButton size="small" onClick={() => setOpenView(false)}>
@@ -316,7 +407,7 @@ const OrdersTable = () => {
 
             {/* products table */}
             <div className="relative overflow-x-auto mb-5 max-h-52">
-              <table className="w-full text-sm text-left text-gray-500 overflow-auto">
+              <table className="w-full lg:text-sm text-xs text-left text-gray-500 overflow-auto">
                 <thead className="sticky top-0 bg-gray-100 text-gray-800 z-10">
                   <tr>
                     <th scope="col" className="px-6 py-3">
@@ -333,7 +424,7 @@ const OrdersTable = () => {
                     </th>
                   </tr>
                 </thead>
-                <tbody className="text-sm">
+                <tbody className="lg:text-sm text-xs">
                   {singleOrder?.items?.map((item, idx) => (
                     <tr key={idx} className="bg-white border-b border-gray-200">
                       <th
@@ -353,10 +444,10 @@ const OrdersTable = () => {
               </table>
             </div>
 
-            <div className="grid grid-cols-2 gap-7">
+            <div className="grid lg:grid-cols-2 md:grid-cols-2 sm:grid-cols-2 gap-7">
               <div className="flex flex-col gap-5">
-                <div className="flex flex-col gap-2 text-sm">
-                  <h1 className="font-semibold text-base text-gray-800">
+                <div className="flex flex-col gap-2 lg:text-sm text-xs">
+                  <h1 className="font-semibold lg:text-base text-sm text-gray-800">
                     Order Information
                   </h1>
                   <div className="flex items-center justify-between font-semibold">
@@ -372,8 +463,8 @@ const OrdersTable = () => {
                     {format(singleOrder?.createdAt, "dd MMM yyyy")}
                   </div>
                 </div>
-                <div className="flex flex-col gap-2 text-sm">
-                  <h1 className="font-semibold text-base text-gray-800">
+                <div className="flex flex-col gap-2 lg:text-sm text-xs">
+                  <h1 className="font-semibold lg:text-base text-sm text-gray-800">
                     Payment Information
                   </h1>
                   <div className="flex items-center justify-between font-semibold">
@@ -413,23 +504,23 @@ const OrdersTable = () => {
                         Advance Confirmation:
                       </span>
                       {singleOrder?.advancePaymentStatus === "Approved" && (
-                        <span className="text-green-700 font-semibold bg-green-100 p-1 px-3 rounded-full text-xs">
+                        <span className="text-green-700 font-semibold bg-green-100 p-0.5 px-2 rounded-full lg:text-xs text-[10px]">
                           Confirmed
                         </span>
                       )}
                       {singleOrder?.advancePaymentStatus ===
                         "SentForApproval" && (
-                        <span className="text-indigo-700 font-semibold bg-indigo-100 p-1 px-3 rounded-full text-xs">
+                        <span className="text-indigo-700 font-semibold bg-indigo-100 p-0.5 px-2 rounded-full lg:text-xs text-[10px]">
                           Sent For Confirmation
                         </span>
                       )}
                       {singleOrder?.advancePaymentStatus === "Pending" && (
-                        <span className="text-yellow-700 font-semibold bg-yellow-100 p-1 px-3 rounded-full text-xs">
+                        <span className="text-yellow-700 font-semibold bg-yellow-100 p-0.5 px-2 rounded-full lg:text-xs text-[10px]">
                           Pending
                         </span>
                       )}
                       {singleOrder?.advancePaymentStatus === "Rejected" && (
-                        <span className="text-red-700 font-semibold bg-red-100 p-1 px-3 rounded-full text-xs">
+                        <span className="text-red-700 font-semibold bg-red-100 p-0.5 px-2 rounded-full lg:text-xs text-[10px]">
                           Rejected
                         </span>
                       )}
@@ -441,22 +532,22 @@ const OrdersTable = () => {
                         Due Confirmation:
                       </span>
                       {singleOrder?.duePaymentStatus === "Approved" && (
-                        <span className="text-green-700 font-semibold bg-green-100 p-1 px-3 rounded-full text-xs">
+                        <span className="text-green-700 font-semibold bg-green-100 p-0.5 px-2 rounded-full lg:text-xs text-[10px]">
                           Confirmed
                         </span>
                       )}
                       {singleOrder?.duePaymentStatus === "SentForApproval" && (
-                        <span className="text-indigo-700 font-semibold bg-indigo-100 p-1 px-3 rounded-full text-xs">
+                        <span className="text-indigo-700 font-semibold bg-indigo-100 p-0.5 px-2 rounded-full lg:text-xs text-[10px]">
                           Sent For Confirmation
                         </span>
                       )}
                       {singleOrder?.duePaymentStatus === "Pending" && (
-                        <span className="text-yellow-700 font-semibold bg-yellow-100 p-1 px-3 rounded-full text-xs">
+                        <span className="text-yellow-700 font-semibold bg-yellow-100 p-0.5 px-2 rounded-full lg:text-xs text-[10px]">
                           Pending
                         </span>
                       )}
                       {singleOrder?.duePaymentStatus === "Rejected" && (
-                        <span className="text-red-700 font-semibold bg-red-100 p-1 px-3 rounded-full text-xs">
+                        <span className="text-red-700 font-semibold bg-red-100 p-0.5 px-2 rounded-full lg:text-xs text-[10px]">
                           Rejected
                         </span>
                       )}
@@ -489,8 +580,8 @@ const OrdersTable = () => {
               </div>
 
               <div className="flex flex-col gap-5">
-                <div className="flex flex-col gap-2 text-sm">
-                  <h1 className="font-semibold text-base text-gray-800">
+                <div className="flex flex-col gap-2 lg:text-sm text-xs">
+                  <h1 className="font-semibold lg:text-base text-sm text-gray-800">
                     Order Status
                   </h1>
                   <div className="flex items-center justify-between font-semibold">
@@ -498,15 +589,15 @@ const OrdersTable = () => {
                       Order Status:
                     </span>
                     {singleOrder?.orderStatus === "Delivered" ? (
-                      <span className="text-green-700 bg-green-100 p-1 px-3 rounded-full text-xs">
+                      <span className="text-green-700 bg-green-100 p-0.5 px-2 rounded-full lg:text-xs text-[10px]">
                         {singleOrder?.orderStatus}
                       </span>
                     ) : singleOrder?.orderStatus === "Cancelled" ? (
-                      <span className="text-red-700 bg-red-100 p-1 px-3 rounded-full text-xs">
+                      <span className="text-red-700 bg-red-100 p-0.5 px-2 rounded-full lg:text-xs text-[10px]">
                         {singleOrder?.orderStatus}
                       </span>
                     ) : (
-                      <span className="text-gray-700 bg-gray-200 p-1 px-3 rounded-full text-xs">
+                      <span className="text-gray-700 bg-gray-200 p-0.5 px-2 rounded-full lg:text-xs text-[10px]">
                         {singleOrder?.orderStatus}
                       </span>
                     )}
@@ -516,17 +607,17 @@ const OrdersTable = () => {
                       Payment Status:
                     </span>
                     {singleOrder?.paymentStatus === "PendingDues" && (
-                      <span className="text-red-700 bg-red-100 p-1 px-3 rounded-full text-xs">
+                      <span className="text-red-700 bg-red-100 p-0.5 px-2 rounded-full lg:text-xs text-[10px]">
                         Pending Dues
                       </span>
                     )}
                     {singleOrder?.paymentStatus === "Paid" && (
-                      <span className="text-green-700 bg-green-100 p-1 px-3 rounded-full text-xs">
+                      <span className="text-green-700 bg-green-100 p-0.5 px-2 rounded-full lg:text-xs text-[10px]">
                         Paid
                       </span>
                     )}
                     {singleOrder?.paymentStatus === "ConfirmationPending" && (
-                      <span className="text-yellow-700 bg-yellow-100 p-1 px-3 rounded-full text-xs">
+                      <span className="text-yellow-700 bg-yellow-100 p-0.5 px-2 rounded-full lg:text-xs text-[10px]">
                         Confirmation Pending
                       </span>
                     )}
@@ -536,11 +627,11 @@ const OrdersTable = () => {
                       Invoice Generated:
                     </span>
                     {singleOrder?.invoiceGenerated ? (
-                      <span className="text-green-800 bg-green-100 p-1 px-3 rounded-full text-xs">
+                      <span className="text-green-800 bg-green-100 p-0.5 px-2 rounded-full lg:text-xs text-[10px]">
                         Yes
                       </span>
                     ) : (
-                      <span className="text-red-700 bg-red-100 p-1 px-3 rounded-full text-xs">
+                      <span className="text-red-700 bg-red-100 p-0.5 px-2 rounded-full lg:text-xs text-[10px]">
                         No
                       </span>
                     )}
@@ -551,11 +642,11 @@ const OrdersTable = () => {
                         Due Invoice Generated:
                       </span>
                       {singleOrder?.dueInvoiceGenerated ? (
-                        <span className="text-green-800 bg-green-100 p-1 px-3 rounded-full text-xs">
+                        <span className="text-green-800 bg-green-100 p-0.5 px-2 rounded-full lg:text-xs text-[10px]">
                           Yes
                         </span>
                       ) : (
-                        <span className="text-red-700 bg-red-100 p-1 px-3 rounded-full text-xs">
+                        <span className="text-red-700 bg-red-100 p-0.5 px-2 rounded-full lg:text-xs text-[10px]">
                           No
                         </span>
                       )}
@@ -563,8 +654,8 @@ const OrdersTable = () => {
                   )}
                 </div>
 
-                <div className="flex flex-col gap-2 text-sm">
-                  <h1 className="font-semibold text-base text-gray-800">
+                <div className="flex flex-col gap-2 lg:text-sm text-xs">
+                  <h1 className="font-semibold lg:text-base text-sm text-gray-800">
                     Shipping Details
                   </h1>
                   <div className="flex items-center justify-between font-semibold">
@@ -574,8 +665,8 @@ const OrdersTable = () => {
                 </div>
 
                 {/* assigned warehouse */}
-                <div className="flex flex-col gap-2 text-sm">
-                  <h1 className="font-semibold text-base text-gray-800">
+                <div className="flex flex-col gap-2 lg:text-sm text-xs">
+                  <h1 className="font-semibold lg:text-base text-sm text-gray-800">
                     Assigned Plant
                   </h1>
                   <div className="flex items-center justify-between font-semibold">
@@ -590,7 +681,7 @@ const OrdersTable = () => {
                         </p>
                       </div>
                     ) : (
-                      <span className="text-red-700 bg-red-100 p-1 px-3 rounded-full text-xs">
+                      <span className="text-red-700 bg-red-100 p-0.5 px-2 rounded-full lg:text-xs text-[10px]">
                         Not Assigned
                       </span>
                     )}
@@ -600,11 +691,11 @@ const OrdersTable = () => {
                       Plant Approval:
                     </span>
                     {singleOrder?.approvedBy ? (
-                      <span className="text-green-700 font-semibold bg-green-100 p-1 px-3 rounded-full text-xs">
+                      <span className="text-green-700 font-semibold bg-green-100 p-0.5 px-2 rounded-full lg:text-xs text-[10px]">
                         Approved
                       </span>
                     ) : (
-                      <span className="text-red-700 font-semibold bg-red-100 p-1 px-3 rounded-full text-xs">
+                      <span className="text-red-700 font-semibold bg-red-100 p-0.5 px-2 rounded-full lg:text-xs text-[10px]">
                         Pending
                       </span>
                     )}
@@ -613,20 +704,22 @@ const OrdersTable = () => {
               </div>
             </div>
             {/* notes */}
-            <div className="flex flex-col gap-2 text-sm my-5">
-              <h1 className="font-semibold text-base text-gray-800">Notes</h1>
+            <div className="flex flex-col gap-2 lg:text-sm text-xs my-5">
+              <h1 className="font-semibold lg:text-base text-sm text-gray-800">
+                Notes
+              </h1>
               <p className="bg-yellow-50 rounded-lg p-3">
                 {singleOrder?.notes}
               </p>
             </div>
             {/* dispatch info */}
             {singleOrder?.dispatchInfo && (
-              <div className="flex flex-col gap-2 text-sm bg-green-50 p-3 rounded-lg mt-5">
-                <h1 className="font-semibold text-base text-gray-800">
+              <div className="flex flex-col gap-2 lg:text-sm text-xs bg-green-50 p-3 rounded-lg mt-5">
+                <h1 className="font-semibold lg:text-base text-sm text-gray-800">
                   Dispatch Info
                 </h1>
-                <div className="grid grid-cols-2 gap-5">
-                  <div className="flex flex-col gap-2 text-sm">
+                <div className="grid lg:grid-cols-2 md:grid-cols-2 sm:grid-cols-2 grid-cols-1 lg:gap-7 md:gap-7 gap-2">
+                  <div className="flex flex-col gap-2 lg:text-sm text-xs">
                     <div className="flex items-center justify-between font-semibold">
                       <span className="text-gray-600 font-normal">
                         Driver Name
@@ -653,7 +746,7 @@ const OrdersTable = () => {
                     </div>
                   </div>
 
-                  <div className="flex flex-col gap-2 text-sm">
+                  <div className="flex flex-col gap-2 lg:text-sm text-xs">
                     <div className="flex items-center justify-between font-semibold">
                       <span className="text-gray-600 font-normal">
                         Dispatched By:
@@ -686,10 +779,10 @@ const OrdersTable = () => {
       {/* --- View Invoice Modal --- */}
       {openInvoice && (
         <div className="transition-all bg-gradient-to-b from-black/20 to-black/60 backdrop-blur-sm w-full z-50 h-screen absolute top-0 left-0 flex items-center justify-center">
-          <div className="bg-white relative p-7 w-[35%] rounded-lg overflow-auto">
+          <div className="bg-white relative lg:p-7 p-5 lg:w-[35%] md:w-[50%] sm:w-[60%] w-[95%] rounded-lg overflow-auto">
             <div className="mb-5">
               <div className="flex items-center justify-between">
-                <p className="text-xl font-bold">Invoice</p>
+                <p className="lg:text-xl text-base font-semibold">Invoice</p>
                 <div className="flex items-center gap-5">
                   <div className="relative group">
                     <Tooltip
@@ -715,8 +808,8 @@ const OrdersTable = () => {
               </div>
             </div>
             <div>
-              <div className="flex flex-col gap-2 text-sm">
-                <h1 className="font-semibold text-base text-gray-800">
+              <div className="flex flex-col gap-2 lg:text-sm text-xs">
+                <h1 className="font-semibold lg:text-base text-sm text-gray-800">
                   Invoiced By
                 </h1>
                 <div className="flex items-center justify-between font-semibold">
@@ -729,8 +822,8 @@ const OrdersTable = () => {
                 </div>
               </div>
 
-              <div className="flex flex-col gap-2 text-sm mt-5">
-                <h1 className="font-semibold text-base text-gray-800">
+              <div className="flex flex-col gap-2 lg:text-sm text-xs mt-5">
+                <h1 className="font-semibold lg:text-base text-sm text-gray-800">
                   Party Details
                 </h1>
                 <div className="flex items-center justify-between font-semibold">
@@ -751,8 +844,8 @@ const OrdersTable = () => {
                 </div>
               </div>
 
-              <div className="flex flex-col gap-2 text-sm mt-5">
-                <h1 className="font-semibold text-base text-gray-800">
+              <div className="flex flex-col gap-2 lg:text-sm text-xs mt-5">
+                <h1 className="font-semibold lg:text-base text-sm text-gray-800">
                   Payment Information
                 </h1>
                 <div className="flex items-center justify-between font-semibold">
@@ -783,12 +876,133 @@ const OrdersTable = () => {
               </div>
               <hr className="my-3" />
               <div>
-                <div className="flex items-center justify-between font-semibold text-sm">
+                <div className="flex items-center justify-between font-semibold lg:text-sm text-xs">
                   <span className="text-gray-600 font-normal">
                     Invoice Generated on:
                   </span>
                   {format(
                     singleOrder?.invoiceDetails?.generatedAt,
+                    "dd MMM yyyy"
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* --- View Due Invoice Modal --- */}
+      {openDuePaymentInvoice && (
+        <div className="transition-all bg-gradient-to-b from-black/20 to-black/60 backdrop-blur-sm w-full z-50 h-screen absolute top-0 left-0 flex items-center justify-center">
+          <div className="bg-white relative lg:p-7 p-5 lg:w-[35%] md:w-[50%] sm:w-[60%] w-[95%] rounded-lg overflow-auto">
+            <div className="mb-5">
+              <div className="flex items-center justify-between">
+                <p className="lg:text-xl text-base font-semibold">
+                  Due Payment Invoice
+                </p>
+                <div className="flex items-center gap-5">
+                  <div className="relative group">
+                    <Tooltip
+                      title="Download Invoice"
+                      placement="top"
+                      enterDelay={500}
+                    >
+                      <DownloadIcon
+                        onClick={handleDownloadDueInvoice}
+                        className="text-blue-600 hover:bg-blue-100 p-1.5 rounded-lg active:scale-95 transition-all"
+                        size={30}
+                      />
+                    </Tooltip>
+                  </div>
+
+                  <IconButton
+                    size="small"
+                    onClick={() => setOpenDuePaymentInvoice(false)}
+                  >
+                    <CloseIcon />
+                  </IconButton>
+                </div>
+              </div>
+            </div>
+            <div>
+              <div className="flex flex-col gap-2 lg:text-sm text-xs">
+                <h1 className="font-semibold lg:text-base text-sm text-gray-800">
+                  Invoiced By
+                </h1>
+                <div className="flex items-center justify-between font-semibold">
+                  <span className="text-gray-600 font-normal">Name:</span>
+                  {singleOrder?.dueInvoiceDetails?.invoicedBy?.name}
+                </div>
+                <div className="flex items-center justify-between font-semibold">
+                  <span className="text-gray-600 font-normal">Email:</span>
+                  {singleOrder?.dueInvoiceDetails?.invoicedBy?.email}
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-2 lg:text-sm text-xs mt-5">
+                <h1 className="font-semibold lg:text-base text-sm text-gray-800">
+                  Party Details
+                </h1>
+                <div className="flex items-center justify-between font-semibold">
+                  <span className="text-gray-600 font-normal">
+                    Company Name:
+                  </span>
+                  {singleOrder?.dueInvoiceDetails?.party?.companyName}
+                </div>
+                <div className="flex items-center justify-between font-semibold">
+                  <span className="text-gray-600 font-normal">Address:</span>
+                  {singleOrder?.dueInvoiceDetails?.party?.address}
+                </div>
+                <div className="flex items-center justify-between font-semibold">
+                  <span className="text-gray-600 font-normal">
+                    Contact Person Number:
+                  </span>
+                  {singleOrder?.dueInvoiceDetails?.party?.contactPersonNumber}
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-2 lg:text-sm text-xs mt-5">
+                <h1 className="font-semibold lg:text-base text-sm text-gray-800">
+                  Payment Information
+                </h1>
+                <div className="flex items-center justify-between font-semibold">
+                  <span className="text-gray-600 font-normal">
+                    Total Amount:
+                  </span>
+                  {formatRupee(singleOrder?.dueInvoiceDetails?.totalAmount)}
+                </div>
+                <div className="flex items-center justify-between font-semibold text-green-700">
+                  <span className="text-gray-600 font-normal">
+                    Advance Amount:
+                  </span>
+                  {formatRupee(singleOrder?.dueInvoiceDetails?.advanceAmount)}
+                </div>
+                <div className="flex items-center justify-between font-semibold text-red-700">
+                  <span className="text-gray-600 font-normal">Due Amount:</span>
+                  {formatRupee(singleOrder?.dueInvoiceDetails?.dueAmount)}
+                </div>
+                <div className="flex items-center justify-between font-semibold">
+                  <span className="text-gray-600 font-normal">Due Date:</span>
+                  {format(
+                    singleOrder?.dueInvoiceDetails?.dueDate,
+                    "dd MMM yyyy"
+                  )}
+                </div>
+                <div className="flex items-center justify-between font-semibold">
+                  <span className="text-gray-600 font-normal">
+                    Payment Mode:
+                  </span>
+                  {singleOrder?.dueInvoiceDetails?.paymentMode}
+                </div>
+              </div>
+              <hr className="my-3" />
+              <div>
+                <div className="flex items-center justify-between font-semibold lg:text-sm text-xs">
+                  <span className="text-gray-600 font-normal">
+                    Invoice Generated on:
+                  </span>
+                  {format(
+                    singleOrder?.dueInvoiceDetails?.generatedAt,
                     "dd MMM yyyy"
                   )}
                 </div>

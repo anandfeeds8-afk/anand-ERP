@@ -1,13 +1,11 @@
-// Import core modules and packages
 const express = require("express");
-const mongoose = require("mongoose");
 const cors = require("cors");
 require("dotenv").config();
 const cookieParser = require("cookie-parser");
 const http = require("http");
 const { initSocket } = require("./config/socket");
+const { client } = require("./config/redis");
 
-// Import custom route files
 const salesmanRoutes = require("./routes/salesmanRouter");
 const adminRoutes = require("./routes/adminRouter");
 const managerRoutes = require("./routes/managerRouter");
@@ -18,31 +16,27 @@ const notificationRoutes = require("./routes/notificationRouter");
 const messageRoutes = require("./routes/messageRouter");
 const meRoutes = require("./routes/meRouter");
 
-// Create Express app instance
 const app = express();
-
-// Import database connection function
 const connectDatabase = require("./config/db");
-
-// Define port from .env or fallback to 5000
 const PORT = process.env.PORT || 5000;
 
-// 🔗 Connect to MongoDB
+// DB connect
 connectDatabase();
 
-// Enable CORS and parse JSON body
+// Middlewares
 app.use(
   cors({
-    origin: ["https://poultry-feed-management-software-4.onrender.com"],
+    origin: "https://poultry-feed-management-software-4.onrender.com",
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
   })
 );
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
-// Mount route handlers for each user role
+// Routes
 app.use("/api/admin", adminRoutes);
 app.use("/api/salesman", salesmanRoutes);
 app.use("/api/manager", managerRoutes);
@@ -53,14 +47,23 @@ app.use("/api/notifications", notificationRoutes);
 app.use("/api/messages", messageRoutes);
 app.use("/api/me", meRoutes);
 
-// Root route (API health check)
 app.get("/", (req, res) => {
   res.send("<h1>🐣 Poultry Feed Management API Running...</h1>");
 });
 
-// Start Express server
-const server = http.createServer(app);
-initSocket(server);
-server.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
-});
+// ✅ Proper Redis + Server Startup
+(async () => {
+  try {
+    await client.connect();
+    console.log("✅ Redis Connected");
+
+    const server = http.createServer(app);
+    initSocket(server);
+
+    server.listen(PORT, () => {
+      console.log(`🚀 Server running on port ${PORT}`);
+    });
+  } catch (err) {
+    console.error("❌ Redis Connection Failed", err);
+  }
+})();

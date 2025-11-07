@@ -47,8 +47,6 @@ const OrdersForPlantHead = () => {
 
   const reason = watch("reason");
 
-  console.log("singleOrderFromPlanthead", singleOrderFromPlanthead);
-
   const [paginationModel, setPaginationModel] = useState({
     page: 0,
     pageSize: 5,
@@ -86,19 +84,21 @@ const OrdersForPlantHead = () => {
       minWidth: 80,
       maxWidth: 100,
     },
-    { field: "product", headerName: "Product", flex: 1 },
-    { field: "party", headerName: "Party", flex: 1 },
-    { field: "date", headerName: "Date", flex: 1 },
-    { field: "quantity", headerName: "Quantity", flex: 1 },
+    { field: "product", headerName: "Product", flex: 1, minWidth: 120 },
+    { field: "party", headerName: "Party", flex: 1, minWidth: 100 },
+    { field: "date", headerName: "Date", flex: 1, minWidth: 100 },
+    { field: "quantity", headerName: "Quantity", flex: 1, minWidth: 100 },
     {
       field: "totalAmount",
       headerName: "Total Amount",
       flex: 1,
+      minWidth: 100,
     },
     {
       field: "advanceAmount",
       headerName: "Advance Amount",
       flex: 1,
+      minWidth: 100,
       renderCell: (params) => (
         <span className={`${params.value !== "₹0" && "text-green-700"}`}>
           {params.value}
@@ -109,6 +109,7 @@ const OrdersForPlantHead = () => {
       field: "dueAmount",
       headerName: "Due Amount",
       flex: 1,
+      minWidth: 100,
       renderCell: (params) => (
         <span className={`${params.value !== "₹0" && "text-red-600"}`}>
           {params.value}
@@ -119,6 +120,7 @@ const OrdersForPlantHead = () => {
       field: "orderStatus",
       headerName: "Status",
       flex: 1,
+      minWidth: 100,
       renderCell: (params) => (
         <span
           className={`${
@@ -244,10 +246,10 @@ const OrdersForPlantHead = () => {
       {/* --- View Order Modal --- */}
       {openView && (
         <div className="transition-all bg-gradient-to-b from-black/20 to-black/60 backdrop-blur-sm w-full z-50 h-screen absolute top-0 left-0 flex items-center justify-center">
-          <div className="bg-white relative p-7 rounded-lg w-[50%] max-h-[90%] overflow-auto">
-            <div className="mb-5">
+          <div className="bg-white relative lg:p-7 p-5 rounded-lg lg:max-w-[60%] lg:min-w-[50%] lg:max-h-[95%] w-[95%] max-h-[95%] overflow-auto">
+            <div className="lg:mb-5 mb-2">
               <div className="flex items-center justify-between">
-                <p className="text-xl font-bold">
+                <p className="lg:text-xl text-base font-semibold">
                   Order Details - #{singleOrderFromPlanthead?.orderId}
                 </p>
                 <IconButton size="small" onClick={() => setOpenView(false)}>
@@ -258,7 +260,7 @@ const OrdersForPlantHead = () => {
 
             {/* products table */}
             <div className="relative overflow-x-auto mb-5 max-h-52">
-              <table className="w-full text-sm text-left text-gray-500 overflow-auto">
+              <table className="w-full lg:text-sm text-xs text-left text-gray-500 overflow-auto">
                 <thead className="sticky top-0 bg-gray-100 text-gray-800 z-10">
                   <tr>
                     <th scope="col" className="px-6 py-3">
@@ -275,7 +277,7 @@ const OrdersForPlantHead = () => {
                     </th>
                   </tr>
                 </thead>
-                <tbody className="text-sm">
+                <tbody className="lg:text-sm text-xs">
                   {singleOrderFromPlanthead?.items?.map((item) => (
                     <tr
                       key={item._id}
@@ -298,10 +300,10 @@ const OrdersForPlantHead = () => {
               </table>
             </div>
 
-            <div className="grid grid-cols-2 gap-7">
+            <div className="grid lg:grid-cols-2 md:grid-cols-2 sm:grid-cols-2 grid-cols-1 gap-7">
               <div className="flex flex-col gap-5">
-                <div className="flex flex-col gap-2 text-sm">
-                  <h1 className="font-semibold text-base text-gray-800">
+                <div className="flex flex-col gap-2 lg:text-sm text-xs">
+                  <h1 className="font-semibold lg:text-base text-xs text-gray-800">
                     Order Information
                   </h1>
                   <div className="flex items-center justify-between font-semibold">
@@ -317,8 +319,8 @@ const OrdersForPlantHead = () => {
                     {format(singleOrderFromPlanthead?.createdAt, "dd MMM yyyy")}
                   </div>
                 </div>
-                <div className="flex flex-col gap-2 text-sm">
-                  <h1 className="font-semibold text-base text-gray-800">
+                <div className="flex flex-col gap-2 lg:text-sm text-xs">
+                  <h1 className="font-semibold lg:text-base text-xs text-gray-800">
                     Payment Information
                   </h1>
                   <div className="flex items-center justify-between font-semibold">
@@ -360,25 +362,25 @@ const OrdersForPlantHead = () => {
                       </span>
                       {singleOrderFromPlanthead?.advancePaymentStatus ===
                         "Approved" && (
-                        <span className="text-green-700 font-semibold bg-green-100 p-1 px-3 rounded-full text-xs">
+                        <span className="text-green-700 font-semibold bg-green-100 p-0.5 px-2 rounded-full lg:text-xs text-[10px]">
                           Confirmed
                         </span>
                       )}
                       {singleOrderFromPlanthead?.advancePaymentStatus ===
                         "SentForApproval" && (
-                        <span className="text-indigo-700 font-semibold bg-indigo-100 p-1 px-3 rounded-full text-xs">
+                        <span className="text-indigo-700 font-semibold bg-indigo-100 p-0.5 px-2 rounded-full lg:text-xs text-[10px]">
                           Sent For Confirmation
                         </span>
                       )}
                       {singleOrderFromPlanthead?.advancePaymentStatus ===
                         "Pending" && (
-                        <span className="text-yellow-700 font-semibold bg-yellow-100 p-1 px-3 rounded-full text-xs">
+                        <span className="text-yellow-700 font-semibold bg-yellow-100 p-0.5 px-2 rounded-full lg:text-xs text-[10px]">
                           Pending
                         </span>
                       )}
                       {singleOrderFromPlanthead?.advancePaymentStatus ===
                         "Rejected" && (
-                        <span className="text-red-700 font-semibold bg-red-100 p-1 px-3 rounded-full text-xs">
+                        <span className="text-red-700 font-semibold bg-red-100 p-0.5 px-2 rounded-full lg:text-xs text-[10px]">
                           Rejected
                         </span>
                       )}
@@ -391,25 +393,25 @@ const OrdersForPlantHead = () => {
                       </span>
                       {singleOrderFromPlanthead?.duePaymentStatus ===
                         "Approved" && (
-                        <span className="text-green-700 font-semibold bg-green-100 p-1 px-3 rounded-full text-xs">
+                        <span className="text-green-700 font-semibold bg-green-100 p-0.5 px-2 rounded-full lg:text-xs text-[10px]">
                           Confirmed
                         </span>
                       )}
                       {singleOrderFromPlanthead?.duePaymentStatus ===
                         "SentForApproval" && (
-                        <span className="text-indigo-700 font-semibold bg-indigo-100 p-1 px-3 rounded-full text-xs">
+                        <span className="text-indigo-700 font-semibold bg-indigo-100 p-0.5 px-2 rounded-full lg:text-xs text-[10px]">
                           Sent For Confirmation
                         </span>
                       )}
                       {singleOrderFromPlanthead?.duePaymentStatus ===
                         "Pending" && (
-                        <span className="text-yellow-700 font-semibold bg-yellow-100 p-1 px-3 rounded-full text-xs">
+                        <span className="text-yellow-700 font-semibold bg-yellow-100 p-0.5 px-2 rounded-full lg:text-xs text-[10px]">
                           Pending
                         </span>
                       )}
                       {singleOrderFromPlanthead?.duePaymentStatus ===
                         "Rejected" && (
-                        <span className="text-red-700 font-semibold bg-red-100 p-1 px-3 rounded-full text-xs">
+                        <span className="text-red-700 font-semibold bg-red-100 p-0.5 px-2 rounded-full lg:text-xs text-[10px]">
                           Rejected
                         </span>
                       )}
@@ -442,8 +444,8 @@ const OrdersForPlantHead = () => {
               </div>
 
               <div className="flex flex-col gap-5">
-                <div className="flex flex-col gap-2 text-sm">
-                  <h1 className="font-semibold text-base text-gray-800">
+                <div className="flex flex-col gap-2 lg:text-sm text-xs">
+                  <h1 className="font-semibold lg:text-base text-sm text-gray-800">
                     Order Status
                   </h1>
                   <div className="flex items-center justify-between font-semibold">
@@ -451,11 +453,11 @@ const OrdersForPlantHead = () => {
                       Order Status:
                     </span>
                     {singleOrderFromPlanthead?.orderStatus === "Delivered" ? (
-                      <span className="text-green-700 bg-green-100 p-1 px-3 rounded-full text-xs">
+                      <span className="text-green-700 bg-green-100 p-0.5 px-2 rounded-full lg:text-xs text-[10px]">
                         {singleOrderFromPlanthead?.orderStatus}
                       </span>
                     ) : (
-                      <span className="text-gray-700 bg-gray-200 p-1 px-3 rounded-full text-xs">
+                      <span className="text-gray-700 bg-gray-200 p-0.5 px-2 rounded-full lg:text-xs text-[10px]">
                         {singleOrderFromPlanthead?.orderStatus}
                       </span>
                     )}
@@ -466,18 +468,18 @@ const OrdersForPlantHead = () => {
                     </span>
                     {singleOrderFromPlanthead?.paymentStatus ===
                       "PendingDues" && (
-                      <span className="text-red-700 bg-red-100 p-1 px-3 rounded-full text-xs">
+                      <span className="text-red-700 bg-red-100 p-0.5 px-2 rounded-full lg:text-xs text-[10px]">
                         Pending Dues
                       </span>
                     )}
                     {singleOrderFromPlanthead?.paymentStatus === "Paid" && (
-                      <span className="text-green-700 bg-green-100 p-1 px-3 rounded-full text-xs">
+                      <span className="text-green-700 bg-green-100 p-0.5 px-2 rounded-full lg:text-xs text-[10px]">
                         Paid
                       </span>
                     )}
                     {singleOrderFromPlanthead?.paymentStatus ===
                       "ConfirmationPending" && (
-                      <span className="text-yellow-700 bg-yellow-100 p-1 px-3 rounded-full text-xs">
+                      <span className="text-yellow-700 bg-yellow-100 p-0.5 px-2 rounded-full lg:text-xs text-[10px]">
                         Confirmation Pending
                       </span>
                     )}
@@ -488,11 +490,11 @@ const OrdersForPlantHead = () => {
                       Invoice Generated:
                     </span>{" "}
                     {singleOrderFromPlanthead?.invoiceGenerated === "true" ? (
-                      <span className="text-green-700 bg-green-100 p-1 px-3 rounded-full text-xs">
+                      <span className="text-green-700 bg-green-100 p-0.5 px-2 rounded-full lg:text-xs text-[10px]">
                         Yes
                       </span>
                     ) : (
-                      <span className="text-red-700 bg-red-100 p-1 px-3 rounded-full text-xs">
+                      <span className="text-red-700 bg-red-100 p-0.5 px-2 rounded-full lg:text-xs text-[10px]">
                         No
                       </span>
                     )}
@@ -500,8 +502,8 @@ const OrdersForPlantHead = () => {
                 </div>
 
                 {/* order timeline */}
-                <div className="flex flex-col gap-2 text-sm">
-                  <h1 className="font-semibold text-base text-gray-800">
+                <div className="flex flex-col gap-2 lg:text-sm text-xs">
+                  <h1 className="font-semibold lg:text-base text-xs text-gray-800">
                     Order Timeline
                   </h1>
                   <div className="flex items-center justify-between font-semibold">
@@ -513,8 +515,8 @@ const OrdersForPlantHead = () => {
                 </div>
 
                 {/* assigned warehouse */}
-                <div className="flex flex-col gap-2 text-sm">
-                  <h1 className="font-semibold text-base text-gray-800">
+                <div className="flex flex-col gap-2 lg:text-sm text-xs">
+                  <h1 className="font-semibold lg:text-base text-xs text-gray-800">
                     Assigned Plant
                   </h1>
                   <div className="flex items-center justify-between font-semibold">
@@ -532,7 +534,7 @@ const OrdersForPlantHead = () => {
                         </span>
                       </div>
                     ) : (
-                      <span className="text-red-700 bg-red-100 p-1 px-3 rounded-full text-xs">
+                      <span className="text-red-700 bg-red-100 p-0.5 px-2 rounded-full lg:text-xs text-[10px]">
                         Not Assigned
                       </span>
                     )}
@@ -542,11 +544,11 @@ const OrdersForPlantHead = () => {
                       Plant Approval:
                     </span>
                     {singleOrderFromPlanthead?.approvedBy ? (
-                      <span className="text-green-700 font-semibold bg-green-100 p-1 px-3 rounded-full text-xs">
+                      <span className="text-green-700 font-semibold bg-green-100 p-0.5 px-2 rounded-full lg:text-xs text-[10px]">
                         Approved
                       </span>
                     ) : (
-                      <span className="text-red-700 font-semibold bg-red-100 p-1 px-3 rounded-full text-xs">
+                      <span className="text-red-700 font-semibold bg-red-100 p-0.5 px-2 rounded-full lg:text-xs text-[10px]">
                         Pending
                       </span>
                     )}
@@ -556,8 +558,10 @@ const OrdersForPlantHead = () => {
             </div>
 
             {/* notes  */}
-            <div className="flex flex-col gap-2 text-sm mt-5">
-              <h1 className="font-semibold text-base text-gray-800">Notes</h1>
+            <div className="flex flex-col gap-2 lg:text-sm text-xs mt-5">
+              <h1 className="font-semibold lg:text-base text-xs text-gray-800">
+                Notes
+              </h1>
               <div className="bg-yellow-50 rounded-lg p-3 w-full">
                 <p className="break-words whitespace-normal">
                   {singleOrderFromPlanthead?.notes}
@@ -571,9 +575,11 @@ const OrdersForPlantHead = () => {
       {/* --- Dispatch Order Modal --- */}
       {openDispatch && (
         <div className="transition-all bg-gradient-to-b from-black/20 to-black/60 backdrop-blur-sm w-full z-50 h-screen absolute top-0 left-0 flex items-center justify-center">
-          <div className="bg-white relative p-7 rounded-lg w-[30%] overflow-auto">
+          <div className="bg-white relative lg:p-7 p-5 rounded-lg lg:w-[30%] md:w-[30%] sm:w-[60%] w-[95%] overflow-auto">
             <div className="flex items-center justify-between">
-              <p className="text-xl font-bold">Dispatch Order</p>
+              <p className="lg:text-xl text-base font-semibold">
+                Dispatch Order
+              </p>
               <IconButton size="small" onClick={() => setOpenDispatch(false)}>
                 <CloseIcon />
               </IconButton>
@@ -703,6 +709,7 @@ const OrdersForPlantHead = () => {
                   <Button
                     variant="outlined"
                     disableElevation
+                    size="small"
                     sx={{ textTransform: "none" }}
                     onClick={() => setOpenDispatch(false)}
                   >
@@ -711,6 +718,7 @@ const OrdersForPlantHead = () => {
                   <Button
                     // disabled={singleOrderFromPlanthead?.dueAmount > 0}
                     loading={isDispatchingOrder}
+                    size="small"
                     loadingPosition="start"
                     variant="contained"
                     disableElevation
@@ -729,13 +737,13 @@ const OrdersForPlantHead = () => {
       {/* Cancel Order Modal */}
       {openCancel && (
         <div className="transition-all bg-gradient-to-b from-black/20 to-black/60 backdrop-blur-sm w-full z-50 h-screen absolute top-0 left-0 flex items-center justify-center">
-          <div className="bg-white p-7 rounded-lg w-[29rem]">
-            <p className="text-lg font-semibold">
-              Are you sure you want to cancel "
-              {singleOrderFromPlanthead?.item?.name}"?
+          <div className="bg-white lg:p-7 p-5 rounded-lg lg:w-[29rem] md:w-[60%] sm:w-[60%] w-[95%]">
+            <p className="lg:text-lg text-base font-semibold">
+              Are you sure you want to cancel the order #
+              {singleOrderFromPlanthead?.orderId} ?
             </p>
-            <p className="text-gray-800 my-2">
-              Tell us why you are cancelling this order:
+            <p className="lg:text-sm text-xs text-gray-800 my-2">
+              Tell us why you are cancelling this order ?
             </p>
             <form onSubmit={handleSubmit(handleCancelOrder)}>
               <div>
@@ -762,6 +770,7 @@ const OrdersForPlantHead = () => {
                   color="error"
                   sx={{ textTransform: "none" }}
                   onClick={() => setOpenCancel(false)}
+                  size="small"
                 >
                   Keep Order
                 </Button>
@@ -772,6 +781,7 @@ const OrdersForPlantHead = () => {
                   color="error"
                   type="Submit"
                   sx={{ textTransform: "none" }}
+                  size="small"
                 >
                   Cancel Order
                 </Button>

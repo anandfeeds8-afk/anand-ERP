@@ -45,12 +45,13 @@ const AssignmentHistory = () => {
       minWidth: 80,
       maxWidth: 100,
     },
-    { field: "warehouseName", headerName: "Warehouse", flex: 1 },
-    { field: "location", headerName: "Location", flex: 1 },
+    { field: "warehouseName", headerName: "Warehouse", flex: 1, minWidth: 120 },
+    { field: "location", headerName: "Location", flex: 1, minWidth: 100 },
     {
       field: "orderStatus",
       headerName: "Status",
       flex: 1,
+      minWidth: 100,
       renderCell: (params) => (
         <span
           className={`${
@@ -69,7 +70,7 @@ const AssignmentHistory = () => {
       field: "actions",
       headerName: "Actions",
       flex: 1,
-      minWidth: 150,
+      minWidth: 100,
       sortable: false,
       filterable: false,
       renderCell: (params) => (
@@ -165,10 +166,10 @@ const AssignmentHistory = () => {
       {/* --- View Order Modal --- */}
       {openView && (
         <div className="transition-all bg-gradient-to-b from-black/20 to-black/60 backdrop-blur-sm w-full z-50 h-screen absolute top-0 left-0 flex items-center justify-center">
-          <div className="bg-white relative p-7 rounded-lg min-w-[50%] max-w-[55%] max-h-[95%] overflow-auto">
-            <div className="mb-5">
+          <div className="bg-white relative lg:p-7 p-5 rounded-lg lg:max-w-[60%] lg:min-w-[50%] lg:max-h-[95%] w-[95%] max-h-[95%]  overflow-auto">
+            <div className="lg:mb-5 mb-2">
               <div className="flex items-center justify-between">
-                <p className="text-xl font-bold">
+                <p className="lg:text-xl text-sm font-bold">
                   Order Details - #{singleOrderFromSalesauthorizer?.orderId}
                 </p>
                 <IconButton size="small" onClick={() => setOpenView(false)}>
@@ -177,8 +178,8 @@ const AssignmentHistory = () => {
               </div>
 
               {/* products table */}
-              <div className="relative overflow-x-auto mt-5 max-h-52">
-                <table className="w-full text-sm text-left text-gray-500 overflow-auto">
+              <div className="relative overflow-x-auto lg:mb-5 my-3 max-h-52">
+                <table className="w-full lg:text-sm text-xs text-left text-gray-500 overflow-auto">
                   <thead className="sticky top-0 bg-gray-100 text-gray-800 z-10">
                     <tr>
                       <th scope="col" className="px-6 py-3">
@@ -195,7 +196,7 @@ const AssignmentHistory = () => {
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="text-sm">
+                  <tbody className="lg:text-sm text-xs">
                     {singleOrderFromSalesauthorizer?.items?.map((item) => (
                       <tr
                         key={item._id}
@@ -218,10 +219,10 @@ const AssignmentHistory = () => {
                 </table>
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-7">
+            <div className="grid lg:grid-cols-2 md:grid-cols-2 sm:grid-cols-2 grid-cols-1 gap-7">
               <div className="flex flex-col gap-5">
-                <div className="flex flex-col gap-2 text-sm">
-                  <h1 className="font-semibold text-base text-gray-800">
+                <div className="flex flex-col gap-2 lg:text-sm text-xs">
+                  <h1 className="font-semibold text-gray-800 lg:text-base text-sm">
                     Order Information
                   </h1>
                   <div className="flex items-center justify-between font-semibold">
@@ -240,8 +241,8 @@ const AssignmentHistory = () => {
                     )}
                   </div>
                 </div>
-                <div className="flex flex-col gap-2 text-sm">
-                  <h1 className="font-semibold text-base text-gray-800">
+                <div className="flex flex-col gap-2 lg:text-sm text-xs">
+                  <h1 className="font-semibold lg:text-base text-sm text-gray-800">
                     Payment Information
                   </h1>
                   <div className="flex items-center justify-between font-semibold">
@@ -285,25 +286,25 @@ const AssignmentHistory = () => {
                       </span>
                       {singleOrderFromSalesauthorizer?.advancePaymentStatus ===
                         "Approved" && (
-                        <span className="text-green-700 font-semibold bg-green-100 p-1 px-3 rounded-full text-xs">
+                        <span className="text-green-700 font-semibold bg-green-100 p-0.5 px-2 rounded-full lg:text-xs text-[10px]">
                           Confirmed
                         </span>
                       )}
                       {singleOrderFromSalesauthorizer?.advancePaymentStatus ===
                         "SentForApproval" && (
-                        <span className="text-indigo-700 font-semibold bg-indigo-100 p-1 px-3 rounded-full text-xs">
+                        <span className="text-indigo-700 font-semibold bg-indigo-100 p-0.5 px-2 rounded-full lg:text-xs text-[10px]">
                           Sent For Confirmation
                         </span>
                       )}
                       {singleOrderFromSalesauthorizer?.advancePaymentStatus ===
                         "Pending" && (
-                        <span className="text-yellow-700 font-semibold bg-yellow-100 p-1 px-3 rounded-full text-xs">
+                        <span className="text-yellow-700 font-semibold bg-yellow-100 p-0.5 px-2 rounded-full lg:text-xs text-[10px]">
                           Pending
                         </span>
                       )}
                       {singleOrderFromSalesauthorizer?.advancePaymentStatus ===
                         "Rejected" && (
-                        <span className="text-red-700 font-semibold bg-red-100 p-1 px-3 rounded-full text-xs">
+                        <span className="text-red-700 font-semibold bg-red-100 p-0.5 px-2 rounded-full lg:text-xs text-[10px]">
                           Rejected
                         </span>
                       )}
@@ -316,25 +317,25 @@ const AssignmentHistory = () => {
                       </span>
                       {singleOrderFromSalesauthorizer?.duePaymentStatus ===
                         "Approved" && (
-                        <span className="text-green-700 font-semibold bg-green-100 p-1 px-3 rounded-full text-xs">
+                        <span className="text-green-700 font-semibold bg-green-100 p-0.5 px-2 rounded-full lg:text-xs text-[10px]">
                           Confirmed
                         </span>
                       )}
                       {singleOrderFromSalesauthorizer?.duePaymentStatus ===
                         "SentForApproval" && (
-                        <span className="text-indigo-700 font-semibold bg-indigo-100 p-1 px-3 rounded-full text-xs">
+                        <span className="text-indigo-700 font-semibold bg-indigo-100 p-0.5 px-2 rounded-full lg:text-xs text-[10px]">
                           Sent For Confirmation
                         </span>
                       )}
                       {singleOrderFromSalesauthorizer?.duePaymentStatus ===
                         "Pending" && (
-                        <span className="text-yellow-700 font-semibold bg-yellow-100 p-1 px-3 rounded-full text-xs">
+                        <span className="text-yellow-700 font-semibold bg-yellow-100 p-0.5 px-2 rounded-full lg:text-xs text-[10px]">
                           Pending
                         </span>
                       )}
                       {singleOrderFromSalesauthorizer?.duePaymentStatus ===
                         "Rejected" && (
-                        <span className="text-red-700 font-semibold bg-red-100 p-1 px-3 rounded-full text-xs">
+                        <span className="text-red-700 font-semibold bg-red-100 p-0.5 px-2 rounded-full lg:text-xs text-[10px]">
                           Rejected
                         </span>
                       )}
@@ -366,8 +367,8 @@ const AssignmentHistory = () => {
               </div>
 
               <div className="flex flex-col gap-5">
-                <div className="flex flex-col gap-2 text-sm">
-                  <h1 className="font-semibold text-base text-gray-800">
+                <div className="flex flex-col gap-2 lg:text-sm text-xs">
+                  <h1 className="font-semibold lg:text-base text-sm text-gray-800">
                     Order Status
                   </h1>
                   <div className="flex items-center justify-between font-semibold">
@@ -376,16 +377,16 @@ const AssignmentHistory = () => {
                     </span>
                     {singleOrderFromSalesauthorizer?.orderStatus ===
                     "Delivered" ? (
-                      <span className="text-green-700 bg-green-100 p-1 px-3 rounded-full text-xs">
+                      <span className="text-green-700 bg-green-100 p-0.5 px-2 rounded-full lg:text-xs text-[10px]">
                         {singleOrderFromSalesauthorizer?.orderStatus}
                       </span>
                     ) : singleOrderFromSalesauthorizer?.orderStatus ===
                       "Cancelled" ? (
-                      <span className="text-red-700 bg-red-100 p-1 px-3 rounded-full text-xs">
+                      <span className="text-red-700 bg-red-100 p-0.5 px-2 rounded-full lg:text-xs text-[10px]">
                         {singleOrderFromSalesauthorizer?.orderStatus}
                       </span>
                     ) : (
-                      <span className="text-gray-700 bg-gray-200 p-1 px-3 rounded-full text-xs">
+                      <span className="text-gray-700 bg-gray-200 p-0.5 px-2 rounded-full lg:text-xs text-[10px]">
                         {singleOrderFromSalesauthorizer?.orderStatus}
                       </span>
                     )}
@@ -396,19 +397,19 @@ const AssignmentHistory = () => {
                     </span>
                     {singleOrderFromSalesauthorizer?.paymentStatus ===
                       "PendingDues" && (
-                      <span className="text-red-700 bg-red-100 p-1 px-3 rounded-full text-xs">
+                      <span className="text-red-700 bg-red-100 p-0.5 px-2 rounded-full lg:text-xs text-[10px]">
                         Pending Dues
                       </span>
                     )}
                     {singleOrderFromSalesauthorizer?.paymentStatus ===
                       "Paid" && (
-                      <span className="text-green-700 bg-green-100 p-1 px-3 rounded-full text-xs">
+                      <span className="text-green-700 bg-green-100 p-0.5 px-2 rounded-full lg:text-xs text-[10px]">
                         Paid
                       </span>
                     )}
                     {singleOrderFromSalesauthorizer?.paymentStatus ===
                       "ConfirmationPending" && (
-                      <span className="text-yellow-700 bg-yellow-100 p-1 px-3 rounded-full text-xs">
+                      <span className="text-yellow-700 bg-yellow-100 p-0.5 px-2 rounded-full lg:text-xs text-[10px]">
                         Confirmation Pending
                       </span>
                     )}
@@ -419,11 +420,11 @@ const AssignmentHistory = () => {
                       Invoice Generated:
                     </span>
                     {singleOrderFromSalesauthorizer?.invoiceGenerated ? (
-                      <span className="text-green-800 bg-green-100 p-1 px-3 rounded-full text-xs">
+                      <span className="text-green-800 bg-green-100 p-0.5 px-2 rounded-full lg:text-xs text-[10px]">
                         Yes
                       </span>
                     ) : (
-                      <span className="text-red-700 bg-red-100 p-1 px-3 rounded-full text-xs">
+                      <span className="text-red-700 bg-red-100 p-0.5 px-2 rounded-full lg:text-xs text-[10px]">
                         No
                       </span>
                     )}
@@ -434,11 +435,11 @@ const AssignmentHistory = () => {
                         Due Invoice Generated:
                       </span>
                       {singleOrderFromSalesauthorizer?.dueInvoiceGenerated ? (
-                        <span className="text-green-800 bg-green-100 p-1 px-3 rounded-full text-xs">
+                        <span className="text-green-800 bg-green-100 p-0.5 px-2 rounded-full lg:text-xs text-[10px]">
                           Yes
                         </span>
                       ) : (
-                        <span className="text-red-700 bg-red-100 p-1 px-3 rounded-full text-xs">
+                        <span className="text-red-700 bg-red-100 p-0.5 px-2 rounded-full lg:text-xs text-[10px]">
                           No
                         </span>
                       )}
@@ -446,8 +447,8 @@ const AssignmentHistory = () => {
                   )}
                 </div>
 
-                <div className="flex flex-col gap-2 text-sm">
-                  <h1 className="font-semibold text-base text-gray-800">
+                <div className="flex flex-col gap-2 lg:text-sm text-xs">
+                  <h1 className="font-semibold lg:text-base text-sm text-gray-800">
                     Shipping Details
                   </h1>
                   <div className="flex items-center justify-between font-semibold">
@@ -457,8 +458,8 @@ const AssignmentHistory = () => {
                 </div>
 
                 {/* assigned warehouse */}
-                <div className="flex flex-col gap-2 text-sm">
-                  <h1 className="font-semibold text-base text-gray-800">
+                <div className="flex flex-col gap-2 lg:text-sm text-xs">
+                  <h1 className="font-semibold lg:text-base text-sm text-gray-800">
                     Assigned Plant
                   </h1>
 
@@ -482,7 +483,7 @@ const AssignmentHistory = () => {
                         </p>
                       </div>
                     ) : (
-                      <span className="text-red-700 bg-red-100 p-1 px-3 rounded-full text-xs">
+                      <span className="text-red-700 bg-red-100 p-0.5 px-2 rounded-full lg:text-xs text-[10px]">
                         Not Assigned
                       </span>
                     )}
@@ -492,11 +493,11 @@ const AssignmentHistory = () => {
                       Plant Approval:
                     </span>
                     {singleOrderFromSalesauthorizer?.approvedBy ? (
-                      <span className="text-green-700 font-semibold bg-green-100 p-1 px-3 rounded-full text-xs">
+                      <span className="text-green-700 font-semibold bg-green-100 p-0.5 px-2 rounded-full lg:text-xs text-[10px]">
                         Approved
                       </span>
                     ) : (
-                      <span className="text-red-700 font-semibold bg-red-100 p-1 px-3 rounded-full text-xs">
+                      <span className="text-red-700 font-semibold bg-red-100 p-0.5 px-2 rounded-full lg:text-xs text-[10px]">
                         Pending
                       </span>
                     )}
@@ -506,8 +507,10 @@ const AssignmentHistory = () => {
             </div>
 
             {/* notes  */}
-            <div className="flex flex-col gap-2 text-sm mt-5">
-              <h1 className="font-semibold text-base text-gray-800">Notes</h1>
+            <div className="flex flex-col gap-2 lg:text-sm text-xs mt-5">
+              <h1 className="font-semibold lg:text-base text-sm text-gray-800">
+                Notes
+              </h1>
               <div className="bg-yellow-50 rounded-lg p-3 w-full">
                 <p className="break-words whitespace-normal">
                   {singleOrderFromSalesauthorizer?.notes}
@@ -517,12 +520,12 @@ const AssignmentHistory = () => {
 
             {/* dispatch info */}
             {singleOrderFromSalesauthorizer?.dispatchInfo && (
-              <div className="flex flex-col gap-2 text-sm bg-green-50 p-3 rounded-lg mt-5">
-                <h1 className="font-semibold text-base text-gray-800">
+              <div className="flex flex-col gap-2 lg:text-sm text-xs bg-green-50 p-3 rounded-lg mt-5">
+                <h1 className="font-semibold lg:text-base text-sm text-gray-800">
                   Dispatch Info
                 </h1>
-                <div className="grid grid-cols-2 gap-5">
-                  <div className="flex flex-col gap-2 text-sm">
+                <div className="grid lg:grid-cols-2 md:grid-cols-2 sm:grid-cols-2 grid-cols-1 lg:gap-7 md:gap-7 sm:gap-7 gap-2">
+                  <div className="flex flex-col gap-2 lg:text-sm text-xs">
                     <div className="flex items-center justify-between font-semibold">
                       <span className="text-gray-600 font-normal">
                         Driver Name
@@ -558,7 +561,7 @@ const AssignmentHistory = () => {
                     </div>
                   </div>
 
-                  <div className="flex flex-col gap-2 text-sm">
+                  <div className="flex flex-col gap-2 lg:text-sm text-xs">
                     <div className="flex items-center justify-between font-semibold">
                       <span className="text-gray-600 font-normal">
                         Dispatched By:
@@ -598,10 +601,12 @@ const AssignmentHistory = () => {
       {/* --- View Order Modal --- */}
       {openWarehouseStatus && (
         <div className="transition-all bg-gradient-to-b from-black/20 to-black/60 backdrop-blur-sm w-full z-50 h-screen absolute top-0 left-0 flex items-center justify-center">
-          <div className="bg-white relative p-7 rounded-lg w-[30%] overflow-auto">
+          <div className="bg-white relative lg:p-7 md:p-5 sm:p-5 p-5 rounded-lg lg:w-[30%] md:w-[40%] sm:w-[90%] w-[95%]  overflow-auto">
             <div className="mb-5">
               <div className="flex items-center justify-between">
-                <p className="text-xl font-bold">Warehouse Approval Details</p>
+                <p className="lg:text-xl text-base font-bold">
+                  Warehouse Approval Details
+                </p>
                 <IconButton
                   size="small"
                   onClick={() => setOpenWarehouseStatus(false)}
@@ -610,10 +615,10 @@ const AssignmentHistory = () => {
                 </IconButton>
               </div>
             </div>
-            <div className="">
+            <div>
               <div className="flex flex-col gap-5">
-                <div className="flex flex-col gap-2 text-sm">
-                  <h1 className="font-semibold text-base text-gray-800">
+                <div className="flex flex-col gap-2 lg:text-sm text-xs">
+                  <h1 className="font-semibold lg:text-base text-sm text-gray-800">
                     Approval Information
                   </h1>
                   <div className="flex items-center justify-between font-semibold">
@@ -660,8 +665,8 @@ const AssignmentHistory = () => {
                     {ApprovedOrderForWarehouse?.approvedBy?.email}
                   </div>
                 </div>
-                <div className="flex flex-col gap-2 text-sm">
-                  <h1 className="font-semibold text-base text-gray-800">
+                <div className="flex flex-col gap-2 lg:text-sm text-xs">
+                  <h1 className="font-semibold lg:text-base text-sm text-gray-800">
                     Warehouse Details
                   </h1>
                   <div className="flex items-center justify-between font-semibold">

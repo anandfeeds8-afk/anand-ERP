@@ -1,7 +1,7 @@
 import { EmojiPicker } from "frimousse";
 import { useEffect, useRef } from "react";
 
-export function MyEmojiPicker({ onEmojiSelect, onClose }) {
+export function MyEmojiPicker({ onEmojiSelect, onClose = () => {} }) {
   const handleEmojiSelect = (emoji) => {
     onEmojiSelect(emoji);
   };
@@ -23,7 +23,12 @@ export function MyEmojiPicker({ onEmojiSelect, onClose }) {
   return (
     <div className="relative">
       <div className="fixed inset-0 bg-opacity-50 z-40" onClick={onClose} />
-      <div ref={pickerRef} className="relative z-50">
+      <div
+        ref={pickerRef}
+        className="relative z-50"
+        onMouseDown={(e) => e.stopPropagation()}
+        onTouchStart={(e) => e.stopPropagation()}
+      >
         <EmojiPicker.Root className="isolate flex h-[368px] w-fit flex-col bg-white dark:bg-neutral-900 shadow rounded-lg">
           <EmojiPicker.Search className="z-10 mx-2 mt-2 appearance-none rounded-md bg-neutral-100 px-2.5 py-2 text-sm dark:bg-neutral-800" />
           <EmojiPicker.Viewport className="relative flex-1 outline-hidden">
@@ -51,7 +56,10 @@ export function MyEmojiPicker({ onEmojiSelect, onClose }) {
                 ),
                 Emoji: ({ emoji, ...props }) => (
                   <button
-                    onClick={() => handleEmojiSelect(emoji)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleEmojiSelect(emoji);
+                    }}
                     className="flex size-8 items-center justify-center rounded-md text-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 transition"
                   >
                     {emoji.emoji}

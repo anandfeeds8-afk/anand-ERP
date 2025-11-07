@@ -1,5 +1,6 @@
 import { useMutation } from "@tanstack/react-query";
 import axios from "axios";
+import { BASE_URL, API_PATHS } from "../utils/apiPaths";
 
 const useNotification = () => {
   const token = localStorage.getItem("token");
@@ -9,7 +10,7 @@ const useNotification = () => {
     useMutation({
       mutationFn: async () => {
         const response = await axios.delete(
-          `https://poultry-feed-management-software-3.onrender.com/api/notifications/clearNotifications`,
+          BASE_URL + API_PATHS.NOTIFICATIONS.CLEAR,
           {
             headers: {
               Authorization: `Bearer ${token}`,

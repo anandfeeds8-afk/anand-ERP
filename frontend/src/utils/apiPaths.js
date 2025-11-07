@@ -1,6 +1,5 @@
 // BASE URL
-export const BASE_URL =
-  "https://poultry-feed-management-software-3.onrender.com";
+export const BASE_URL = "https://poultry-feed-management-software-3.onrender.com";
 
 export const API_PATHS = {
   AUTH: {
@@ -18,6 +17,7 @@ export const API_PATHS = {
       GET: (id) => `/api/admin/get_salesman/${id}`,
       UPDATE: (id) => `/api/admin/update_salesman/${id}`,
       DELETE: (id) => `/api/admin/delete_salesman/${id}`,
+      DELIVER_ORDER: `/api/salesman/deliver-order`,
     },
 
     SALES_MANAGER: {
@@ -174,5 +174,12 @@ export const API_PATHS = {
 
   MESSAGES: {
     GET_ALL_ADMINS: "/api/messages/get-all-admins",
+    GET_MESSAGES: (userId, selectedEmployeeId) =>
+      `/api/messages/${userId}/${selectedEmployeeId}`,
+  },
+
+  NOTIFICATIONS: {
+    CLEAR: "/api/notifications/clearNotifications",
+    GET_NOTIFICATIONS: (userId) => `/api/notifications/${userId}`,
   },
 };

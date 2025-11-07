@@ -54,35 +54,35 @@ const Party = ({ party }) => {
   }
 
   return (
-    <div className="shadow bg-white dark:bg-gray-800 lg:rounded-lg lg:p-4 lg:flex lg:flex-col justify-between hover:shadow-md transition-all">
+    <div className="shadow bg-white dark:bg-gray-800 rounded-lg lg:p-4 md:p-4 sm:p-3 p-3 lg:flex lg:flex-col justify-between hover:shadow-md transition-all">
       <div className="flex flex-col gap-2">
         <div className="flex items-center justify-between">
-          <p className="text-left lg:text-lg lg:font-bold dark:text-gray-300">
+          <p className="text-left lg:text-lg text-base font-bold dark:text-gray-300">
             {party.companyName}
           </p>
           {party?.partyStatus === "approved" && (
-            <p className="text-green-700 dark:text-green-400 dark:bg-green-800 font-semibold text-xs p-1 px-2 bg-green-100 rounded-full">
+            <p className="text-green-700 dark:text-green-400 dark:bg-green-800 font-semibold text-[10px] lg:text-xs p-1 px-2 bg-green-100 rounded-full">
               Approved
             </p>
           )}
           {party?.partyStatus === "pending" && (
-            <p className="text-orange-700 dark:text-orange-400 dark:bg-orange-800 font-semibold text-xs p-1 px-2 bg-orange-100 rounded-full">
+            <p className="text-orange-700 dark:text-orange-400 dark:bg-orange-800 font-semibold text-[10px] lg:text-xs p-1 px-2 bg-orange-100 rounded-full">
               Pending
             </p>
           )}
           {party?.partyStatus === "sentForApproval" && (
-            <p className="text-violet-700 dark:text-violet-400 dark:bg-violet-800 font-semibold text-xs p-1 px-2 bg-violet-100 rounded-full">
+            <p className="text-violet-700 dark:text-violet-400 dark:bg-violet-800 font-semibold text-[10px] lg:text-xs p-1 px-2 bg-violet-100 rounded-full">
               Sent for approval
             </p>
           )}
           {party?.partyStatus === "rejected" && (
-            <p className="text-red-700 dark:text-red-400 dark:bg-red-800 font-semibold text-xs p-1 px-2 bg-red-100 rounded-full">
+            <p className="text-red-700 dark:text-red-400 dark:bg-red-800 font-semibold text-[10px] lg:text-xs p-1 px-2 bg-red-100 rounded-full">
               Rejected
             </p>
           )}
         </div>
         <div className="flex flex-col gap-5 mt-2">
-          <div className="flex flex-col gap-2 text-sm">
+          <div className="flex flex-col gap-2 lg:text-sm md:text-xs sm:text-xs text-xs">
             <div className="flex items-center justify-between font-semibold">
               <span className="text-gray-600 dark:text-gray-400 font-normal text-right">
                 Address:
@@ -119,6 +119,7 @@ const Party = ({ party }) => {
         {party.partyStatus === "pending" && (
           <div>
             <Button
+              size="small"
               sx={{ textTransform: "none" }}
               color="secondary"
               disableElevation
@@ -161,16 +162,17 @@ const Party = ({ party }) => {
       {/* --- Delete party Modal --- */}
       {openDelete && (
         <div className="transition-all bg-gradient-to-b from-black/20 to-black/60 backdrop-blur-sm w-full z-50 h-screen absolute top-0 left-0 flex items-center justify-center">
-          <div className="bg-white p-7 rounded-lg w-[29rem]">
-            <p className="text-lg font-semibold">
+          <div className="bg-white lg:p-7 p-5 rounded-lg lg:w-[29rem] md:w-[29rem] sm:w-[29rem] w-[95%]">
+            <p className="lg:text-lg md:text-lg sm:text-base text-base font-semibold">
               Are you sure you want to delete {party.companyName}?
             </p>
-            <p className="text-gray-500 text-sm">
+            <p className="text-gray-500 lg:text-sm md:text-sm sm:text-xs text-xs">
               This action cannot be undone. {party.companyName}'s data will be
               permanently removed.
             </p>
             <div className="flex items-center justify-end gap-3 mt-5">
               <Button
+                size="small"
                 variant="outlined"
                 disableElevation
                 color="error"
@@ -181,6 +183,7 @@ const Party = ({ party }) => {
               </Button>
               <Button
                 loading={deletingParty}
+                size="small"
                 loadingPosition="start"
                 variant="contained"
                 disableElevation
@@ -198,8 +201,8 @@ const Party = ({ party }) => {
       {/* --- Edit party Modal --- */}
       {openEdit && (
         <div className="transition-all bg-gradient-to-b from-black/20 to-black/60 backdrop-blur-sm w-full z-50 h-screen absolute top-0 left-0 flex items-center justify-center">
-          <div className="bg-white p-7 rounded-lg w-[29rem]">
-            <p className="text-xl font-semibold mb-7">
+          <div className="bg-white lg:p-7 p-5 rounded-lg lg:w-[29rem] md:w-[29rem] sm:w-[29rem] w-[95%]">
+            <p className="lg:text-lg md:text-lg sm:text-base text-base font-semibold mb-7">
               Edit {party.companyName}
             </p>
             <form
@@ -285,6 +288,7 @@ const Party = ({ party }) => {
 
               <div className="flex items-center justify-end gap-3 mt-5">
                 <Button
+                  size="small"
                   variant="outlined"
                   disableElevation
                   sx={{ textTransform: "none" }}
@@ -294,6 +298,7 @@ const Party = ({ party }) => {
                 </Button>
                 <Button
                   loading={updatingParty}
+                  size="small"
                   loadingPosition="start"
                   variant="contained"
                   disableElevation

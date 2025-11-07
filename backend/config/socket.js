@@ -1,6 +1,7 @@
 // socket.js
 const { Server } = require("socket.io");
 const Message = require("../models/Message");
+// const { client } = require("./redis");
 
 let io;
 
@@ -40,6 +41,16 @@ const initSocket = (server) => {
         // Save message to database
         const message = new Message(data);
         await message.save();
+
+        // Save in Redis sorted set
+        // const chatKey = `chat:${senderId}:${receiverId}`;
+
+        // await client.zAdd(chatKey, [
+        //   {
+        //     score: message.timestamp.getTime(),
+        //     value: JSON.stringify(message),
+        //   },
+        // ]);
 
         io.to(data.senderId).emit("receiveMessage", data);
         io.to(data.receiverId).emit("receiveMessage", data);

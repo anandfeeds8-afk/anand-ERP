@@ -20,7 +20,7 @@ const Sidebar = ({ isCollapsed, setIsCollapsed }) => {
         isCollapsed
           ? "max-w-16 transition-all duration-500"
           : "max-w-[20rem] transition-all duration-500"
-      } border-r border-neutral-100 dark:border-gray-700 dark:bg-gray-900`}
+      } border-r border-neutral-100 dark:border-gray-700 dark:bg-gray-900 lg:block hidden`}
     >
       <div className="text-xl flex items-center justify-around font-semibold text-center mt-5">
         {!isCollapsed && (
@@ -47,7 +47,7 @@ const Sidebar = ({ isCollapsed, setIsCollapsed }) => {
             to="/admin/dashboard"
             className={({ isActive }) =>
               isActive
-                ? "transition-all bg-blue-100 border-e-4 border-blue-500 p-2 w-full text-left rounded-lg"
+                ? "transition-all bg-blue-50 border-e-4 border-blue-500 p-2 w-full text-left rounded-lg"
                 : "transition-all hover:bg-blue-50 p-2 w-full text-gray-800 rounded-lg text-left"
             }
           >
@@ -219,35 +219,6 @@ const Sidebar = ({ isCollapsed, setIsCollapsed }) => {
               </div>
             )}
           </NavLink>
-          {/* <NavLink
-            to="/admin/reports-module"
-            className={({ isActive }) =>
-              isActive
-                ? "transition-all bg-blue-100 border-e-4 border-blue-500 p-2 w-full text-left rounded-lg"
-                : "transition-all hover:bg-blue-50 p-2 w-full text-gray-800 rounded-lg text-left"
-            }
-          >
-            {({ isActive }) => (
-              <div className="flex items-center gap-2 font-semibold w-56 h-6">
-                <div className="w-6 flex items-center justify-center">
-                  {isActive ? (
-                    <HiDocumentText className="text-blue-600 text-lg" />
-                  ) : (
-                    <HiOutlineDocumentText className="text-blue-600 text-lg" />
-                  )}
-                </div>
-                <span
-                  className={`${
-                    isCollapsed
-                      ? "hidden"
-                      : "block line-clamp-1 truncate w-full text-gray-800"
-                  }`}
-                >
-                  Reports Module
-                </span>
-              </div>
-            )}
-          </NavLink> */}
         </div>
       )}
 

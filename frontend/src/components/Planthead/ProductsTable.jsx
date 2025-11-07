@@ -50,10 +50,10 @@ const ProductsTable = () => {
   if (productsInPlantheadLoading) return <CircularProgress />;
 
   const columns = [
-    { field: "product", headerName: "Product", flex: 1 },
-    { field: "category", headerName: "Category", flex: 1 },
-    { field: "description", headerName: "Description", flex: 1 },
-    { field: "quantity", headerName: "Quantity", flex: 1 },
+    { field: "product", headerName: "Product", flex: 1, minWidth: 150 },
+    { field: "category", headerName: "Category", flex: 1, minWidth: 150 },
+    { field: "description", headerName: "Description", flex: 1, minWidth: 150 },
+    { field: "quantity", headerName: "Quantity", flex: 1, minWidth: 100 },
     {
       field: "actions",
       headerName: "Actions",
@@ -129,7 +129,7 @@ const ProductsTable = () => {
       {openEdit && (
         <div className="transition-all bg-gradient-to-b from-black/20 to-black/60 backdrop-blur-sm w-full z-50 h-screen absolute top-0 left-0 flex items-center justify-center">
           <div className="bg-white p-7 rounded-lg w-[29rem]">
-            <p className="text-xl font-semibold mb-7">
+            <p className="lg:text-xl text-base font-semibold mb-7">
               Update Product Quantity
             </p>
             <form className="space-y-5" onSubmit={handleSubmit(onUpdate)}>

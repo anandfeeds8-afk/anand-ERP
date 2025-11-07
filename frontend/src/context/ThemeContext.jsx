@@ -7,12 +7,10 @@ export const ThemeProvider = ({ children }) => {
   const [theme, setTheme] = useState(getInitialTheme);
   const [resolvedTheme, setResolvedTheme] = useState("light");
 
-  // ✅ Save to localStorage when theme changes
   useEffect(() => {
     localStorage.setItem("theme", theme);
   }, [theme]);
 
-  // ✅ Resolve theme ("system" → light/dark)
   useEffect(() => {
     const applyResolvedTheme = () => {
       if (theme === "system") {

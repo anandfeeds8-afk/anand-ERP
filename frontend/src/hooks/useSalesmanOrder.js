@@ -96,11 +96,11 @@ export const useSalesmanOrder = (id) => {
     },
   });
 
-  // DELETE Order in Salesman
+  // DELIVER Order in Salesman
   const { mutate: deliverOrder, isPending: isDeliveringOrder } = useMutation({
     mutationFn: async (orderId) => {
       const response = await axios.patch(
-        "https://poultry-feed-management-software-3.onrender.com/api/salesman/deliver-order",
+        BASE_URL + API_PATHS.SALESMAN.DELIVER_ORDER,
         { orderId },
         {
           headers: {

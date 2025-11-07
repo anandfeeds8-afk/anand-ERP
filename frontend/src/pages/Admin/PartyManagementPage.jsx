@@ -1,12 +1,25 @@
 import React, { useState } from "react";
 import { useAdminOrder } from "../../hooks/useAdminOrders";
-import { Button, ButtonGroup, CircularProgress } from "@mui/material";
+import {
+  Button,
+  ButtonGroup,
+  CircularProgress,
+  FormControl,
+  InputLabel,
+  MenuItem,
+  Select,
+  useMediaQuery,
+  useTheme,
+} from "@mui/material";
 import PartyToApproveForAdmin from "../../components/Admin/PartyManagement/PartyToApproveForAdmin";
 import AllPartiesForAdmin from "../../components/Admin/PartyManagement/AllPartiesForAdmin";
 import ApprovedPartiesForAdmin from "../../components/Admin/PartyManagement/ApprovedPartiesForAdmin";
 import RejectedPartiesForAdmin from "../../components/Admin/PartyManagement/RejectedPartiesForAdmin";
 
 const PartyManagementPage = () => {
+  const theme = useTheme();
+  const isMdUp = useMediaQuery(theme.breakpoints.up("md"));
+
   const partyTypes = [
     "All Parties",
     "Pending Approvals",
@@ -37,11 +50,16 @@ const PartyManagementPage = () => {
   return (
     <div>
       <div>
-        <h1 className="text-3xl font-bold">{isActive}</h1>
+        <h1 className="lg:text-3xl md:text-xl font-bold sm:text-lg text-base dark:text-gray-200">
+          {isActive}
+        </h1>
       </div>
 
-      <div className="my-5">
-        <ButtonGroup aria-label="Medium-sized button group">
+      <div className="lg:my-5 sm:my-5 md:my-5 my-3 hidden md:block lg:block sm:block">
+        <ButtonGroup
+          aria-label="Medium-sized button group"
+          size={isMdUp ? "medium" : "small"}
+        >
           {partyTypes.map((party) => (
             <Button
               key={party}
@@ -57,9 +75,25 @@ const PartyManagementPage = () => {
           ))}
         </ButtonGroup>
       </div>
+      <div className="lg:my-5 sm:my-5 md:my-5 my-3 md:hidden lg:hidden sm:hidden">
+        <FormControl size="small" fullWidth>
+          <Select
+            labelId="demo-simple-select-label"
+            id="demo-simple-select"
+            value={isActive}
+            onChange={(e) => setIsActive(e.target.value)}
+          >
+            {partyTypes.map((party) => (
+              <MenuItem key={party} value={party}>
+                {party}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+      </div>
 
       {isActive === "All Parties" && (
-        <div className="grid grid-cols-3 gap-7 mt-5 min-h-[200px]">
+        <div className="grid lg:grid-cols-3 md:grid-cols-2 sm:grid-cols-1 lg:gap-7 md:gap-5 sm:gap-3 gap-3 mt-5 min-h-[200px]">
           {allParties?.length > 0 ? (
             allParties.map((party) => (
               <AllPartiesForAdmin party={party} key={party._id} />
@@ -73,7 +107,7 @@ const PartyManagementPage = () => {
       )}
 
       {isActive === "Pending Approvals" && (
-        <div className="grid grid-cols-3 gap-7 mt-5 min-h-[200px]">
+        <div className="grid lg:grid-cols-3 md:grid-cols-2 sm:grid-cols-1 lg:gap-7 md:gap-5 sm:gap-3 gap-3 mt-5 min-h-[200px]">
           {partiesToApprove?.length > 0 ? (
             partiesToApprove.map((party) => (
               <PartyToApproveForAdmin party={party} key={party._id} />
@@ -87,7 +121,7 @@ const PartyManagementPage = () => {
       )}
 
       {isActive === "Approved Parties" && (
-        <div className="grid grid-cols-3 gap-7 mt-5 min-h-[200px]">
+        <div className="grid lg:grid-cols-3 md:grid-cols-2 sm:grid-cols-1 lg:gap-7 md:gap-5 sm:gap-3 gap-3 mt-5 min-h-[200px]">
           {approvedParties?.length > 0 ? (
             approvedParties.map((party) => (
               <ApprovedPartiesForAdmin party={party} key={party._id} />
@@ -101,7 +135,7 @@ const PartyManagementPage = () => {
       )}
 
       {isActive === "Rejected Parties" && (
-        <div className="grid grid-cols-3 gap-7 mt-5 min-h-[200px]">
+        <div className="grid lg:grid-cols-3 md:grid-cols-2 sm:grid-cols-1 lg:gap-7 md:gap-5 sm:gap-3 gap-3 mt-5 min-h-[200px]">
           {rejectedParties?.length > 0 ? (
             rejectedParties.map((party) => (
               <RejectedPartiesForAdmin party={party} key={party._id} />

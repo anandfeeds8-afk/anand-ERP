@@ -10,7 +10,7 @@ import {
   TextField,
   Tooltip,
 } from "@mui/material";
-import { Eye } from "lucide-react";
+import { BadgeCheck, BadgeX, CheckIcon, Eye, X } from "lucide-react";
 import { format } from "date-fns";
 import { DataGrid } from "@mui/x-data-grid";
 import CloseIcon from "@mui/icons-material/Close";
@@ -100,20 +100,21 @@ const OrdersForAuthorizer = () => {
       minWidth: 80,
       maxWidth: 100,
     },
-    { field: "product", headerName: "Product", flex: 1 },
-    { field: "party", headerName: "Party", flex: 1 },
-    { field: "date", headerName: "Date", flex: 1 },
-    { field: "quantity", headerName: "Quantity", flex: 1 },
+    { field: "product", headerName: "Product", flex: 1, minWidth: 120 },
+    { field: "party", headerName: "Party", flex: 1, minWidth: 100 },
+    { field: "date", headerName: "Date", flex: 1, minWidth: 100 },
+    { field: "quantity", headerName: "Quantity", flex: 1, minWidth: 100 },
     {
       field: "totalAmount",
       headerName: "Total Amount",
       flex: 1,
+      minWidth: 100,
     },
     {
       field: "advanceAmount",
       headerName: "Advance Amount",
       flex: 1,
-
+      minWidth: 100,
       renderCell: (params) => (
         <span className={`${params.value !== "₹0" && "text-green-700"}`}>
           {params.value}
@@ -124,7 +125,7 @@ const OrdersForAuthorizer = () => {
       field: "dueAmount",
       headerName: "Due Amount",
       flex: 1,
-
+      minWidth: 100,
       renderCell: (params) => (
         <span className={`${params.value !== "₹0" && "text-red-600"}`}>
           {params.value}
@@ -135,7 +136,7 @@ const OrdersForAuthorizer = () => {
       field: "orderStatus",
       headerName: "Status",
       flex: 1,
-
+      minWidth: 100,
       renderCell: (params) => (
         <span
           className={`${
@@ -154,7 +155,7 @@ const OrdersForAuthorizer = () => {
       field: "actions",
       headerName: "Actions",
       flex: 1,
-      minWidth: 150,
+      minWidth: 100,
       sortable: false,
       filterable: false,
       renderCell: (params) => (
@@ -251,14 +252,14 @@ const OrdersForAuthorizer = () => {
 
       {openView && (
         <div className="transition-all bg-gradient-to-b from-black/20 to-black/60 backdrop-blur-sm w-full z-50 h-screen absolute top-0 left-0 flex items-center justify-center">
-          <div className="bg-white relative p-7 rounded-lg min-w-[50%] max-w-[55%] max-h-[95%] overflow-auto">
-            <div className="mb-5">
+          <div className="bg-white relative lg:p-7 p-5 rounded-lg lg:max-w-[60%] lg:min-w-[50%] lg:max-h-[95%] w-[95%] max-h-[95%]  overflow-auto">
+            <div className="lg:mb-5 mb-2">
               <div className="flex items-center justify-between">
-                <p className="text-xl font-bold">
+                <p className="lg:text-xl text-sm font-bold">
                   Order Details - #{singleOrderFromSalesauthorizer?.orderId}
                 </p>
 
-                <div className="w-64">
+                <div className="w-64 hidden md:block sm:block lg:block">
                   {singleOrderFromSalesauthorizer?.orderStatus ===
                     "ForwardedToAuthorizer" && (
                     <form
@@ -271,15 +272,15 @@ const OrdersForAuthorizer = () => {
                           disabled={!user.isActive}
                           name="warehouseId"
                           control={control}
-                          rules={{ required: "Warehouse is required" }}
+                          rules={{ required: "Plant is required" }}
                           render={({ field }) => (
                             <Select
                               {...field}
                               labelId="warehouse-label"
                               id="warehouseId"
-                              label="Assign Warehouse"
+                              label="Assign Plant"
                             >
-                              <MenuItem>Select Warehouse</MenuItem>
+                              <MenuItem>Select Plant</MenuItem>
                               {allWarehouses?.map((warehouse) => (
                                 <MenuItem
                                   key={warehouse._id}
@@ -314,9 +315,103 @@ const OrdersForAuthorizer = () => {
                 </IconButton>
               </div>
 
+              <div className="lg:hidden md:hidden sm:hidden w-full mt-3">
+                {singleOrderFromSalesauthorizer?.orderStatus ===
+                  "ForwardedToAuthorizer" && (
+                  <form
+                    className="flex items-center gap-2"
+                    onSubmit={handleSubmit(handleAssignWarehouse)}
+                  >
+                    <FormControl fullWidth size="small">
+                      <InputLabel id="item-label">Assign Plant</InputLabel>
+                      <Controller
+                        disabled={!user.isActive}
+                        name="warehouseId"
+                        control={control}
+                        rules={{ required: "Plant is required" }}
+                        render={({ field }) => (
+                          <Select
+                            {...field}
+                            labelId="warehouse-label"
+                            id="warehouseId"
+                            label="Assign Plant"
+                          >
+                            <MenuItem>Select Plant</MenuItem>
+                            {allWarehouses?.map((warehouse) => (
+                              <MenuItem
+                                key={warehouse._id}
+                                value={warehouse._id}
+                              >
+                                {warehouse.name}
+                              </MenuItem>
+                            ))}
+                          </Select>
+                        )}
+                      />
+                      {errors?.warehouse && (
+                        <span className="text-red-600 text-xs mt-1">
+                          {errors.warehouse?.message}
+                        </span>
+                      )}
+                    </FormControl>
+                    <Button
+                      disabled={!user.isActive}
+                      size="small"
+                      variant="outlined"
+                      type="submit"
+                    >
+                      Assign
+                    </Button>
+                  </form>
+                )}
+              </div>
+
+              <div className="sm:hidden md:hidden lg:hidden">
+                {singleOrderFromSalesauthorizer?.orderStatus ===
+                  "WarehouseAssigned" && (
+                  <div className="flex items-center gap-3 justify-center">
+                    <Button
+                      disabled={!user.isActive}
+                      loading={approveWarehouseLoading}
+                      variant="contained"
+                      color="success"
+                      disableElevation
+                      sx={{
+                        fontSize: "12px",
+                        textTransform: "none",
+                        padding: "2px 10px",
+                        borderRadius: "999px",
+                      }}
+                      startIcon={<BadgeCheck size={15} />}
+                      onClick={() => {
+                        approveWarehouse(singleOrderId);
+                        setOpenView(false);
+                      }}
+                    >
+                      Approve Plant
+                    </Button>
+                    <Button
+                      disabled={!user.isActive}
+                      variant="outlined"
+                      color="error"
+                      disableElevation
+                      sx={{
+                        textTransform: "none",
+                        fontSize: "12px",
+                        padding: "2px 10px",
+                        borderRadius: "999px",
+                      }}
+                      startIcon={<BadgeX size={15} />}
+                    >
+                      Reject Plant
+                    </Button>
+                  </div>
+                )}
+              </div>
+
               {/* products table */}
-              <div className="relative overflow-x-auto mt-5 max-h-52">
-                <table className="w-full text-sm text-left text-gray-500 overflow-auto">
+              <div className="relative overflow-x-auto lg:mb-5 my-3 max-h-52">
+                <table className="w-full lg:text-sm text-xs text-left text-gray-500 overflow-auto">
                   <thead className="sticky top-0 bg-gray-100 text-gray-800 z-10">
                     <tr>
                       <th scope="col" className="px-6 py-3">
@@ -333,7 +428,7 @@ const OrdersForAuthorizer = () => {
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="text-sm">
+                  <tbody className="lg:text-sm text-xs">
                     {singleOrderFromSalesauthorizer?.items?.map((item) => (
                       <tr
                         key={item._id}
@@ -356,10 +451,10 @@ const OrdersForAuthorizer = () => {
                 </table>
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-7">
+            <div className="grid lg:grid-cols-2md:grid-cols-2 sm:grid-cols-2 gap-7">
               <div className="flex flex-col gap-5">
-                <div className="flex flex-col gap-2 text-sm">
-                  <h1 className="font-semibold text-base text-gray-800">
+                <div className="flex flex-col gap-2 lg:text-sm text-xs">
+                  <h1 className="font-semibold lg:text-base text-sm text-gray-800">
                     Order Information
                   </h1>
                   <div className="flex items-center justify-between font-semibold">
@@ -378,8 +473,8 @@ const OrdersForAuthorizer = () => {
                     )}
                   </div>
                 </div>
-                <div className="flex flex-col gap-2 text-sm">
-                  <h1 className="font-semibold text-base text-gray-800">
+                <div className="flex flex-col gap-2 lg:text-sm text-xs">
+                  <h1 className="font-semibold lg:text-base text-sm text-gray-800">
                     Payment Information
                   </h1>
                   <div className="flex items-center justify-between font-semibold">
@@ -423,25 +518,25 @@ const OrdersForAuthorizer = () => {
                       </span>
                       {singleOrderFromSalesauthorizer?.advancePaymentStatus ===
                         "Approved" && (
-                        <span className="text-green-700 font-semibold bg-green-100 p-1 px-3 rounded-full text-xs">
+                        <span className="text-green-700 font-semibold bg-green-100 p-0.5 px-2 rounded-full lg:text-xs text-[10px]">
                           Confirmed
                         </span>
                       )}
                       {singleOrderFromSalesauthorizer?.advancePaymentStatus ===
                         "SentForApproval" && (
-                        <span className="text-indigo-700 font-semibold bg-indigo-100 p-1 px-3 rounded-full text-xs">
+                        <span className="text-indigo-700 font-semibold bg-indigo-100 p-0.5 px-2 rounded-full lg:text-xs text-[10px]">
                           Sent For Confirmation
                         </span>
                       )}
                       {singleOrderFromSalesauthorizer?.advancePaymentStatus ===
                         "Pending" && (
-                        <span className="text-yellow-700 font-semibold bg-yellow-100 p-1 px-3 rounded-full text-xs">
+                        <span className="text-yellow-700 font-semibold bg-yellow-100 p-0.5 px-2 rounded-full lg:text-xs text-[10px]">
                           Pending
                         </span>
                       )}
                       {singleOrderFromSalesauthorizer?.advancePaymentStatus ===
                         "Rejected" && (
-                        <span className="text-red-700 font-semibold bg-red-100 p-1 px-3 rounded-full text-xs">
+                        <span className="text-red-700 font-semibold bg-red-100 p-0.5 px-2 rounded-full lg:text-xs text-[10px]">
                           Rejected
                         </span>
                       )}
@@ -454,25 +549,25 @@ const OrdersForAuthorizer = () => {
                       </span>
                       {singleOrderFromSalesauthorizer?.duePaymentStatus ===
                         "Approved" && (
-                        <span className="text-green-700 font-semibold bg-green-100 p-1 px-3 rounded-full text-xs">
+                        <span className="text-green-700 font-semibold bg-green-100 p-0.5 px-2 rounded-full lg:text-xs text-[10px]">
                           Confirmed
                         </span>
                       )}
                       {singleOrderFromSalesauthorizer?.duePaymentStatus ===
                         "SentForApproval" && (
-                        <span className="text-indigo-700 font-semibold bg-indigo-100 p-1 px-3 rounded-full text-xs">
+                        <span className="text-indigo-700 font-semibold bg-indigo-100 p-0.5 px-2 rounded-full lg:text-xs text-[10px]">
                           Sent For Confirmation
                         </span>
                       )}
                       {singleOrderFromSalesauthorizer?.duePaymentStatus ===
                         "Pending" && (
-                        <span className="text-yellow-700 font-semibold bg-yellow-100 p-1 px-3 rounded-full text-xs">
+                        <span className="text-yellow-700 font-semibold bg-yellow-100 p-0.5 px-2 rounded-full lg:text-xs text-[10px]">
                           Pending
                         </span>
                       )}
                       {singleOrderFromSalesauthorizer?.duePaymentStatus ===
                         "Rejected" && (
-                        <span className="text-red-700 font-semibold bg-red-100 p-1 px-3 rounded-full text-xs">
+                        <span className="text-red-700 font-semibold bg-red-100 p-0.5 px-2 rounded-full lg:text-xs text-[10px]">
                           Rejected
                         </span>
                       )}
@@ -504,8 +599,8 @@ const OrdersForAuthorizer = () => {
               </div>
 
               <div className="flex flex-col gap-5">
-                <div className="flex flex-col gap-2 text-sm">
-                  <h1 className="font-semibold text-base text-gray-800">
+                <div className="flex flex-col gap-2 lg:text-sm text-xs">
+                  <h1 className="font-semibold lg:text-base text-sm text-gray-800">
                     Order Status
                   </h1>
                   <div className="flex items-center justify-between font-semibold">
@@ -514,16 +609,16 @@ const OrdersForAuthorizer = () => {
                     </span>
                     {singleOrderFromSalesauthorizer?.orderStatus ===
                     "Delivered" ? (
-                      <span className="text-green-700 bg-green-100 p-1 px-3 rounded-full text-xs">
+                      <span className="text-green-700 bg-green-100 p-0.5 px-2 rounded-full lg:text-xs text-[10px]">
                         {singleOrderFromSalesauthorizer?.orderStatus}
                       </span>
                     ) : singleOrderFromSalesauthorizer?.orderStatus ===
                       "Cancelled" ? (
-                      <span className="text-red-700 bg-red-100 p-1 px-3 rounded-full text-xs">
+                      <span className="text-red-700 bg-red-100 p-0.5 px-2 rounded-full lg:text-xs text-[10px]">
                         {singleOrderFromSalesauthorizer?.orderStatus}
                       </span>
                     ) : (
-                      <span className="text-gray-700 bg-gray-200 p-1 px-3 rounded-full text-xs">
+                      <span className="text-gray-700 bg-gray-200 p-0.5 px-2 rounded-full lg:text-xs text-[10px]">
                         {singleOrderFromSalesauthorizer?.orderStatus}
                       </span>
                     )}
@@ -534,19 +629,19 @@ const OrdersForAuthorizer = () => {
                     </span>
                     {singleOrderFromSalesauthorizer?.paymentStatus ===
                       "PendingDues" && (
-                      <span className="text-red-700 bg-red-100 p-1 px-3 rounded-full text-xs">
+                      <span className="text-red-700 bg-red-100 p-0.5 px-2 rounded-full lg:text-xs text-[10px]">
                         Pending Dues
                       </span>
                     )}
                     {singleOrderFromSalesauthorizer?.paymentStatus ===
                       "Paid" && (
-                      <span className="text-green-700 bg-green-100 p-1 px-3 rounded-full text-xs">
+                      <span className="text-green-700 bg-green-100 p-0.5 px-2 rounded-full lg:text-xs text-[10px]">
                         Paid
                       </span>
                     )}
                     {singleOrderFromSalesauthorizer?.paymentStatus ===
                       "ConfirmationPending" && (
-                      <span className="text-yellow-700 bg-yellow-100 p-1 px-3 rounded-full text-xs">
+                      <span className="text-yellow-700 bg-yellow-100 p-0.5 px-2 rounded-full lg:text-xs text-[10px]">
                         Confirmation Pending
                       </span>
                     )}
@@ -557,11 +652,11 @@ const OrdersForAuthorizer = () => {
                       Invoice Generated:
                     </span>
                     {singleOrderFromSalesauthorizer?.invoiceGenerated ? (
-                      <span className="text-green-800 bg-green-100 p-1 px-3 rounded-full text-xs">
+                      <span className="text-green-800 bg-green-100 p-0.5 px-2 rounded-full lg:text-xs text-[10px]">
                         Yes
                       </span>
                     ) : (
-                      <span className="text-red-700 bg-red-100 p-1 px-3 rounded-full text-xs">
+                      <span className="text-red-700 bg-red-100 p-0.5 px-2 rounded-full lg:text-xs text-[10px]">
                         No
                       </span>
                     )}
@@ -572,11 +667,11 @@ const OrdersForAuthorizer = () => {
                         Due Invoice Generated:
                       </span>
                       {singleOrderFromSalesauthorizer?.dueInvoiceGenerated ? (
-                        <span className="text-green-800 bg-green-100 p-1 px-3 rounded-full text-xs">
+                        <span className="text-green-800 bg-green-100 p-0.5 px-2 rounded-full lg:text-xs text-[10px]">
                           Yes
                         </span>
                       ) : (
-                        <span className="text-red-700 bg-red-100 p-1 px-3 rounded-full text-xs">
+                        <span className="text-red-700 bg-red-100 p-0.5 px-2 rounded-full lg:text-xs text-[10px]">
                           No
                         </span>
                       )}
@@ -585,8 +680,8 @@ const OrdersForAuthorizer = () => {
                 </div>
 
                 {/* order timeline */}
-                <div className="flex flex-col gap-2 text-sm">
-                  <h1 className="font-semibold text-base text-gray-800">
+                <div className="flex flex-col gap-2 lg:text-sm text-xs">
+                  <h1 className="font-semibold lg:text-base text-sm text-gray-800">
                     Shipping Details
                   </h1>
                   <div className="flex items-center justify-between font-semibold">
@@ -596,49 +691,51 @@ const OrdersForAuthorizer = () => {
                 </div>
 
                 {/* assigned warehouse */}
-                <div className="flex flex-col gap-2 text-sm">
-                  <div className="flex justify-between text-sm">
-                    <h1 className="font-semibold text-base text-gray-800">
+                <div className="flex flex-col gap-2 lg:text-sm text-xs">
+                  <div className="flex justify-between lg:text-sm text-xs">
+                    <h1 className="font-semibold lg:text-base text-sm text-gray-800">
                       Assigned Plant
                     </h1>
-                    {singleOrderFromSalesauthorizer?.orderStatus ===
-                      "WarehouseAssigned" && (
-                      <div className="flex items-center gap-3">
-                        <Button
-                          disabled={!user.isActive}
-                          loading={approveWarehouseLoading}
-                          variant="contained"
-                          color="success"
-                          disableElevation
-                          sx={{
-                            fontSize: "12px",
-                            textTransform: "none",
-                            padding: "2px 10px",
-                            borderRadius: "999px",
-                          }}
-                          onClick={() => {
-                            approveWarehouse(singleOrderId);
-                            setOpenView(false);
-                          }}
-                        >
-                          Approve
-                        </Button>
-                        <Button
-                          disabled={!user.isActive}
-                          variant="outlined"
-                          color="error"
-                          disableElevation
-                          sx={{
-                            textTransform: "none",
-                            fontSize: "12px",
-                            padding: "2px 10px",
-                            borderRadius: "999px",
-                          }}
-                        >
-                          Reject
-                        </Button>
-                      </div>
-                    )}
+                    <div className="hidden sm:block md:block lg:block">
+                      {singleOrderFromSalesauthorizer?.orderStatus ===
+                        "WarehouseAssigned" && (
+                        <div className="flex items-center gap-3">
+                          <Button
+                            disabled={!user.isActive}
+                            loading={approveWarehouseLoading}
+                            variant="contained"
+                            color="success"
+                            disableElevation
+                            sx={{
+                              fontSize: "12px",
+                              textTransform: "none",
+                              padding: "2px 10px",
+                              borderRadius: "999px",
+                            }}
+                            onClick={() => {
+                              approveWarehouse(singleOrderId);
+                              setOpenView(false);
+                            }}
+                          >
+                            Approve
+                          </Button>
+                          <Button
+                            disabled={!user.isActive}
+                            variant="outlined"
+                            color="error"
+                            disableElevation
+                            sx={{
+                              textTransform: "none",
+                              fontSize: "12px",
+                              padding: "2px 10px",
+                              borderRadius: "999px",
+                            }}
+                          >
+                            Reject
+                          </Button>
+                        </div>
+                      )}
+                    </div>
                   </div>
                   <div className="flex items-center justify-between font-semibold">
                     <span className="text-gray-600 font-normal">Plant:</span>
@@ -660,7 +757,7 @@ const OrdersForAuthorizer = () => {
                         </p>
                       </div>
                     ) : (
-                      <span className="text-red-700 bg-red-100 p-1 px-3 rounded-full text-xs">
+                      <span className="text-red-700 bg-red-100 p-0.5 px-2 rounded-full lg:text-xs text-[10px]">
                         Not Assigned
                       </span>
                     )}
@@ -670,11 +767,11 @@ const OrdersForAuthorizer = () => {
                       Plant Approval:
                     </span>
                     {singleOrderFromSalesauthorizer?.approvedBy ? (
-                      <span className="text-green-700 font-semibold bg-green-100 p-1 px-3 rounded-full text-xs">
+                      <span className="text-green-700 font-semibold bg-green-100 p-0.5 px-2 rounded-full lg:text-xs text-[10px]">
                         Approved
                       </span>
                     ) : (
-                      <span className="text-red-700 font-semibold bg-red-100 p-1 px-3 rounded-full text-xs">
+                      <span className="text-red-700 font-semibold bg-red-100 p-0.5 px-2 rounded-full lg:text-xs text-[10px]">
                         Pending
                       </span>
                     )}
@@ -685,9 +782,11 @@ const OrdersForAuthorizer = () => {
 
             {/* notes  */}
             <div className="flex flex-col gap-2 text-sm mt-5">
-              <h1 className="font-semibold text-base text-gray-800">Notes</h1>
+              <h1 className="font-semibold lg:text-base text-sm text-gray-800">
+                Notes
+              </h1>
               <div className="bg-yellow-50 rounded-lg p-3 w-full">
-                <p className="break-words whitespace-normal">
+                <p className="break-words whitespace-normal text-xs">
                   {singleOrderFromSalesauthorizer?.notes}
                 </p>
               </div>
@@ -696,10 +795,10 @@ const OrdersForAuthorizer = () => {
             {/* dispatch info */}
             {singleOrderFromSalesauthorizer?.dispatchInfo && (
               <div className="flex flex-col gap-2 text-sm bg-green-50 p-3 rounded-lg mt-5">
-                <h1 className="font-semibold text-base text-gray-800">
+                <h1 className="font-semibold lg:text-base text-sm text-gray-800">
                   Dispatch Info
                 </h1>
-                <div className="grid grid-cols-2 gap-5">
+                <div className="grid lg:grid-cols-2 md:grid-cols-2 sm:grid-cols-2 grid-cols-1 lg:gap-7 md:gap-7 sm:gap-7 gap-2">
                   <div className="flex flex-col gap-2 text-sm">
                     <div className="flex items-center justify-between font-semibold">
                       <span className="text-gray-600 font-normal">
@@ -776,13 +875,13 @@ const OrdersForAuthorizer = () => {
       {/* Cancel Order Modal */}
       {openCancel && (
         <div className="transition-all bg-gradient-to-b from-black/20 to-black/60 backdrop-blur-sm w-full z-50 h-screen absolute top-0 left-0 flex items-center justify-center">
-          <div className="bg-white p-7 rounded-lg w-[29rem]">
-            <p className="text-lg font-semibold">
-              Are you sure you want to cancel "
-              {singleOrderFromSalesauthorizer?.item?.name}"?
+          <div className="bg-white lg:p-7 p-5 rounded-lg lg:w-[29rem] md:w-[60%] w-[95%]">
+            <p className="lg:text-lg text-base font-semibold">
+              Are you sure you want to cancel the order #
+              {singleOrderFromSalesauthorizer?.orderId} ?
             </p>
-            <p className="text-gray-800 my-2">
-              Tell us why you are cancelling this order:
+            <p className="lg:text-sm text-xs text-gray-800 my-2">
+              Tell us why you are cancelling this order ?
             </p>
             <form onSubmit={handleSubmit(handleCancelOrder)}>
               <div>

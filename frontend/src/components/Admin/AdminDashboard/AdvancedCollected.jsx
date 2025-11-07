@@ -5,9 +5,9 @@ import { formatRupee } from "../../../utils/formatRupee.js";
 
 const AdvancedCollected = ({ advance, ordersLoading }) => {
   return (
-    <div className="bg-white rounded-lg p-4 flex items-center justify-between gap-5 shadow hover:shadow-md transition-all">
+    <div className="bg-white dark:bg-gray-900 rounded-lg lg:p-4 md:p-3 sm:p-4 p-3 flex items-center justify-between gap-5 shadow hover:shadow-md transition-all">
       <div className="flex flex-col justify-center gap-1 h-full">
-        <p className="text-left lg:font-semibold text-gray-600">
+        <p className="dark:text-gray-300 text-left text-sm lg:text-base md:text-base sm:text-base font-semibold text-gray-600">
           Total Advance Collected
         </p>
         {ordersLoading ? (
@@ -16,14 +16,14 @@ const AdvancedCollected = ({ advance, ordersLoading }) => {
           </div>
         ) : (
           <div>
-            <p className="lg:text-4xl text-left lg:font-semibold">
+            <p className="dark:text-gray-200 lg:text-4xl md:text-2xl sm:text-2xl text-2xl text-left font-semibold">
               {formatRupee(advance)}
             </p>
           </div>
         )}
       </div>
-      <div className="p-3 bg-indigo-100 rounded-full">
-        <GiCash className="text-4xl opacity-70 text-indigo-600" />
+      <div className="p-3 bg-indigo-100 dark:bg-indigo-800 rounded-full">
+        <GiCash className="lg:text-4xl md:text-3xl sm:text-3xl text-2xl opacity-70 text-indigo-600 dark:text-indigo-200" />
       </div>
     </div>
   );

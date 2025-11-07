@@ -10,7 +10,7 @@ import {
   Select,
   TextField,
 } from "@mui/material";
-
+import { GiGrain } from "react-icons/gi";
 const LoginPage = () => {
   const {
     register,
@@ -33,10 +33,11 @@ const LoginPage = () => {
     );
 
   return (
-    <div className="flex flex-col justify-center items-center h-screen w-full border-2 border-black">
+    <div className="flex flex-col justify-center items-center h-screen w-full dark:bg-gray-950">
       <div className="mb-5">
-        <h1 className="text-4xl font-semibold text-center text-[20px] sm:text-3xl">
-          Poultry Feed Management
+        <h1 className="font-semibold text-center text-2xl dark:text-gray-300">
+          <GiGrain className="inline text-indigo-500 me-2" />
+          <span className="text-indigo-500">Feed Manager</span>
         </h1>
       </div>
       <form

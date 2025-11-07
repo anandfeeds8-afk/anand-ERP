@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Button, CircularProgress, IconButton, Tooltip } from "@mui/material";
-import { Download, Eye, File, FileImage } from "lucide-react";
+import { ClipboardCheck, Download, Eye, File, FileImage } from "lucide-react";
 import { format } from "date-fns";
 import { DataGrid } from "@mui/x-data-grid";
 import CloseIcon from "@mui/icons-material/Close";
@@ -195,12 +195,33 @@ const ApproveAdvancePaymentOrders = () => {
       {/* --- View Order Modal --- */}
       {openView && (
         <div className="transition-all bg-gradient-to-b from-black/20 to-black/60 backdrop-blur-sm w-full z-50 h-screen absolute top-0 left-0 flex items-center justify-center">
-          <div className="bg-white relative p-7 rounded-lg w-[50%] max-h-[90%] overflow-auto">
+          <div className="bg-white relative lg:p-7 p-5 rounded-lg lg:max-w-[60%] lg:min-w-[50%] lg:max-h-[95%] w-[95%] max-h-[95%] overflow-auto">
             <div className="mb-5">
               <div className="flex items-center justify-between">
-                <p className="text-xl font-bold">
+                <p className="lg:text-xl text-base font-bold">
                   Order Details - #{singleOrderInAccountant?.orderId}
                 </p>
+                <div className="hidden md:block sm:block lg:block">
+                  <Button
+                    loading={isApprovingOrderPayment}
+                    onClick={() => {
+                      approveOrderPayment(singleOrderId);
+                      setOpenView(false);
+                    }}
+                    sx={{
+                      textTransform: "none",
+                    }}
+                  >
+                    Confirm advance payment
+                  </Button>
+                </div>
+
+                <IconButton size="small" onClick={() => setOpenView(false)}>
+                  <CloseIcon />
+                </IconButton>
+              </div>
+
+              <div className="md:hidden sm:hidden lg:hidden text-center">
                 <Button
                   loading={isApprovingOrderPayment}
                   onClick={() => {
@@ -209,18 +230,19 @@ const ApproveAdvancePaymentOrders = () => {
                   }}
                   sx={{
                     textTransform: "none",
+                    fontSize: "12px",
                   }}
+                  variant="text"
+                  disableElevation
+                  startIcon={<ClipboardCheck size={15} />}
                 >
                   Confirm advance payment
                 </Button>
-                <IconButton size="small" onClick={() => setOpenView(false)}>
-                  <CloseIcon />
-                </IconButton>
               </div>
 
               {/* products table */}
-              <div className="relative overflow-x-auto mt-5 max-h-52">
-                <table className="w-full text-sm text-left text-gray-500 overflow-auto">
+              <div className="relative overflow-x-auto lg:mt-5 mt-2 max-h-52">
+                <table className="w-full lg:text-sm text-xs text-left text-gray-500 overflow-auto">
                   <thead className="sticky top-0 bg-gray-100 text-gray-800 z-10">
                     <tr>
                       <th scope="col" className="px-6 py-3">
@@ -237,7 +259,7 @@ const ApproveAdvancePaymentOrders = () => {
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="text-sm">
+                  <tbody className="lg:text-sm text-xs">
                     {singleOrderInAccountant?.items?.map((item) => (
                       <tr className="bg-white border-b border-gray-200">
                         <th
@@ -258,10 +280,10 @@ const ApproveAdvancePaymentOrders = () => {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-7">
+            <div className="grid lg:grid-cols-2 md:grid-cols-2 grid-cols-1 gap-7">
               <div className="flex flex-col gap-5">
-                <div className="flex flex-col gap-2 text-sm">
-                  <h1 className="font-semibold text-base text-gray-800">
+                <div className="flex flex-col gap-2 lg:text-sm text-xs">
+                  <h1 className="font-semibold text-gray-800 lg:text-base text-sm">
                     Order Information
                   </h1>
                   <div className="flex items-center justify-between font-semibold">
@@ -277,8 +299,8 @@ const ApproveAdvancePaymentOrders = () => {
                     {format(singleOrderInAccountant?.createdAt, "dd MMM yyyy")}
                   </div>
                 </div>
-                <div className="flex flex-col gap-2 text-sm">
-                  <h1 className="font-semibold text-base text-gray-800">
+                <div className="flex flex-col gap-2 lg:text-sm text-xs">
+                  <h1 className="font-semibold lg:text-base text-sm text-gray-800">
                     Payment Information
                   </h1>
                   <div className="flex items-center justify-between font-semibold">
@@ -319,25 +341,25 @@ const ApproveAdvancePaymentOrders = () => {
                       </span>
                       {singleOrderInAccountant?.advancePaymentStatus ===
                         "Approved" && (
-                        <span className="text-green-700 font-semibold bg-green-100 p-1 px-3 rounded-full text-xs">
+                        <span className="text-green-700 font-semibold bg-green-100 p-0.5 px-2 rounded-full lg:text-xs text-[10px]">
                           Confirmed
                         </span>
                       )}
                       {singleOrderInAccountant?.advancePaymentStatus ===
                         "SentForApproval" && (
-                        <span className="text-indigo-700 font-semibold bg-indigo-100 p-1 px-3 rounded-full text-xs">
+                        <span className="text-indigo-700 font-semibold bg-indigo-100 p-0.5 px-2 rounded-full lg:text-xs text-[10px]">
                           Sent For Confirmation
                         </span>
                       )}
                       {singleOrderInAccountant?.advancePaymentStatus ===
                         "Pending" && (
-                        <span className="text-yellow-700 font-semibold bg-yellow-100 p-1 px-3 rounded-full text-xs">
+                        <span className="text-yellow-700 font-semibold bg-yellow-100 p-0.5 px-2 rounded-full lg:text-xs text-[10px]">
                           Pending
                         </span>
                       )}
                       {singleOrderInAccountant?.advancePaymentStatus ===
                         "Rejected" && (
-                        <span className="text-red-700 font-semibold bg-red-100 p-1 px-3 rounded-full text-xs">
+                        <span className="text-red-700 font-semibold bg-red-100 p-0.5 px-2 rounded-full lg:text-xs text-[10px]">
                           Rejected
                         </span>
                       )}
@@ -350,25 +372,25 @@ const ApproveAdvancePaymentOrders = () => {
                       </span>
                       {singleOrderInAccountant?.duePaymentStatus ===
                         "Approved" && (
-                        <span className="text-green-700 font-semibold bg-green-100 p-1 px-3 rounded-full text-xs">
+                        <span className="text-green-700 font-semibold bg-green-100 p-0.5 px-2 rounded-full lg:text-xs text-[10px]">
                           Confirmed
                         </span>
                       )}
                       {singleOrderInAccountant?.duePaymentStatus ===
                         "SentForApproval" && (
-                        <span className="text-indigo-700 font-semibold bg-indigo-100 p-1 px-3 rounded-full text-xs">
+                        <span className="text-indigo-700 font-semibold bg-indigo-100 p-0.5 px-2 rounded-full lg:text-xs text-[10px]">
                           Sent For Confirmation
                         </span>
                       )}
                       {singleOrderInAccountant?.duePaymentStatus ===
                         "Pending" && (
-                        <span className="text-yellow-700 font-semibold bg-yellow-100 p-1 px-3 rounded-full text-xs">
+                        <span className="text-yellow-700 font-semibold bg-yellow-100 p-0.5 px-2 rounded-full lg:text-xs text-[10px]">
                           Pending
                         </span>
                       )}
                       {singleOrderInAccountant?.duePaymentStatus ===
                         "Rejected" && (
-                        <span className="text-red-700 font-semibold bg-red-100 p-1 px-3 rounded-full text-xs">
+                        <span className="text-red-700 font-semibold bg-red-100 p-0.5 px-2 rounded-full lg:text-xs text-[10px]">
                           Rejected
                         </span>
                       )}
@@ -397,8 +419,8 @@ const ApproveAdvancePaymentOrders = () => {
               </div>
 
               <div className="flex flex-col gap-5">
-                <div className="flex flex-col gap-2 text-sm">
-                  <h1 className="font-semibold text-base text-gray-800">
+                <div className="flex flex-col gap-2 lg:text-sm text-xs">
+                  <h1 className="font-semibold lg:text-base text-sm text-gray-800">
                     Order Status
                   </h1>
                   <div className="flex items-center justify-between font-semibold">
@@ -406,11 +428,11 @@ const ApproveAdvancePaymentOrders = () => {
                       Order Status:
                     </span>{" "}
                     {singleOrderInAccountant?.orderStatus === "Delivered" ? (
-                      <span className="text-green-700 bg-green-100 p-1 px-3 rounded-full text-xs">
+                      <span className="text-green-700 bg-green-100 p-0.5 px-2 rounded-full lg:text-xs text-[10px]">
                         {singleOrderInAccountant?.orderStatus}
                       </span>
                     ) : (
-                      <span className="text-gray-700 bg-gray-200 p-1 px-3 rounded-full text-xs">
+                      <span className="text-gray-700 bg-gray-200 p-0.5 px-2 rounded-full lg:text-xs text-[10px]">
                         {singleOrderInAccountant?.orderStatus}
                       </span>
                     )}
@@ -421,18 +443,18 @@ const ApproveAdvancePaymentOrders = () => {
                     </span>
                     {singleOrderInAccountant?.paymentStatus ===
                       "PendingDues" && (
-                      <span className="text-red-700 bg-red-100 p-1 px-3 rounded-full text-xs">
+                      <span className="text-red-700 bg-red-100 p-0.5 px-2 rounded-full lg:text-xs text-[10px]">
                         Pending Dues
                       </span>
                     )}
                     {singleOrderInAccountant?.paymentStatus === "Paid" && (
-                      <span className="text-green-700 bg-green-100 p-1 px-3 rounded-full text-xs">
+                      <span className="text-green-700 bg-green-100 p-0.5 px-2 rounded-full lg:text-xs text-[10px]">
                         Paid
                       </span>
                     )}
                     {singleOrderInAccountant?.paymentStatus ===
                       "ConfirmationPending" && (
-                      <span className="text-yellow-700 bg-yellow-100 p-1 px-3 rounded-full text-xs">
+                      <span className="text-yellow-700 bg-yellow-100 p-0.5 px-2 rounded-full lg:text-xs text-[10px]">
                         Confirmation Pending
                       </span>
                     )}
@@ -442,19 +464,19 @@ const ApproveAdvancePaymentOrders = () => {
                       Invoice Generated:
                     </span>{" "}
                     {singleOrderInAccountant?.invoiceGenerated === true ? (
-                      <span className="text-green-700 bg-green-100 p-1 px-3 rounded-full text-xs">
+                      <span className="text-green-700 bg-green-100 p-0.5 px-2 rounded-full lg:text-xs text-[10px]">
                         Yes
                       </span>
                     ) : (
-                      <span className="text-red-700 bg-red-100 p-1 px-3 rounded-full text-xs">
+                      <span className="text-red-700 bg-red-100 p-0.5 px-2 rounded-full lg:text-xs text-[10px]">
                         No
                       </span>
                     )}
                   </div>
                 </div>
 
-                <div className="flex flex-col gap-2 text-sm">
-                  <h1 className="font-semibold text-base text-gray-800">
+                <div className="flex flex-col gap-2 lg:text-sm text-xs">
+                  <h1 className="font-semibold lg:text-base text-sm text-gray-800">
                     Shipping Details
                   </h1>
                   <div className="flex items-center justify-between font-semibold">
@@ -464,9 +486,9 @@ const ApproveAdvancePaymentOrders = () => {
                 </div>
 
                 {singleOrderInAccountant?.assignedWarehouse && (
-                  <div className="flex flex-col gap-2 text-sm">
+                  <div className="flex flex-col gap-2 lg:text-sm text-xs">
                     <div className="flex justify-between text-sm">
-                      <h1 className="font-semibold text-base text-gray-800">
+                      <h1 className="font-semibold lg:text-base text-sm text-gray-800">
                         Assigned Plant
                       </h1>
                     </div>
@@ -487,7 +509,7 @@ const ApproveAdvancePaymentOrders = () => {
                           </p>
                         </div>
                       ) : (
-                        <span className="text-red-700 bg-red-100 p-1 px-3 rounded-full text-xs">
+                        <span className="text-red-700 bg-red-100 p-0.5 px-2 rounded-full lg:text-xs text-[10px]">
                           Not Assigned
                         </span>
                       )}
@@ -497,11 +519,11 @@ const ApproveAdvancePaymentOrders = () => {
                         Plant Approval:
                       </span>
                       {singleOrderInAccountant?.approvedBy ? (
-                        <span className="text-green-700 font-semibold bg-green-100 p-1 px-3 rounded-full text-xs">
+                        <span className="text-green-700 font-semibold bg-green-100 p-0.5 px-2 rounded-full lg:text-xs text-[10px]">
                           Approved
                         </span>
                       ) : (
-                        <span className="text-red-700 font-semibold bg-red-100 p-1 px-3 rounded-full text-xs">
+                        <span className="text-red-700 font-semibold bg-red-100 p-0.5 px-2 rounded-full lg:text-xs text-[10px]">
                           Pending
                         </span>
                       )}
@@ -510,8 +532,10 @@ const ApproveAdvancePaymentOrders = () => {
                 )}
               </div>
             </div>
-            <div className="flex flex-col gap-2 text-sm mt-5">
-              <h1 className="font-semibold text-base text-gray-800">Notes</h1>
+            <div className="flex flex-col gap-2 lg:text-sm text-xs mt-5">
+              <h1 className="font-semibold lg:text-base text-sm text-gray-800">
+                Notes
+              </h1>
               <div className="bg-yellow-50 rounded-lg p-3 w-full">
                 <p className="break-words whitespace-normal">
                   {singleOrderInAccountant?.notes}
@@ -525,10 +549,10 @@ const ApproveAdvancePaymentOrders = () => {
       {/* Open Invoice Modal */}
       {openInvoice && (
         <div className="transition-all bg-gradient-to-b from-black/20 to-black/60backdrop-blur-sm w-full z-50 h-screen absolute top-0 left-0 flex items-center justify-center">
-          <div className="bg-white relative p-7 rounded-lg max-w-[60%] min-w-[35%] max-h-[90%] overflow-auto">
+          <div className="bg-white relative lg:p-7 p-5 rounded-lg lg:max-w-[60%] lg:min-w-[50%] lg:max-h-[95%] w-[95%] max-h-[95%] overflow-auto">
             <div className="mb-5">
               <div className="flex items-center justify-between">
-                <p className="text-xl font-bold">Invoice</p>
+                <p className="lg:text-xl text-base font-bold">Invoice</p>
                 <div className="flex items-center gap-5">
                   {user.isActive ? (
                     <Tooltip
@@ -594,9 +618,9 @@ const ApproveAdvancePaymentOrders = () => {
               )}
             </div>
 
-            <div className="grid grid-cols-2 gap-7">
-              <div className="flex flex-col gap-2 text-sm">
-                <h1 className="font-semibold text-base text-gray-800">
+            <div className="grid lg:grid-cols-2 grid-cols-1 lg:gap-7 gap-5">
+              <div className="flex flex-col gap-2 lg:text-sm text-xs">
+                <h1 className="font-semibold lg:text-base text-sm text-gray-800">
                   Placed By
                 </h1>
                 <div className="flex items-center justify-between font-semibold">
@@ -608,8 +632,8 @@ const ApproveAdvancePaymentOrders = () => {
                   {singleOrderInAccountant?.placedBy?.email}
                 </div>
               </div>
-              <div className="flex flex-col gap-2 text-sm">
-                <h1 className="font-semibold text-base text-gray-800">
+              <div className="flex flex-col gap-2 lg:text-sm text-xs">
+                <h1 className="font-semibold lg:text-base text-sm text-gray-800">
                   Payment Details
                 </h1>
                 <div className="flex items-center justify-between font-semibold">

@@ -7,6 +7,8 @@ import {
   MenuItem,
   Select,
   TextField,
+  useMediaQuery,
+  useTheme,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import { Controller, useFieldArray, useForm } from "react-hook-form";
@@ -22,6 +24,10 @@ import { useUser } from "../../hooks/useUser";
 import { CircleX } from "lucide-react";
 
 const SalesmanDashboardPage = () => {
+  const theme = useTheme();
+  const isMdUp = useMediaQuery(theme.breakpoints.up("md"));
+  const isSmDown = useMediaQuery(theme.breakpoints.down("sm"));
+
   const [discount, setDiscount] = useState(0);
   const [discountError, setDiscountError] = useState("");
   const [totalAmount, setTotalAmount] = useState(0);
@@ -161,7 +167,7 @@ const SalesmanDashboardPage = () => {
   return (
     <div>
       <div className="flex items-center justify-between">
-        <h1 className="lg:text-3xl lg:font-bold mb-5 dark:text-gray-300">
+        <h1 className="lg:text-3xl md:text-2xl font-bold lg:mb-5 md:mb-5 sm:mb-5 mb-2 sm:text-lg text-base dark:text-gray-200">
           {isActive}
         </h1>
         <Button
@@ -172,6 +178,7 @@ const SalesmanDashboardPage = () => {
           startIcon={<AddIcon />}
           sx={{
             fontWeight: "600",
+            fontSize: isSmDown ? "10px" : "12px",
           }}
           onClick={() => setOpenForm(true)}
         >
@@ -185,6 +192,7 @@ const SalesmanDashboardPage = () => {
             <Button
               key={order._id}
               disableElevation
+              size={isMdUp ? "medium" : "small"}
               variant={isActive === order ? "contained" : "outlined"}
               sx={{
                 textTransform: "none",
@@ -205,18 +213,18 @@ const SalesmanDashboardPage = () => {
       {/* Place Order Modal */}
       {openForm && (
         <div className="transition-all bg-gradient-to-b from-black/20 to-black/60 backdrop-blur-sm w-full z-50 h-screen absolute top-0 left-0 flex items-center justify-center">
-          <div className="bg-white p-7 rounded-lg w-[50%] dark:bg-gray-900">
-            <p className="text-xl font-semibold mb-5 dark:text-gray-400">
+          <div className="bg-white p-7 rounded-lg lg:w-[50%] md:w-[50%] sm:w-[95%] w-[95%] max-h-[95%] overflow-y-auto dark:bg-gray-900">
+            <p className="lg:text-lg md:text-lg sm:text-base text-base font-semibold mb-7">
               Place a new Order
             </p>
             <form
-              className="grid grid-cols-2 gap-5"
+              className="grid lg:grid-cols-2 grid-cols-1 gap-5"
               onSubmit={handleSubmit(onSubmit)}
             >
               <div>
                 <div className="mb-5">
                   <div className="flex items-start justify-between">
-                    <h1 className="font-semibold text-gray-800 mb-3 dark:text-gray-400">
+                    <h1 className="font-semibold text-gray-800 mb-3 text-sm dark:text-gray-400">
                       Party Information
                     </h1>
 
@@ -320,7 +328,7 @@ const SalesmanDashboardPage = () => {
 
                 <div>
                   <div className="flex items-start justify-between">
-                    <h1 className="font-semibold text-gray-800 mb-3">
+                    <h1 className="font-semibold text-sm text-gray-800 mb-3">
                       Product Information
                     </h1>
                     {!isNaN(finalTotalAmount) && (
@@ -455,7 +463,7 @@ const SalesmanDashboardPage = () => {
               <div>
                 <div>
                   <div className="flex items-start justify-between">
-                    <h1 className="font-semibold text-gray-800 mb-3">
+                    <h1 className="font-semibold text-gray-800 mb-3 text-sm">
                       Payment Information
                     </h1>
                     {!isNaN(dueAmount) && (
@@ -502,7 +510,18 @@ const SalesmanDashboardPage = () => {
                         type="file"
                         id="formFileMultiple"
                         multiple
-                        {...register("advanceAmountDocs")}
+                        {...register("advanceAmountDocs", {
+                          validate: (files) => {
+                            const amt = Number(watch("advanceAmount"));
+                            if (amt > 0) {
+                              return (
+                                (files && files.length > 0) ||
+                                "Payment proof is required"
+                              );
+                            }
+                            return true;
+                          },
+                        })}
                       />
                       {errors.advanceAmountDocs && (
                         <p className="text-red-600 text-xs mt-1">
@@ -537,6 +556,13 @@ const SalesmanDashboardPage = () => {
                             required: {
                               value: true,
                               message: "Due Date is required",
+                            },
+                            validate: (value) => {
+                              const today = format(new Date(), "yyyy-MM-dd");
+                              if (dueAmount > 0 && value < today) {
+                                return "Due date cannot be in the past";
+                              }
+                              return true;
                             },
                           })}
                         />
@@ -621,6 +647,7 @@ const SalesmanDashboardPage = () => {
                   <div className="flex items-center justify-end gap-3 mt-5">
                     <Button
                       variant="outlined"
+                      size="small"
                       disableElevation
                       sx={{ textTransform: "none" }}
                       onClick={() => setOpenForm(false)}
@@ -628,6 +655,7 @@ const SalesmanDashboardPage = () => {
                       Cancel
                     </Button>
                     <Button
+                      size="small"
                       loading={isCreatingOrder}
                       variant="contained"
                       disableElevation

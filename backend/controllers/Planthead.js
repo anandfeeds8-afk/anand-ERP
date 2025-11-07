@@ -199,6 +199,8 @@ const getAllProductsInWarehouse = async (req, res) => {
         .json({ success: false, message: "Warehouse not found" });
     }
 
+    console.log(warehouse);
+
     const products = warehouse.stock.map((item) => ({
       productId: item.product._id,
       name: item.product.name,
@@ -207,6 +209,8 @@ const getAllProductsInWarehouse = async (req, res) => {
       quantity: item.quantity,
       price: item.price,
     }));
+
+    console.log(products);
 
     res.status(200).json({ success: true, data: products });
   } catch (err) {

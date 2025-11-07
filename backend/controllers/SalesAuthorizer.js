@@ -111,7 +111,8 @@ const getOrderDetails = async (req, res) => {
       .populate("items.product", "name category price description")
       .populate("placedBy", "name email")
       .populate("party", "companyName address contactPersonNumber")
-      .populate("assignedWarehouse", "name location");
+      .populate("assignedWarehouse", "name location")
+      .populate("dispatchInfo.dispatchedBy", "name phone role");
     if (!order)
       return res
         .status(404)

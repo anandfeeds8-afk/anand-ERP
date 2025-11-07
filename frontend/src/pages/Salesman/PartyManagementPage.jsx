@@ -7,6 +7,8 @@ import {
   ButtonGroup,
   CircularProgress,
   TextField,
+  useMediaQuery,
+  useTheme,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import { useFieldArray, useForm } from "react-hook-form";
@@ -15,6 +17,10 @@ import RejectedParties from "../../components/Salesman/PartyManagement/RejectedP
 import { CircleX } from "lucide-react";
 
 const PartyManagementPage = () => {
+  const theme = useTheme();
+  const isMdUp = useMediaQuery(theme.breakpoints.up("md"));
+  const isSmDown = useMediaQuery(theme.breakpoints.down("sm"));
+
   const [singleOrderId, setSingleOrderId] = useState(null);
   const partyTypes = ["All Parties", "Approved Parties", "Rejected Parties"];
   const [isActive, setIsActive] = useState("All Parties");
@@ -68,7 +74,7 @@ const PartyManagementPage = () => {
   return (
     <div>
       <div className="flex items-center justify-between">
-        <h1 className="lg:text-3xl lg:font-bold mb-5 dark:text-gray-300">
+        <h1 className="lg:text-3xl md:text-xl font-bold lg:mb-5 md:mb-5 sm:mb-5 mb-2 sm:text-lg text-base dark:text-gray-200">
           {isActive}
         </h1>
         <Button
@@ -79,6 +85,7 @@ const PartyManagementPage = () => {
           onClick={() => setOpenAdd(true)}
           sx={{
             fontWeight: "600",
+            fontSize: isSmDown ? "10px" : "12px",
           }}
           disabled={!user.isActive}
         >
@@ -86,12 +93,13 @@ const PartyManagementPage = () => {
         </Button>
       </div>
 
-      <div className="mb-5">
+      <div className="mb-5 mt-2">
         <ButtonGroup aria-label="Medium-sized button group">
           {partyTypes.map((party) => (
             <Button
               key={party}
               disableElevation
+              size={isMdUp ? "medium" : "small"}
               variant={isActive === party ? "contained" : "outlined"}
               sx={{
                 textTransform: "none",
@@ -106,7 +114,7 @@ const PartyManagementPage = () => {
 
       <div className="mb-5">
         {isActive === "All Parties" && (
-          <div className="grid grid-cols-3 gap-7">
+          <div className="grid lg:grid-cols-3 md:grid-cols-2 sm:grid-cols-2 grid-cols-1 lg:gap-7 md:gap-5 sm:gap-5 gap-3">
             {parties?.length > 0 ? (
               parties?.map((party) => <Party party={party} key={party._id} />)
             ) : (
@@ -117,7 +125,7 @@ const PartyManagementPage = () => {
           </div>
         )}
         {isActive === "Approved Parties" && (
-          <div className="grid grid-cols-3 gap-7">
+          <div className="grid lg:grid-cols-3 md:grid-cols-2 sm:grid-cols-2 grid-cols-1 lg:gap-7 md:gap-5 sm:gap-5 gap-3">
             {approvedParties?.length > 0 ? (
               approvedParties?.map((party) => (
                 <ApprovedParties party={party} key={party._id} />
@@ -130,7 +138,7 @@ const PartyManagementPage = () => {
           </div>
         )}
         {isActive === "Rejected Parties" && (
-          <div className="grid grid-cols-3 gap-7">
+          <div className="grid lg:grid-cols-3 md:grid-cols-2 sm:grid-cols-2 grid-cols-1 lg:gap-7 md:gap-5 sm:gap-5 gap-3">
             {rejectedParties?.length > 0 ? (
               rejectedParties?.map((party) => (
                 <RejectedParties party={party} key={party._id} />
@@ -147,8 +155,10 @@ const PartyManagementPage = () => {
       {/* --- Add Party Modal --- */}
       {openAdd && (
         <div className="transition-all bg-gradient-to-b from-black/20 to-black/60 backdrop-blur-sm w-full z-50 h-screen absolute top-0 left-0 flex items-center justify-center">
-          <div className="bg-white p-7 rounded-lg w-[29rem] max-h-[95%] overflow-y-auto">
-            <p className="text-xl font-semibold mb-7">Add a new party</p>
+          <div className="bg-white p-7 rounded-lg lg:w-[29rem] md:w-[29rem] sm:w-[29rem] w-[95%] max-h-[95%] overflow-y-auto">
+            <p className="lg:text-lg md:text-lg sm:text-base text-base font-semibold mb-7">
+              Add a new party
+            </p>
             <form className="space-y-5" onSubmit={handleSubmit(onSubmit)}>
               <TextField
                 size="small"
@@ -344,6 +354,7 @@ const PartyManagementPage = () => {
                   disableElevation
                   startIcon={<AddIcon />}
                   sx={{ textTransform: "none" }}
+                  size="small"
                   onClick={() => append({})}
                 >
                   Add Sub Agent
@@ -355,6 +366,7 @@ const PartyManagementPage = () => {
                   variant="outlined"
                   disableElevation
                   sx={{ textTransform: "none" }}
+                  size="small"
                   onClick={() => setOpenAdd(false)}
                 >
                   Cancel
@@ -362,6 +374,7 @@ const PartyManagementPage = () => {
                 <Button
                   loading={addingParty}
                   loadingPosition="start"
+                  size="small"
                   variant="contained"
                   disableElevation
                   sx={{ textTransform: "none" }}

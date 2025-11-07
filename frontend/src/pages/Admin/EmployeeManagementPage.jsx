@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import {
   Button,
   ButtonGroup,
@@ -6,8 +6,10 @@ import {
   FormControl,
   InputLabel,
   MenuItem,
-  Select,
   TextField,
+  useMediaQuery,
+  useTheme,
+  Select,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import Salesman from "../../components/Admin/EmployeeManagement/Salesman";
@@ -22,6 +24,10 @@ import TotalActiveEmployees from "../../components/Admin/EmployeeManagement/Tota
 import InactiveEmployees from "../../components/Admin/EmployeeManagement/InactiveEmployees";
 
 const EmployeeManagementPage = () => {
+  const theme = useTheme();
+  const isMdUp = useMediaQuery(theme.breakpoints.up("md"));
+  const isSmDown = useMediaQuery(theme.breakpoints.down("sm"));
+
   const employeeTypes = [
     "Salesman",
     "Sales Manager",
@@ -29,6 +35,10 @@ const EmployeeManagementPage = () => {
     "Plant Head",
     "Accountant",
   ];
+
+  const handleEmployeeChange = (value) => {
+    setIsActive(value);
+  };
 
   const {
     // Salesman
@@ -150,28 +160,34 @@ const EmployeeManagementPage = () => {
 
   return (
     <div>
-      <div className="lg:flex lg:justify-between lg:items-center mb-5">
-        <h1 className="lg:text-3xl lg:font-bold">Employee Management</h1>
+      <div className="flex justify-between items-center mb-5">
+        <h1 className="lg:text-3xl md:text-xl font-bold sm:text-lg text-base dark:text-gray-200">
+          Employee Management
+        </h1>
         <Button
           size="small"
           variant="contained"
           disableElevation
           sx={{
             fontWeight: "600",
+            fontSize: isSmDown ? "10px" : "12px",
           }}
           startIcon={<AddIcon />}
           onClick={() => setOpenForm(true)}
         >
-          Add Employee
+          {isSmDown ? "Add" : "Add Employee"}
         </Button>
       </div>
-      <div className="grid grid-cols-3 gap-7">
+      <div className="grid lg:grid-cols-3 sm:grid-cols-3 md:grid-cols-2 lg:gap-7 md:gap-3 sm:gap-3 gap-2 items-center">
         <TotalEmployees total={totalEmployees} />
         <TotalActiveEmployees total={totalActiveEmployees} />
         <InactiveEmployees total={totalInactiveEmployees} />
       </div>
-      <div className="mt-5">
-        <ButtonGroup aria-label="Medium-sized button group">
+      <div className="mt-5 hidden sm:block lg:block md:block">
+        <ButtonGroup
+          aria-label="Medium-sized button group"
+          size={isMdUp ? "medium" : "small"}
+        >
           {employeeTypes.map((employee) => (
             <Button
               key={employee._id}
@@ -187,6 +203,20 @@ const EmployeeManagementPage = () => {
           ))}
         </ButtonGroup>
       </div>
+      <div className="mt-5 sm:hidden lg:hidden md:hidden">
+        <FormControl size="small" fullWidth>
+          <Select
+            labelId="demo-simple-select-label"
+            id="demo-simple-select"
+            value={isActive}
+            onChange={(e) => handleEmployeeChange(e.target.value)}
+          >
+            {employeeTypes.map((employee) => (
+              <MenuItem value={employee}>{employee}</MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+      </div>
       <div className="mt-5">
         <TextField
           fullWidth
@@ -201,7 +231,7 @@ const EmployeeManagementPage = () => {
       {/* ---Employee List--- */}
       <div>
         {isActive === "Salesman" && (
-          <div className="mt-5 grid lg:grid-cols-3 gap-7">
+          <div className="mt-5 grid lg:grid-cols-3 md:grid-cols-2 sm:grid-cols-2 sm:gap-3 lg:gap-7 gap-3">
             {FilteredSalesman?.map((item) => (
               <Salesman key={item._id} item={item} />
             ))}
@@ -209,7 +239,7 @@ const EmployeeManagementPage = () => {
         )}
 
         {isActive === "Sales Manager" && (
-          <div className="mt-5 grid lg:grid-cols-3 gap-7">
+          <div className="mt-5 grid lg:grid-cols-3 md:grid-cols-2 sm:grid-cols-2 sm:gap-3 lg:gap-7 gap-3">
             {FilteredSalesManager?.map((item) => (
               <SalesManager key={item._id} item={item} />
             ))}
@@ -217,7 +247,7 @@ const EmployeeManagementPage = () => {
         )}
 
         {isActive === "Sales Authorizer" && (
-          <div className="mt-5 grid lg:grid-cols-3 gap-7">
+          <div className="mt-5 grid lg:grid-cols-3 md:grid-cols-2 sm:grid-cols-2 sm:gap-3 lg:gap-7 gap-3">
             {FilteredSalesAuthorizer?.map((item) => (
               <SalesAuthorizer key={item._id} item={item} />
             ))}
@@ -225,7 +255,7 @@ const EmployeeManagementPage = () => {
         )}
 
         {isActive === "Plant Head" && (
-          <div className="mt-5 grid lg:grid-cols-3 gap-7">
+          <div className="mt-5 grid lg:grid-cols-3 md:grid-cols-2 sm:grid-cols-2 sm:gap-3 lg:gap-7 gap-3">
             {FilteredPlantHead?.map((item) => (
               <PlantHead key={item._id} item={item} />
             ))}
@@ -233,7 +263,7 @@ const EmployeeManagementPage = () => {
         )}
 
         {isActive === "Accountant" && (
-          <div className="mt-5 grid lg:grid-cols-3 gap-7">
+          <div className="mt-5 grid lg:grid-cols-3 md:grid-cols-2 sm:grid-cols-2 sm:gap-3 lg:gap-7 gap-3">
             {FilteredAccountant?.map((item) => (
               <Accountant key={item._id} item={item} />
             ))}
@@ -244,8 +274,10 @@ const EmployeeManagementPage = () => {
       {/* --- Add Employee Form --- */}
       {openForm && (
         <div className="transition-all bg-gradient-to-b from-black/20 to-black/60 backdrop-blur-sm w-full z-50 h-screen absolute top-0 left-0 flex items-center justify-center">
-          <div className="bg-white p-7 rounded-lg w-[29rem]">
-            <p className="text-lg font-semibold mb-5">Add Employee</p>
+          <div className="bg-white dark:bg-gray-800 lg:p-7 p-5 rounded-lg lg:w-[29rem] md:w-[50%] sm:w-[60%] w-[95%]">
+            <p className="lg:text-lg text-base font-semibold mb-5 dark:text-gray-200">
+              Add Employee
+            </p>
             <form className="space-y-5" onSubmit={handleSubmit(onSubmit)}>
               <FormControl
                 fullWidth

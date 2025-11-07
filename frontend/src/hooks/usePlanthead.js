@@ -66,6 +66,7 @@ export const usePlantheadOrder = (id) => {
       },
       onError: (error) => {
         console.log(error);
+        throw new Error(error);
       },
     });
 

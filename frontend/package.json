@@ -19,6 +19,7 @@
     "axios": "^1.11.0",
     "date-fns": "^4.1.0",
     "emoji-picker-react": "^4.14.0",
+    "firebase": "^12.5.0",
     "frimousse": "^0.3.0",
     "html2canvas": "^1.4.1",
     "indian-number-format": "^1.0.5",

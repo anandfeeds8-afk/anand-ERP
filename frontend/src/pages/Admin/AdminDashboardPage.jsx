@@ -48,8 +48,10 @@ const AdminDashboardPage = () => {
 
   return (
     <div>
-      <h1 className="lg:text-3xl lg:font-bold mb-5">Dashboard</h1>
-      <div className="grid lg:grid-cols-3 lg:gap-7 lg:mt-3">
+      <h1 className="lg:text-3xl md:text-xl font-bold lg:mb-5 md:mb-5 sm:mb-5 mb-2 sm:text-lg text-base dark:text-gray-200">
+        Dashboard
+      </h1>
+      <div className="grid lg:grid-cols-3 grid-cols-1 gap-3 md:grid-cols-2 sm:grid-cols-2 lg:gap-7 md:gap-3 lg:mt-3">
         <TotalSales total={total} ordersLoading={ordersLoading} />
         <AdvancedCollected advance={advance} ordersLoading={ordersLoading} />
         <TotalOrders totalOrders={totalOrders} ordersLoading={ordersLoading} />
@@ -71,10 +73,6 @@ const AdminDashboardPage = () => {
         <RateChart />
         <TopSalesman />
       </div>
-
-      {/* <div className="my-7">
-        <RecentOrdersTable />
-      </div> */}
     </div>
   );
 };

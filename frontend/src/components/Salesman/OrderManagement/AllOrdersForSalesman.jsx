@@ -256,19 +256,22 @@ const AllOrdersForSalesman = () => {
       field: "product",
       headerName: "Product",
       flex: 1,
+      minWidth: 120,
     },
-    { field: "party", headerName: "Party", flex: 1 },
-    { field: "date", headerName: "Date", flex: 1 },
-    { field: "quantity", headerName: "Quantity", flex: 1 },
+    { field: "party", headerName: "Party", flex: 1, minWidth: 100 },
+    { field: "date", headerName: "Date", flex: 1, minWidth: 100 },
+    { field: "quantity", headerName: "Quantity", flex: 1, minWidth: 100 },
     {
       field: "totalAmount",
       headerName: "Total Amount",
       flex: 1,
+      minWidth: 100,
     },
     {
       field: "advanceAmount",
       headerName: "Advance Amount",
       flex: 1,
+      minWidth: 100,
       renderCell: (params) => (
         <span className={`${params.value !== "₹0" && "text-green-700"}`}>
           {params.value}
@@ -279,6 +282,7 @@ const AllOrdersForSalesman = () => {
       field: "dueAmount",
       headerName: "Due Amount",
       flex: 1,
+      minWidth: 100,
       renderCell: (params) => (
         <span className={`${params.value !== "₹0" && "text-red-600"}`}>
           {params.value}
@@ -289,6 +293,7 @@ const AllOrdersForSalesman = () => {
       field: "orderStatus",
       headerName: "Status",
       flex: 1,
+      minWidth: 100,
       renderCell: (params) => (
         <span
           className={`${
@@ -518,10 +523,10 @@ const AllOrdersForSalesman = () => {
       {/* --- View Order Modal --- */}
       {openView && (
         <div className="transition-all bg-gradient-to-b from-black/20 to-black/60 backdrop-blur-sm w-full z-50 h-screen absolute top-0 left-0 flex items-center justify-center">
-          <div className="bg-white relative p-7 rounded-lg max-w-[60%] min-w-[50%] max-h-[95%] overflow-auto">
-            <div className="mb-5">
+          <div className="bg-white relative lg:p-7 p-5 rounded-lg lg:max-w-[60%] lg:min-w-[50%] lg:max-h-[95%] w-[95%] max-h-[95%] overflow-auto">
+            <div className="lg:mb-5 mb-2">
               <div className="flex items-center justify-between">
-                <p className="text-xl font-bold">
+                <p className="lg:text-xl text-sm font-bold">
                   Order Details - #{singleOrderFromSalesman?.orderId}
                 </p>
                 <IconButton size="small" onClick={() => setOpenView(false)}>
@@ -532,7 +537,7 @@ const AllOrdersForSalesman = () => {
 
             {/* products table */}
             <div className="relative overflow-x-auto mb-5 max-h-52">
-              <table className="w-full text-sm text-left text-gray-500 overflow-auto">
+              <table className="w-full lg:text-sm text-xs text-left text-gray-500 overflow-auto">
                 <thead className="sticky top-0 bg-gray-100 text-gray-800 z-10">
                   <tr>
                     <th scope="col" className="px-6 py-3">
@@ -549,7 +554,7 @@ const AllOrdersForSalesman = () => {
                     </th>
                   </tr>
                 </thead>
-                <tbody className="text-sm">
+                <tbody className="lg:text-sm text-xs">
                   {singleOrderFromSalesman?.items?.map((item, idx) => (
                     <tr key={idx} className="bg-white border-b border-gray-200">
                       <th
@@ -569,10 +574,10 @@ const AllOrdersForSalesman = () => {
               </table>
             </div>
 
-            <div className="grid grid-cols-2 gap-7">
+            <div className="grid lg:grid-cols-2 sm:grid-cols-2 md:grid-cols-2 grid-cols-1 gap-7">
               <div className="flex flex-col gap-5">
-                <div className="flex flex-col gap-2 text-sm">
-                  <h1 className="font-semibold text-base text-gray-800">
+                <div className="flex flex-col gap-2 lg:text-sm text-xs">
+                  <h1 className="font-semibold lg:text-base text-sm text-gray-800">
                     Order Information
                   </h1>
                   <div className="flex items-center justify-between font-semibold">
@@ -588,8 +593,8 @@ const AllOrdersForSalesman = () => {
                     {format(singleOrderFromSalesman?.createdAt, "dd MMM yyyy")}
                   </div>
                 </div>
-                <div className="flex flex-col gap-2 text-sm">
-                  <h1 className="font-semibold text-base text-gray-800">
+                <div className="flex flex-col gap-2 lg:text-sm text-xs">
+                  <h1 className="font-semibold lg:text-base text-sm text-gray-800">
                     Payment Information
                   </h1>
                   <div className="flex items-center justify-between font-semibold">
@@ -630,25 +635,25 @@ const AllOrdersForSalesman = () => {
                       </span>
                       {singleOrderFromSalesman?.advancePaymentStatus ===
                         "Approved" && (
-                        <span className="text-green-700 font-semibold bg-green-100 p-1 px-3 rounded-full text-xs">
+                        <span className="text-green-700 font-semibold bg-green-100 p-0.5 px-2 rounded-full lg:text-xs text-[10px]">
                           Confirmed
                         </span>
                       )}
                       {singleOrderFromSalesman?.advancePaymentStatus ===
                         "SentForApproval" && (
-                        <span className="text-indigo-700 font-semibold bg-indigo-100 p-1 px-3 rounded-full text-xs">
+                        <span className="text-indigo-700 font-semibold bg-indigo-100 p-0.5 px-2 rounded-full lg:text-xs text-[10px]">
                           Sent For Confirmation
                         </span>
                       )}
                       {singleOrderFromSalesman?.advancePaymentStatus ===
                         "Pending" && (
-                        <span className="text-yellow-700 font-semibold bg-yellow-100 p-1 px-3 rounded-full text-xs">
+                        <span className="text-yellow-700 font-semibold bg-yellow-100 p-0.5 px-2 rounded-full lg:text-xs text-[10px]">
                           Pending
                         </span>
                       )}
                       {singleOrderFromSalesman?.advancePaymentStatus ===
                         "Rejected" && (
-                        <span className="text-red-700 font-semibold bg-red-100 p-1 px-3 rounded-full text-xs">
+                        <span className="text-red-700 font-semibold bg-red-100 p-0.5 px-2 rounded-full lg:text-xs text-[10px]">
                           Rejected
                         </span>
                       )}
@@ -661,25 +666,25 @@ const AllOrdersForSalesman = () => {
                       </span>
                       {singleOrderFromSalesman?.duePaymentStatus ===
                         "Approved" && (
-                        <span className="text-green-700 font-semibold bg-green-100 p-1 px-3 rounded-full text-xs">
+                        <span className="text-green-700 font-semibold bg-green-100 p-0.5 px-2 rounded-full lg:text-xs text-[10px]">
                           Confirmed
                         </span>
                       )}
                       {singleOrderFromSalesman?.duePaymentStatus ===
                         "SentForApproval" && (
-                        <span className="text-indigo-700 font-semibold bg-indigo-100 p-1 px-3 rounded-full text-xs">
+                        <span className="text-indigo-700 font-semibold bg-indigo-100 p-0.5 px-2 rounded-full lg:text-xs text-[10px]">
                           Sent For Confirmation
                         </span>
                       )}
                       {singleOrderFromSalesman?.duePaymentStatus ===
                         "Pending" && (
-                        <span className="text-yellow-700 font-semibold bg-yellow-100 p-1 px-3 rounded-full text-xs">
+                        <span className="text-yellow-700 font-semibold bg-yellow-100 p-0.5 px-2 rounded-full lg:text-xs text-[10px]">
                           Pending
                         </span>
                       )}
                       {singleOrderFromSalesman?.duePaymentStatus ===
                         "Rejected" && (
-                        <span className="text-red-700 font-semibold bg-red-100 p-1 px-3 rounded-full text-xs">
+                        <span className="text-red-700 font-semibold bg-red-100 p-0.5 px-2 rounded-full lg:text-xs text-[10px]">
                           Rejected
                         </span>
                       )}
@@ -712,8 +717,8 @@ const AllOrdersForSalesman = () => {
               </div>
 
               <div className="flex flex-col gap-5">
-                <div className="flex flex-col gap-2 text-sm">
-                  <h1 className="font-semibold text-base text-gray-800">
+                <div className="flex flex-col gap-2 lg:text-sm text-xs">
+                  <h1 className="font-semibold lg:text-base text-sm text-gray-800">
                     Order Status
                   </h1>
                   <div className="flex items-center justify-between font-semibold">
@@ -721,15 +726,15 @@ const AllOrdersForSalesman = () => {
                       Order Status:
                     </span>
                     {singleOrderFromSalesman?.orderStatus === "Delivered" ? (
-                      <span className="text-green-700 bg-green-100 p-1 px-3 rounded-full text-xs">
+                      <span className="text-green-700 bg-green-100 p-0.5 px-2 rounded-full lg:text-xs text-[10px]">
                         {singleOrderFromSalesman?.orderStatus}
                       </span>
                     ) : singleOrderFromSalesman?.orderStatus === "Cancelled" ? (
-                      <span className="text-red-700 bg-red-100 p-1 px-3 rounded-full text-xs">
+                      <span className="text-red-700 bg-red-100 p-0.5 px-2 rounded-full lg:text-xs text-[10px]">
                         {singleOrderFromSalesman?.orderStatus}
                       </span>
                     ) : (
-                      <span className="text-gray-700 bg-gray-200 p-1 px-3 rounded-full text-xs">
+                      <span className="text-gray-700 bg-gray-200 p-0.5 px-2 rounded-full lg:text-xs text-[10px]">
                         {singleOrderFromSalesman?.orderStatus}
                       </span>
                     )}
@@ -740,18 +745,18 @@ const AllOrdersForSalesman = () => {
                     </span>
                     {singleOrderFromSalesman?.paymentStatus ===
                       "PendingDues" && (
-                      <span className="text-red-700 bg-red-100 p-1 px-3 rounded-full text-xs">
+                      <span className="text-red-700 bg-red-100 p-0.5 px-2 rounded-full lg:text-xs text-[10px]">
                         Pending Dues
                       </span>
                     )}
                     {singleOrderFromSalesman?.paymentStatus === "Paid" && (
-                      <span className="text-green-700 bg-green-100 p-1 px-3 rounded-full text-xs">
+                      <span className="text-green-700 bg-green-100 p-0.5 px-2 rounded-full lg:text-xs text-[10px]">
                         Paid
                       </span>
                     )}
                     {singleOrderFromSalesman?.paymentStatus ===
                       "ConfirmationPending" && (
-                      <span className="text-yellow-700 bg-yellow-100 p-1 px-3 rounded-full text-xs">
+                      <span className="text-yellow-700 bg-yellow-100 p-0.5 px-2 rounded-full lg:text-xs text-[10px]">
                         Confirmation Pending
                       </span>
                     )}
@@ -761,11 +766,11 @@ const AllOrdersForSalesman = () => {
                       Invoice Generated:
                     </span>
                     {singleOrderFromSalesman?.invoiceGenerated ? (
-                      <span className="text-green-800 bg-green-100 p-1 px-3 rounded-full text-xs">
+                      <span className="text-green-800 bg-green-100 p-0.5 px-2 rounded-full lg:text-xs text-[10px]">
                         Yes
                       </span>
                     ) : (
-                      <span className="text-red-700 bg-red-100 p-1 px-3 rounded-full text-xs">
+                      <span className="text-red-700 bg-red-100 p-0.5 px-2 rounded-full lg:text-xs text-[10px]">
                         No
                       </span>
                     )}
@@ -776,11 +781,11 @@ const AllOrdersForSalesman = () => {
                         Due Invoice Generated:
                       </span>
                       {singleOrderFromSalesman?.dueInvoiceGenerated ? (
-                        <span className="text-green-800 bg-green-100 p-1 px-3 rounded-full text-xs">
+                        <span className="text-green-800 bg-green-100 p-0.5 px-2 rounded-full lg:text-xs text-[10px]">
                           Yes
                         </span>
                       ) : (
-                        <span className="text-red-700 bg-red-100 p-1 px-3 rounded-full text-xs">
+                        <span className="text-red-700 bg-red-100 p-0.5 px-2 rounded-full lg:text-xs text-[10px]">
                           No
                         </span>
                       )}
@@ -788,8 +793,8 @@ const AllOrdersForSalesman = () => {
                   )}
                 </div>
 
-                <div className="flex flex-col gap-2 text-sm">
-                  <h1 className="font-semibold text-base text-gray-800">
+                <div className="flex flex-col gap-2 lg:text-sm text-xs">
+                  <h1 className="font-semibold lg:text-base text-gray-800 text-sm">
                     Shipping Details
                   </h1>
                   <div className="flex items-center justify-between font-semibold">
@@ -799,8 +804,8 @@ const AllOrdersForSalesman = () => {
                 </div>
 
                 {/* assigned warehouse */}
-                <div className="flex flex-col gap-2 text-sm">
-                  <h1 className="font-semibold text-base text-gray-800">
+                <div className="flex flex-col gap-2 lg:text-sm text-xs">
+                  <h1 className="font-semibold lg:text-base text-gray-800 text-sm">
                     Assigned Plant
                   </h1>
                   <div className="flex items-center justify-between font-semibold">
@@ -817,7 +822,7 @@ const AllOrdersForSalesman = () => {
                         </p>
                       </div>
                     ) : (
-                      <span className="text-red-700 bg-red-100 p-1 px-3 rounded-full text-xs">
+                      <span className="text-red-700 bg-red-100 p-0.5 px-2 rounded-full lg:text-xs text-[10px]">
                         Not Assigned
                       </span>
                     )}
@@ -827,11 +832,11 @@ const AllOrdersForSalesman = () => {
                       Plant Approval:
                     </span>
                     {singleOrderFromSalesman?.approvedBy ? (
-                      <span className="text-green-700 font-semibold bg-green-100 p-1 px-3 rounded-full text-xs">
+                      <span className="text-green-700 font-semibold bg-green-100 p-0.5 px-2 rounded-full lg:text-xs text-[10px]">
                         Approved
                       </span>
                     ) : (
-                      <span className="text-red-700 font-semibold bg-red-100 p-1 px-3 rounded-full text-xs">
+                      <span className="text-red-700 font-semibold bg-red-100 p-0.5 px-2 rounded-full lg:text-xs text-[10px]">
                         Pending
                       </span>
                     )}
@@ -841,29 +846,32 @@ const AllOrdersForSalesman = () => {
             </div>
 
             {/* notes */}
-            <div className="flex flex-col gap-2 text-sm my-5">
-              <h1 className="font-semibold text-base text-gray-800">Notes</h1>
+            <div className="flex flex-col gap-2 lg:text-sm text-xs my-5">
+              <h1 className="font-semibold lg:text-base text-sm text-gray-800">
+                Notes
+              </h1>
               <p className="bg-yellow-50 rounded-lg p-3">
                 {singleOrderFromSalesman?.notes}
               </p>
             </div>
+
             {/* dispatch info */}
             {singleOrderFromSalesman?.dispatchInfo && (
-              <div className="flex flex-col gap-2 text-sm bg-green-50 p-3 rounded-lg mt-5">
-                <h1 className="font-semibold text-base text-gray-800">
+              <div className="flex flex-col gap-2 lg:text-sm text-xs bg-green-50 p-3 rounded-lg mt-5">
+                <h1 className="font-semibold lg:text-base text-sm text-gray-800">
                   Dispatch Info
                 </h1>
-                <div className="grid grid-cols-2 gap-5">
-                  <div className="flex flex-col gap-2 text-sm">
+                <div className="grid lg:grid-cols-2 md:grid-cols-2 sm:grid-cols-2 grid-cols-1 gap-2 md:gap-5 lg:gap-7 sm:gap-7 lg:text-sm md:text-xs text-xs">
+                  <div className="flex flex-col gap-2">
                     <div className="flex items-center justify-between font-semibold">
                       <span className="text-gray-600 font-normal">
-                        Driver Name
+                        Driver Name:
                       </span>
                       {singleOrderFromSalesman?.dispatchInfo?.driverName}
                     </div>
                     <div className="flex items-center justify-between font-semibold">
                       <span className="text-gray-600 font-normal">
-                        Driver Contact
+                        Driver Contact:
                       </span>
                       {singleOrderFromSalesman?.dispatchInfo?.driverContact}
                     </div>
@@ -881,7 +889,7 @@ const AllOrdersForSalesman = () => {
                     </div>
                   </div>
 
-                  <div className="flex flex-col gap-2 text-sm">
+                  <div className="flex flex-col gap-2">
                     <div className="flex items-center justify-between font-semibold">
                       <span className="text-gray-600 font-normal">
                         Dispatched By:
@@ -920,10 +928,10 @@ const AllOrdersForSalesman = () => {
       {/* --- View Invoice Modal --- */}
       {openInvoice && (
         <div className="transition-all bg-gradient-to-b from-black/20 to-black/60 backdrop-blur-sm w-full z-50 h-screen absolute top-0 left-0 flex items-center justify-center">
-          <div className="bg-white relative p-7 w-[35%] rounded-lg overflow-auto">
+          <div className="bg-white relative lg:p-7 p-5 lg:w-[35%] md:w-[60%] sm:w-[60%] w-[95%] max-h-[95%] overflow-y-auto rounded-lg">
             <div className="mb-5">
               <div className="flex items-center justify-between">
-                <p className="text-xl font-bold">Invoice</p>
+                <p className="lg:text-xl text-base font-semibold">Invoice</p>
                 <div className="flex items-center gap-5">
                   <div className="relative group">
                     {user.isActive ? (
@@ -956,8 +964,8 @@ const AllOrdersForSalesman = () => {
               </div>
             </div>
             <div>
-              <div className="flex flex-col gap-2 text-sm">
-                <h1 className="font-semibold text-base text-gray-800">
+              <div className="flex flex-col gap-2 lg:text-sm text-xs">
+                <h1 className="font-semibold lg:text-base text-sm text-gray-800">
                   Invoiced By
                 </h1>
                 <div className="flex items-center justify-between font-semibold">
@@ -970,8 +978,8 @@ const AllOrdersForSalesman = () => {
                 </div>
               </div>
 
-              <div className="flex flex-col gap-2 text-sm mt-5">
-                <h1 className="font-semibold text-base text-gray-800">
+              <div className="flex flex-col gap-2 lg:text-sm text-xs mt-5">
+                <h1 className="font-semibold lg:text-base text-sm text-gray-800">
                   Party Details
                 </h1>
                 <div className="flex items-center justify-between font-semibold">
@@ -995,8 +1003,8 @@ const AllOrdersForSalesman = () => {
                 </div>
               </div>
 
-              <div className="flex flex-col gap-2 text-sm mt-5">
-                <h1 className="font-semibold text-base text-gray-800">
+              <div className="flex flex-col gap-2 lg:text-sm text-xs mt-5">
+                <h1 className="font-semibold lg:text-base text-sm text-gray-800">
                   Payment Information
                 </h1>
                 <div className="flex items-center justify-between font-semibold">
@@ -1031,7 +1039,7 @@ const AllOrdersForSalesman = () => {
               </div>
               <hr className="my-3" />
               <div>
-                <div className="flex items-center justify-between font-semibold text-sm">
+                <div className="flex items-center justify-between font-semibold lg:text-sm text-xs">
                   <span className="text-gray-600 font-normal">
                     Invoice Generated on:
                   </span>
@@ -1046,13 +1054,15 @@ const AllOrdersForSalesman = () => {
         </div>
       )}
 
-      {/* --- View Invoice Modal --- */}
+      {/* --- View Due Invoice Modal --- */}
       {openDuePaymentInvoice && (
         <div className="transition-all bg-gradient-to-b from-black/20 to-black/60 backdrop-blur-sm w-full z-50 h-screen absolute top-0 left-0 flex items-center justify-center">
-          <div className="bg-white relative p-7 w-[35%] rounded-lg overflow-auto">
+          <div className="bg-white relative lg:p-7 p-5 lg:w-[35%] md:w-[60%] sm:w-[60%] w-[95%] rounded-lg overflow-auto">
             <div className="mb-5">
               <div className="flex items-center justify-between">
-                <p className="text-xl font-bold">Due Payment Invoice</p>
+                <p className="lg:text-xl text-base font-semibold">
+                  Due Payment Invoice
+                </p>
                 <div className="flex items-center gap-5">
                   <div className="relative group">
                     {user.isActive ? (
@@ -1085,8 +1095,8 @@ const AllOrdersForSalesman = () => {
               </div>
             </div>
             <div>
-              <div className="flex flex-col gap-2 text-sm">
-                <h1 className="font-semibold text-base text-gray-800">
+              <div className="flex flex-col gap-2 lg:text-sm text-xs">
+                <h1 className="font-semibold lg:text-base text-sm text-gray-800">
                   Invoiced By
                 </h1>
                 <div className="flex items-center justify-between font-semibold">
@@ -1102,8 +1112,8 @@ const AllOrdersForSalesman = () => {
                 </div>
               </div>
 
-              <div className="flex flex-col gap-2 text-sm mt-5">
-                <h1 className="font-semibold text-base text-gray-800">
+              <div className="flex flex-col gap-2 lg:text-sm text-xs mt-5">
+                <h1 className="font-semibold lg:text-base text-sm text-gray-800">
                   Party Details
                 </h1>
                 <div className="flex items-center justify-between font-semibold">
@@ -1130,8 +1140,8 @@ const AllOrdersForSalesman = () => {
                 </div>
               </div>
 
-              <div className="flex flex-col gap-2 text-sm mt-5">
-                <h1 className="font-semibold text-base text-gray-800">
+              <div className="flex flex-col gap-2 lg:text-sm text-xs mt-5">
+                <h1 className="font-semibold lg:text-base text-sm text-gray-800">
                   Payment Information
                 </h1>
                 <div className="flex items-center justify-between font-semibold">
@@ -1172,7 +1182,7 @@ const AllOrdersForSalesman = () => {
               </div>
               <hr className="my-3" />
               <div>
-                <div className="flex items-center justify-between font-semibold text-sm">
+                <div className="flex items-center justify-between font-semibold lg:text-sm text-xs">
                   <span className="text-gray-600 font-normal">
                     Invoice Generated on:
                   </span>
@@ -1190,11 +1200,11 @@ const AllOrdersForSalesman = () => {
       {/* Deliver Order Modal */}
       {openDeliver && (
         <div className="transition-all bg-gradient-to-b from-black/20 to-black/60 backdrop-blur-sm w-full z-50 h-screen absolute top-0 left-0 flex items-center justify-center">
-          <div className="bg-white p-7 rounded-lg w-[35rem]">
-            <p className="text-lg font-semibold">
+          <div className="bg-white lg:p-7 p-5 rounded-lg lg:w-[35rem] md:w-[60%] sm:w-[60%] w-[95%]">
+            <p className="lg:text-lg text-base font-semibold">
               Are you sure you want to mark this order Delivered?
             </p>
-            <p className="text-gray-500 text-sm">
+            <p className="text-gray-500 lg:text-sm text-xs">
               This action cannot be undone.{" "}
               {singleOrderFromSalesman?.item?.name} will be marked as Delivered.
             </p>
@@ -1202,6 +1212,7 @@ const AllOrdersForSalesman = () => {
               <Button
                 variant="outlined"
                 disableElevation
+                size="small"
                 color="error"
                 sx={{ textTransform: "none" }}
                 onClick={() => setOpenDeliver(false)}
@@ -1211,7 +1222,8 @@ const AllOrdersForSalesman = () => {
               <Button
                 variant="contained"
                 disableElevation
-                color="error"
+                color="success"
+                size="small"
                 sx={{ textTransform: "none" }}
                 onClick={handleDeliverOrder}
                 loading={isDeliveringOrder}
@@ -1226,10 +1238,12 @@ const AllOrdersForSalesman = () => {
       {/* --- Update Payment Modal --- */}
       {openUpdatePayment && (
         <div className="transition-all bg-gradient-to-b from-black/20 to-black/60 backdrop-blur-sm w-full z-50 h-screen absolute top-0 left-0 flex items-center justify-center">
-          <div className="bg-white relative p-7 w-[25%] rounded-lg overflow-auto">
+          <div className="bg-white relative lg:p-7 p-5 lg:w-[30%] md:w-[60%] sm:w-[60%] w-[95%] max-h-[95%] overflow-y-auto rounded-lg">
             <div className="mb-5">
               <div className="flex items-center justify-between">
-                <p className="text-xl font-bold">Update Payment</p>
+                <p className="lg:text-xl md:text-lg sm:text-base text-base font-semibold">
+                  Update Payment
+                </p>
               </div>
             </div>
             <div>
@@ -1316,6 +1330,7 @@ const AllOrdersForSalesman = () => {
                     onClick={() => setOpenUpdatePayment(false)}
                     variant="outlined"
                     disableElevation
+                    size="small"
                     color="primary"
                     sx={{ textTransform: "none" }}
                   >
@@ -1325,6 +1340,7 @@ const AllOrdersForSalesman = () => {
                     loading={isUpdatingPayment}
                     type="submit"
                     variant="contained"
+                    size="small"
                     disableElevation
                     color="primary"
                     sx={{ textTransform: "none" }}
@@ -1341,13 +1357,13 @@ const AllOrdersForSalesman = () => {
       {/* Cancel Order Modal */}
       {openCancel && (
         <div className="transition-all bg-gradient-to-b from-black/20 to-black/60 backdrop-blur-sm w-full z-50 h-screen absolute top-0 left-0 flex items-center justify-center">
-          <div className="bg-white p-7 rounded-lg w-[29rem]">
-            <p className="text-lg font-semibold">
-              Are you sure you want to cancel "
-              {singleOrderFromSalesman?.item?.name}"?
+          <div className="bg-white lg:p-7 p-5 rounded-lg lg:w-[29rem] md:w-[60%] w-[95%]">
+            <p className="lg:text-lg text-base font-semibold">
+              Are you sure you want to cancel the order #
+              {singleOrderFromSalesman?.orderId} ?
             </p>
-            <p className="text-gray-800 my-2">
-              Tell us why you are cancelling this order:
+            <p className="lg:text-sm text-xs text-gray-800 my-2">
+              Tell us why you are cancelling this order ?
             </p>
             <form onSubmit={handleSubmit(handleCancelOrder)}>
               <div>
@@ -1371,6 +1387,7 @@ const AllOrdersForSalesman = () => {
                 <Button
                   variant="outlined"
                   disableElevation
+                  size="small"
                   color="error"
                   sx={{ textTransform: "none" }}
                   onClick={() => setOpenCancel(false)}
@@ -1381,6 +1398,7 @@ const AllOrdersForSalesman = () => {
                   disabled={!reason}
                   variant="contained"
                   disableElevation
+                  size="small"
                   color="error"
                   type="Submit"
                   sx={{ textTransform: "none" }}

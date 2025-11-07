@@ -14,10 +14,18 @@ import {
   ButtonGroup,
   CircularProgress,
   IconButton,
+  useMediaQuery,
+  useTheme,
 } from "@mui/material";
 import useEmployees from "../hooks/useEmployees.js";
 import Avatar from "./Avatar.jsx";
-import { MessageCircleWarning, SendHorizontal, Smile, X } from "lucide-react";
+import {
+  ArrowLeft,
+  MessageCircleWarning,
+  SendHorizontal,
+  Smile,
+  X,
+} from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import socket from "../utils/socket.js";
 import { format, isToday, isYesterday } from "date-fns";
@@ -25,10 +33,15 @@ import "../App.css";
 import { MyEmojiPicker } from "./EmojiPicker.jsx";
 import useNotification from "../hooks/useNotification.js";
 import CloseIcon from "@mui/icons-material/Close";
-import { useTheme } from "../context/ThemeContext.jsx";
+import { useTheme as MyTheme } from "../context/ThemeContext.jsx";
+import { API_PATHS, BASE_URL } from "../utils/apiPaths.js";
 
 const AdminNotification = ({ setIsOpenNotification }) => {
-  const { resolvedTheme } = useTheme();
+  const theme = useTheme();
+  const isSmDown = useMediaQuery(theme.breakpoints.down("sm"));
+  const isMdUp = useMediaQuery(theme.breakpoints.up("md"));
+
+  const { resolvedTheme } = MyTheme();
   const queryClient = useQueryClient();
   const { user } = useUser();
   const token = localStorage.getItem("token");
@@ -54,16 +67,29 @@ const AdminNotification = ({ setIsOpenNotification }) => {
   const tabType = ["notifications", "messages"];
 
   const messagesEndRef = useRef(null);
+  const messagesContainerDesktopRef = useRef(null);
+  const messagesContainerMobileRef = useRef(null);
 
   const handleClearNotifications = () => {
     clearNotifications();
     setNotifications([]);
   };
 
-  // Scroll to bottom when messages change
+  // Scroll to bottom when messages or context change
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView();
-  }, [messages]);
+    const pickVisible = () => {
+      const desk = messagesContainerDesktopRef.current;
+      const mob = messagesContainerMobileRef.current;
+      if (desk && desk.offsetParent !== null) return desk;
+      if (mob && mob.offsetParent !== null) return mob;
+      return desk || mob || null;
+    };
+    const el = pickVisible();
+    if (!el) return;
+    requestAnimationFrame(() => {
+      el.scrollTo({ top: el.scrollHeight });
+    });
+  }, [messages, loadingMessages, activeTab]);
 
   // Memoize all employees array
   const allEmployees = useMemo(
@@ -79,14 +105,13 @@ const AdminNotification = ({ setIsOpenNotification }) => {
 
   // Memoize selected employee
   const selectedEmployee = useMemo(() => {
-    if (selectedTab === "all-dashboards") return "all-dashboards";
     return allEmployees.find((e) => e._id === selectedTab) || null;
   }, [selectedTab, allEmployees]);
 
   const joinChatRoom = (empId) => {
     setSelectedTab(empId);
     setSelectedDashboard("");
-    setMessages([]); // Clear messages when switching
+    setMessages([]);
 
     if (currentRoomId && currentRoomId !== empId) {
       socket.emit("leaveRoom", currentRoomId);
@@ -95,6 +120,14 @@ const AdminNotification = ({ setIsOpenNotification }) => {
     socket.emit("joinChatRoom", empId);
     setCurrentRoomId(empId);
   };
+
+  const leaveChatRoom = () => {
+    setSelectedTab(null);
+    setCurrentRoomId(null);
+    socket.emit("leaveRoom", currentRoomId);
+    setMessages([]);
+  };
+
   // Stable handlers to avoid duplicate bindings
   const handleNotification = useCallback((data) => {
     // console.log("New notification:", data);
@@ -185,7 +218,7 @@ const AdminNotification = ({ setIsOpenNotification }) => {
       try {
         setLoading(true);
         const res = await axios.get(
-          `https://poultry-feed-management-software-3.onrender.com/api/notifications/${user._id}`,
+          BASE_URL + API_PATHS.NOTIFICATIONS.GET_NOTIFICATIONS(user._id),
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -221,7 +254,11 @@ const AdminNotification = ({ setIsOpenNotification }) => {
       try {
         setLoadingMessages(true);
         const res = await axios.get(
-          `https://poultry-feed-management-software-3.onrender.com/api/messages/${user._id}/${selectedEmployee._id}`,
+          BASE_URL +
+            API_PATHS.MESSAGES.GET_MESSAGES(
+              user._id,
+              selectedEmployee._id
+            ),
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -288,7 +325,6 @@ const AdminNotification = ({ setIsOpenNotification }) => {
   ];
 
   const allUsers = [...new Set(generateRoomId.flat())];
-  console.log(allUsers);
 
   useEffect(() => {
     socket.emit("joinExecutives", user._id);
@@ -297,7 +333,9 @@ const AdminNotification = ({ setIsOpenNotification }) => {
   // Employee list component
   const EmployeeList = ({ title, employees }) => (
     <div className="flex flex-col items-start w-full px-2 transition-all">
-      <p className="text-gray-500 text-sm mb-1 dark:text-gray-400">{title}</p>
+      <p className="text-gray-500 lg:text-sm sm:text-xs text-[10px] mb-1 dark:text-gray-400 md:text-[11px]">
+        {title}
+      </p>
       {employees?.map((emp) => (
         <Button
           key={emp._id}
@@ -314,7 +352,7 @@ const AdminNotification = ({ setIsOpenNotification }) => {
             marginBottom: "5px",
             padding: "4px 15px",
             justifyContent: "flex-start",
-            fontSize: "16px",
+            fontSize: isMdUp ? "16px" : "13px",
             fontWeight: "400",
             width: "100%",
             fontFamily: "'Inter', sans-serif",
@@ -326,6 +364,49 @@ const AdminNotification = ({ setIsOpenNotification }) => {
           onClick={() => joinChatRoom(emp._id)}
         >
           {emp.name}
+        </Button>
+      ))}
+    </div>
+  );
+
+  // Employee list component for mobile
+  const EmployeeListForMobile = ({ title, employees }) => (
+    <div className="flex flex-col items-start w-full px-2 transition-all">
+      <p className="text-gray-500 lg:text-sm sm:text-xs text-[10px] mb-1 dark:text-gray-400 md:text-[11px]">
+        {title}
+      </p>
+      {employees?.map((emp) => (
+        <Button
+          key={emp._id}
+          disableElevation
+          disableRipple={selectedTab === emp._id}
+          disabled={selectedTab === emp._id}
+          variant={selectedTab === emp._id ? "contained" : "text"}
+          sx={{
+            textAlign: "center",
+            textTransform: "none",
+            color:
+              selectedTab === emp._id
+                ? "white"
+                : `${resolvedTheme === "dark" ? "white" : "#1f2937"}`,
+            marginBottom: "5px",
+            padding: "4px 15px",
+            justifyContent: "flex-start",
+            fontSize: isMdUp ? "16px" : "14px",
+            fontWeight: "400",
+            width: "100%",
+            fontFamily: "'Inter', sans-serif",
+            "&.Mui-disabled": {
+              backgroundColor: "#1976D2",
+              color: "white",
+            },
+          }}
+          onClick={() => joinChatRoom(emp._id)}
+        >
+          <div className="flex items-center gap-2">
+            <Avatar size={35} name={emp?.name} />
+            <p>{emp?.name}</p>
+          </div>
         </Button>
       ))}
     </div>
@@ -348,7 +429,7 @@ const AdminNotification = ({ setIsOpenNotification }) => {
         marginBottom: "5px",
         padding: "4px 15px",
         justifyContent: "flex-start",
-        fontSize: "16px",
+        fontSize: isMdUp ? "16px" : "13px",
         fontWeight: "400",
         width: "100%",
         fontFamily: "'Inter', sans-serif",
@@ -402,10 +483,10 @@ const AdminNotification = ({ setIsOpenNotification }) => {
 
   return (
     <div className="flex items-center justify-center w-full h-full absolute top-0 right-0 bg-gradient-to-b from-black/20 to-black/60 backdrop-blur-sm z-50 transition-all">
-      <div className="w-[65%] h-[90%] dark:bg-gray-800 overflow-hidden p-5 flex items-start flex-col bg-white shadow-md rounded-lg z-[9999] transition-all">
+      <div className="lg:w-[65%] lg:h-[90%] md:w-[90%] md:h-[95%] sm:w-[95%] sm:h-[95%] w-[95%] h-[95%] dark:bg-gray-800 overflow-hidden lg:p-5 md:p-5 sm:p-5 p-2 flex items-start flex-col bg-white shadow-md rounded-lg z-[9999] transition-all">
         {/* Header - Fixed height */}
-        <div className="flex items-center justify-between mb-3 w-full flex-shrink-0 ">
-          <p className="text-xl font-bold dark:text-gray-300">
+        <div className="flex items-center justify-between mb-3 sm:mb-2 w-full flex-shrink-0 ">
+          <p className="lg:text-xl md:text-base sm:text-sm font-bold dark:text-gray-300">
             Notifications & Chats
           </p>
           <IconButton size="small" onClick={() => setIsOpenNotification(false)}>
@@ -425,6 +506,7 @@ const AdminNotification = ({ setIsOpenNotification }) => {
                   <Button
                     disableElevation
                     key={i}
+                    size={isMdUp ? "medium" : "small"}
                     variant={activeTab === tab ? "contained" : "outlined"}
                     sx={{
                       textTransform: "none",
@@ -446,14 +528,14 @@ const AdminNotification = ({ setIsOpenNotification }) => {
                   {!loading ? (
                     <div>
                       {sortedNotifications?.length === 0 ? (
-                        <div className="w-full dark:text-gray-400 h-[450px] text-gray-500 flex items-center justify-center">
+                        <div className="w-full dark:text-gray-400 md:h-[400px] lg:h-[450px] text-gray-500 flex items-center justify-center">
                           No notifications
                         </div>
                       ) : (
                         groupedByDateNotifications?.map((group, i) => (
                           <div key={group.key}>
-                            <div className="text-center sticky top-0 z-10 py-2 mb-2 text-sm dark:text-gray-300 text-gray-600 bg-transparent">
-                              <span className="bg-gray-100 dark:bg-gray-700 shadow-sm px-3 font-semibold text-xs py-1 rounded-full">
+                            <div className="text-center sticky top-0 z-10 py-2 mb-2 lg:text-xs md:text-xs dark:text-gray-300 text-gray-600 bg-transparent">
+                              <span className="bg-gray-100 dark:bg-gray-700 shadow-sm px-3 font-semibold lg:text-xs md:text-xs text-[10px] py-1 rounded-full sm:text-[10px]">
                                 {isToday(group.date)
                                   ? "Today"
                                   : isYesterday(group.date)
@@ -466,13 +548,13 @@ const AdminNotification = ({ setIsOpenNotification }) => {
                               <div
                                 key={n?._id || `notification-${group.key}-${i}`}
                               >
-                                <div className="p-3 text-sm my-2 relative bg-gray-50 dark:bg-gray-900 border-l-4 border-[#1976D2] rounded-lg shadow-sm hover:bg-gray-100 transition-colors duration-200">
+                                <div className="lg:p-3 md:p-3 sm:p-3 p-2 text-sm my-2 relative bg-gray-50 dark:bg-gray-900 border-l-4 border-[#1976D2] rounded-lg shadow-sm hover:bg-gray-100 transition-colors duration-200">
                                   <div className="flex justify-between items-center">
-                                    <p className="text-gray-800 dark:text-gray-300 font-medium">
+                                    <p className="text-gray-800 dark:text-gray-300 font-medium lg:text-sm md:text-xs sm:text-xs text-xs me-10">
                                       {n?.message}
                                       {n?.createdAt && (
                                         <span
-                                          className={`text-[10px] text-right absolute bottom-1 right-2 ${
+                                          className={`text-[10px] text-right absolute bottom-1 right-2 sm:text-[10px] ${
                                             n?.createdAt === user._id
                                               ? "text-gray-300"
                                               : "text-gray-500"
@@ -505,7 +587,7 @@ const AdminNotification = ({ setIsOpenNotification }) => {
                       sx={{
                         textTransform: "none",
                         padding: "4px 10px",
-                        fontSize: "14px",
+                        fontSize: isMdUp ? "14px" : "12px",
                         borderRadius: "999px",
                       }}
                       loading={loadingClearNotifications}
@@ -520,219 +602,385 @@ const AdminNotification = ({ setIsOpenNotification }) => {
 
             {/* Messages Tab */}
             {activeTab === "messages" && (
-              <div className="flex w-full flex-1 min-h-0 mt-2">
-                {/* Employee List Sidebar */}
-                <div className="overflow-y-auto custom-scrollbar min-w-48 flex-shrink-0">
-                  <div className="flex flex-col items-start gap-2 w-full px-2">
-                    <Button
-                      onClick={() => {
-                        setSelectedTab("all-dashboards");
-                        setSelectedDashboard("All");
-                        if (currentRoomId) {
-                          socket.emit("leaveRoom", currentRoomId);
-                          setCurrentRoomId(null);
-                        }
-                      }}
-                      disableElevation
-                      disableRipple={selectedTab === "all-dashboards"}
-                      disabled={selectedTab === "all-dashboards"}
-                      variant={
-                        selectedTab === "all-dashboards" ? "contained" : "text"
-                      }
-                      sx={{
-                        textTransform: "none",
-                        color:
-                          selectedTab === "all-dashboards"
-                            ? "white"
-                            : `${
-                                resolvedTheme === "dark" ? "white" : "#1f2937"
-                              }`,
-                        marginBottom: "5px",
-                        padding: "4px 15px",
-                        justifyContent: "flex-start",
-                        fontSize: "16px",
-                        fontWeight: "400",
-                        width: "100%",
-                        fontFamily: "'Inter', sans-serif",
-                        "&.Mui-disabled": {
-                          backgroundColor: "#1976D2",
-                          color: "white",
-                        },
-                      }}
-                    >
-                      Executives
-                    </Button>
-                    <EmployeeList title="Salesmen" employees={salesman} />
-                    <EmployeeList title="Managers" employees={salesmanager} />
-                    <EmployeeList
-                      title="Authorizers"
-                      employees={salesauthorizer}
-                    />
-                    <EmployeeList title="Plant Heads" employees={planthead} />
-                    <EmployeeList title="Accountants" employees={accountant} />
-                  </div>
-                </div>
-
-                {/* Dashboard Filter */}
-                {selectedTab === "all-dashboards" && (
-                  <div className="min-w-[160px] max-w-[160px] border-r transition-all flex-shrink-0 overflow-y-auto px-2 dark:border-r dark:border-gray-700">
-                    <DashboardButton dashboard="All" label="All" />
-                    <DashboardButton dashboard="Salesman" label="Salesmen" />
-                    <DashboardButton dashboard="Managers" label="Managers" />
-                    <DashboardButton
-                      dashboard="Authorizers"
-                      label="Authorizers"
-                    />
-                    <DashboardButton
-                      dashboard="Plantheads"
-                      label="Plant Heads"
-                    />
-                    <DashboardButton
-                      dashboard="Accountants"
-                      label="Accountants"
-                    />
-                  </div>
-                )}
-
-                {/* Chat Area */}
-                <div className="w-full flex-1 flex flex-col min-h-0 min-w-0 dark:border-l dark:border-gray-700 ">
-                  {/* Header - Fixed */}
-                  <div className="flex-shrink-0 border-b dark:border-b dark:border-gray-700">
-                    <div className="p-2 bg-gray-50 dark:bg-gray-800 w-full flex items-center gap-2">
-                      <Avatar
-                        size={40}
-                        name={selectedEmployee?.name || selectedDashboard}
+              <>
+                <div className="lg:flex md:flex sm:flex hidden w-full flex-1 min-h-0 mt-2">
+                  {/* Employee List Sidebar */}
+                  <div className="overflow-y-auto custom-scrollbar lg:min-w-48 md:min-w-40 border-gray-200 flex-shrink-0">
+                    <div className="flex flex-col items-start gap-2 w-full px-2">
+                      <EmployeeList title="Salesmen" employees={salesman} />
+                      <EmployeeList title="Managers" employees={salesmanager} />
+                      <EmployeeList
+                        title="Authorizers"
+                        employees={salesauthorizer}
                       />
-                      <div className="flex flex-col">
-                        <p className="font-semibold dark:text-gray-200">
-                          {selectedDashboard || selectedEmployee.name}
-                        </p>
-                        <p className="text-xs dark:text-gray-300">
-                          {selectedEmployee.role}
-                        </p>
-                      </div>
+                      <EmployeeList title="Plant Heads" employees={planthead} />
+                      <EmployeeList
+                        title="Accountants"
+                        employees={accountant}
+                      />
                     </div>
                   </div>
 
-                  {/* Messages Area - Scrollable */}
-                  {loadingMessages ? (
-                    <div className="flex items-center justify-center w-full flex-1">
-                      <div className="flex items-center justify-center gap-3 bg-blue-50 dark:bg-blue-950 p-2 rounded-lg">
-                        <CircularProgress size={14} />
-                        <p className="text-sm text-[#1976D2]">
-                          Loading chats...
-                        </p>
+                  {/* Chat Area */}
+                  {selectedEmployee ? (
+                    <div className="w-full flex-1 flex flex-col min-h-0 min-w-0 dark:border-l dark:border-gray-700">
+                      {/* Header - Fixed */}
+                      <div className="flex-shrink-0 border-b dark:border-b dark:border-gray-700">
+                        <div className="p-2 bg-gray-50 dark:bg-gray-800 w-full flex items-center gap-2">
+                          <Avatar
+                            size={isSmDown ? 20 : 40}
+                            name={selectedEmployee?.name}
+                          />
+
+                          <div className="flex flex-col">
+                            <p className="font-semibold lg:te xt-base dark:text-gray-200 md:text-sm sm:text-sm">
+                              {selectedEmployee?.name}
+                            </p>
+                            <p className="text-xs dark:text-gray-300 md:text-xs">
+                              {selectedEmployee.role}
+                            </p>
+                          </div>
+                        </div>
                       </div>
-                    </div>
-                  ) : (
-                    <div className="p-2 dark:bg-gray-900 overflow-y-auto custom-scrollbar bg-gray-50 shadow-inner flex-1 min-h-0 relative">
-                      {sortedMessages?.length > 0 ? (
-                        <div className="flex flex-col">
-                          {groupedByDate?.map((group) => (
-                            <div key={group.key} className="flex flex-col">
-                              <div className="text-center sticky top-0 z-10 py-2 text-sm dark:text-gray-300 text-gray-600 bg-transparent">
-                                <span className="bg-gray-200 dark:bg-gray-800 px-3 font-semibold text-xs py-1 rounded-full">
-                                  {isToday(group.date)
-                                    ? "Today"
-                                    : isYesterday(group.date)
-                                    ? "Yesterday"
-                                    : format(group.date, "dd MMM, yyyy")}
-                                </span>
-                              </div>
-                              {group?.items?.map((m, i) => (
-                                <div
-                                  key={`message-${
-                                    m?._id || `${group.key}-${i}`
-                                  }`}
-                                  className={`p-2 px-3 text-gray-800 shadow text-sm mb-2 pe-14 rounded-xl relative max-w-[70%] 
+
+                      {/* Messages Area - Scrollable */}
+                      {loadingMessages ? (
+                        <div className="flex items-center justify-center w-full flex-1">
+                          <div className="flex items-center justify-center gap-3 bg-blue-50 dark:bg-blue-950 p-2 rounded-lg">
+                            <CircularProgress size={14} />
+                            <p className="lg:text-sm md:text-xs text-[#1976D2]">
+                              Loading chats...
+                            </p>
+                          </div>
+                        </div>
+                      ) : (
+                        <div
+                          ref={messagesContainerDesktopRef}
+                          className="p-2 dark:bg-gray-900 overflow-y-auto custom-scrollbar bg-gray-50 shadow-inner flex-1 min-h-0 relative"
+                        >
+                          {sortedMessages?.length > 0 ? (
+                            <div className="flex flex-col">
+                              {groupedByDate?.map((group) => (
+                                <div key={group.key} className="flex flex-col">
+                                  <div className="text-center sticky top-0 z-10 py-2 md:text-xs lg:text-sm dark:text-gray-300 text-gray-600 bg-transparent">
+                                    <span className="bg-gray-200 dark:bg-gray-800 px-3 font-semibold md:text-xs sm:text-[10px] lg:text-xs py-1 rounded-full">
+                                      {isToday(group.date)
+                                        ? "Today"
+                                        : isYesterday(group.date)
+                                        ? "Yesterday"
+                                        : format(group.date, "dd MMM, yyyy")}
+                                    </span>
+                                  </div>
+                                  {group?.items?.map((m, i) => (
+                                    <div
+                                      key={`message-${
+                                        m?._id || `${group.key}-${i}`
+                                      }`}
+                                      className={`p-2 px-3 text-gray-800 shadow md:text-xs lg:text-sm sm:text-xs mb-2 pe-14 rounded-xl relative max-w-[70%] 
                             ${
                               m?.senderId === user._id
                                 ? "bg-[#1976D2] text-white self-end rounded-xl rounded-tr-sm"
                                 : "bg-white dark:bg-gray-700 text-gray-800 dark:text-white self-start rounded-xl rounded-tl-sm"
                             }`}
-                                >
-                                  <p
-                                    className={
-                                      "w-full break-words whitespace-pre-wrap" +
-                                      (emojiRegex.test(m?.message.trim())
-                                        ? " text-center text-2xl"
-                                        : "")
-                                    }
-                                  >
-                                    {m?.message}
-                                  </p>
-
-                                  {m?.timestamp && (
-                                    <p
-                                      className={`text-[10px] text-right absolute bottom-1 right-2 ${
-                                        m?.senderId === user._id
-                                          ? "text-gray-300"
-                                          : "text-gray-500 dark:text-gray-200"
-                                      }`}
                                     >
-                                      {format(m.timestamp, "h:mm a")}
-                                    </p>
-                                  )}
+                                      <p
+                                        className={
+                                          "w-full break-words whitespace-pre-wrap" +
+                                          (emojiRegex.test(m?.message.trim())
+                                            ? " text-center text-2xl"
+                                            : "")
+                                        }
+                                      >
+                                        {m?.message}
+                                      </p>
+
+                                      {m?.timestamp && (
+                                        <p
+                                          className={`text-[10px] text-right absolute bottom-1 right-2 ${
+                                            m?.senderId === user._id
+                                              ? "text-gray-300"
+                                              : "text-gray-500 dark:text-gray-200"
+                                          }`}
+                                        >
+                                          {format(m.timestamp, "h:mm a")}
+                                        </p>
+                                      )}
+                                    </div>
+                                  ))}
                                 </div>
                               ))}
+                              <div ref={messagesEndRef} />
                             </div>
-                          ))}
-                          <div ref={messagesEndRef} />
-                        </div>
-                      ) : (
-                        <div className="flex items-center justify-center w-full h-full">
-                          <div className="flex flex-col items-center text-gray-500 p-8  rounded-lg">
-                            <MessageCircleWarning size={30} />
-                            <h1 className="text-md font-semibold mt-2">
-                              Chat seems empty
-                            </h1>
-                            <p className="text-xs mt-1">
-                              Start a conversation with{" "}
-                              {selectedDashboard || selectedEmployee?.name}
-                            </p>
-                          </div>
+                          ) : (
+                            <div className="flex items-center justify-center w-full h-full">
+                              <div className="flex flex-col items-center text-gray-500 p-8  rounded-lg">
+                                <MessageCircleWarning size={30} />
+                                <h1 className="text-md font-semibold mt-2">
+                                  Chat seems empty
+                                </h1>
+                                <p className="text-xs mt-1">
+                                  Start a conversation with{" "}
+                                  {selectedDashboard || selectedEmployee?.name}
+                                </p>
+                              </div>
+                            </div>
+                          )}
                         </div>
                       )}
+
+                      {/* Input Area - Fixed */}
+
+                      <div className="w-full bg-gray-100 py-2 relative flex-shrink-0 dark:bg-gray-800 dark:border-t dark:border-gray-700">
+                        <Smile
+                          color={openEmoji ? "#1976D2" : "gray"}
+                          size={32}
+                          onClick={() => setOpenEmoji(!openEmoji)}
+                          className={`hidden md:block lg:block absolute top-3 left-2 cursor-pointer active:scale-95 transition-all rounded-full p-1 `}
+                        />
+                        <Smile
+                          color={openEmoji ? "#1976D2" : "gray"}
+                          size={28}
+                          onClick={() => setOpenEmoji(!openEmoji)}
+                          className={`md:hidden lg:hidden absolute top-2.5 left-2 cursor-pointer active:scale-95 transition-all rounded-full p-1 `}
+                        />
+                        <form
+                          className="flex items-center gap-1 px-1"
+                          onSubmit={handleSendMessage}
+                        >
+                          <input
+                            type="text"
+                            placeholder="Message"
+                            className="w-full p-2 md:text-sm lg:text-base sm:text-xs px-4 rounded-full focus:outline-none ps-10 dark:bg-gray-900 dark:text-gray-200"
+                            value={typedMessage}
+                            onChange={(e) => setTypedMessage(e.target.value)}
+                          />
+                          <button
+                            type="submit"
+                            className="hidden md:block lg:block bg-[#1976D2] hover:bg-[#1976D2]/90 transition-all active:scale-95 rounded-full text-white p-2.5"
+                          >
+                            <SendHorizontal size={20} />
+                          </button>
+                          <button
+                            type="submit"
+                            className="md:hidden lg:hidden bg-[#1976D2] hover:bg-[#1976D2]/90 transition-all active:scale-95 rounded-full text-white p-2"
+                          >
+                            <SendHorizontal size={15} />
+                          </button>
+                        </form>
+                        {openEmoji && (
+                          <div className="absolute bottom-14 left-0 z-50">
+                            <MyEmojiPicker
+                              onEmojiSelect={handleEmojiSelect}
+                              onClose={() => setOpenEmoji(false)}
+                            />
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-center w-full h-full">
+                      <div className="flex flex-col items-center text-gray-500 p-8  rounded-lg">
+                        <MessageCircleWarning size={30} />
+                        <h1 className="text-sm font-semibold mt-2">
+                          No conversation selected
+                        </h1>
+                        <p className="text-xs mt-1">
+                          Please choose an employee to view messages
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* for mobile */}
+                <div className="flex w-full flex-1 min-h-0 mt-2 sm:hidden md:hidden lg:hidden rounded-b-lg overflow-hidden">
+                  {/* Employee List Sidebar */}
+                  {!selectedEmployee && (
+                    <div className="overflow-y-auto custom-scrollbar w-full border-gray-200 flex-shrink-0">
+                      <div className="flex flex-col items-start gap-2 w-full px-2">
+                        <EmployeeListForMobile
+                          title="Salesmen"
+                          employees={salesman}
+                        />
+                        <EmployeeListForMobile
+                          title="Managers"
+                          employees={salesmanager}
+                        />
+                        <EmployeeListForMobile
+                          title="Authorizers"
+                          employees={salesauthorizer}
+                        />
+                        <EmployeeListForMobile
+                          title="Plant Heads"
+                          employees={planthead}
+                        />
+                        <EmployeeListForMobile
+                          title="Accountants"
+                          employees={accountant}
+                        />
+                      </div>
                     </div>
                   )}
 
-                  {/* Input Area - Fixed */}
-                  <div className="w-full bg-gray-100 py-2 relative flex-shrink-0 dark:bg-gray-800 dark:border-t dark:border-gray-700">
-                    <Smile
-                      color={openEmoji ? "#1976D2" : "gray"}
-                      size={32}
-                      onClick={() => setOpenEmoji(!openEmoji)}
-                      className={`absolute top-3 left-2 cursor-pointer active:scale-95 transition-all rounded-full p-1 `}
-                    />
-                    <form
-                      className="flex items-center gap-1 px-1"
-                      onSubmit={handleSendMessage}
-                    >
-                      <input
-                        type="text"
-                        placeholder="Message"
-                        className="w-full p-2 px-4 rounded-full focus:outline-none ps-10 dark:bg-gray-900 dark:text-gray-200"
-                        value={typedMessage}
-                        onChange={(e) => setTypedMessage(e.target.value)}
-                      />
-                      <button
-                        type="submit"
-                        className="bg-[#1976D2] hover:bg-[#1976D2]/90 transition-all active:scale-95 rounded-full text-white p-2.5"
-                      >
-                        <SendHorizontal size={20} />
-                      </button>
-                    </form>
-                    {openEmoji && (
-                      <div className="absolute bottom-14 left-0 z-50">
-                        <MyEmojiPicker
-                          onEmojiSelect={handleEmojiSelect}
-                          onClose={() => setOpenEmoji(false)}
-                        />
+                  {/* Chat Area */}
+                  {selectedEmployee ? (
+                    <div className="w-full flex-1 flex flex-col min-h-0 min-w-0">
+                      {/* Header - Fixed */}
+                      <div className="flex-shrink-0 border-b dark:border-b dark:border-gray-700">
+                        <div className="p-2 bg-gray-50 dark:bg-gray-800 w-full flex items-center gap-2">
+                          <ArrowLeft
+                            onClick={leaveChatRoom}
+                            className="active:bg-gray-300 dark:active:bg-gray-700 dark:text-gray-400 rounded-full p-1 transition-all"
+                          />
+                          <Avatar
+                            size={isSmDown ? 35 : 40}
+                            name={selectedEmployee?.name}
+                          />
+
+                          <div className="flex flex-col">
+                            <p className="font-semibold lg:text-base dark:text-gray-200 md:text-sm sm:text-sm text-sm">
+                              {selectedEmployee?.name}
+                            </p>
+                            <p className="text-xs dark:text-gray-300 md:text-xs">
+                              {selectedEmployee.role}
+                            </p>
+                          </div>
+                        </div>
                       </div>
-                    )}
-                  </div>
+
+                      {/* Messages Area - Scrollable */}
+                      {loadingMessages ? (
+                        <div className="flex items-center justify-center w-full flex-1">
+                          <div className="flex items-center justify-center gap-3 bg-blue-50 dark:bg-blue-950 p-2 rounded-lg">
+                            <CircularProgress size={14} />
+                            <p className="lg:text-sm md:text-xs text-xs text-[#1976D2]">
+                              Loading chats...
+                            </p>
+                          </div>
+                        </div>
+                      ) : (
+                        <div
+                          ref={messagesContainerMobileRef}
+                          className="p-2 dark:bg-gray-900 overflow-y-auto custom-scrollbar bg-gray-50 shadow-inner flex-1 min-h-0 relative"
+                        >
+                          {sortedMessages?.length > 0 ? (
+                            <div className="flex flex-col">
+                              {groupedByDate?.map((group) => (
+                                <div key={group.key} className="flex flex-col">
+                                  <div className="text-center sticky top-0 z-10 py-2 md:text-xs lg:text-sm dark:text-gray-300 text-gray-600 bg-transparent">
+                                    <span className="bg-gray-200 dark:bg-gray-800 px-3 font-semibold md:text-xs sm:text-[10px] lg:text-xs text-[10px] py-1 rounded-full">
+                                      {isToday(group.date)
+                                        ? "Today"
+                                        : isYesterday(group.date)
+                                        ? "Yesterday"
+                                        : format(group.date, "dd MMM, yyyy")}
+                                    </span>
+                                  </div>
+                                  {group?.items?.map((m, i) => (
+                                    <div
+                                      key={`message-${
+                                        m?._id || `${group.key}-${i}`
+                                      }`}
+                                      className={`p-2 px-3 text-gray-800 shadow md:text-xs lg:text-sm sm:text-xs text-xs mb-2 pe-14 rounded-xl relative max-w-[70%] 
+                            ${
+                              m?.senderId === user._id
+                                ? "bg-[#1976D2] text-white self-end rounded-xl rounded-tr-sm"
+                                : "bg-white dark:bg-gray-700 text-gray-800 dark:text-white self-start rounded-xl rounded-tl-sm"
+                            }`}
+                                    >
+                                      <p
+                                        className={
+                                          "w-full break-words whitespace-pre-wrap" +
+                                          (emojiRegex.test(m?.message.trim())
+                                            ? " text-center text-2xl"
+                                            : "")
+                                        }
+                                      >
+                                        {m?.message}
+                                      </p>
+
+                                      {m?.timestamp && (
+                                        <p
+                                          className={`text-[10px] text-right absolute bottom-1 right-2 ${
+                                            m?.senderId === user._id
+                                              ? "text-gray-300"
+                                              : "text-gray-500 dark:text-gray-200"
+                                          }`}
+                                        >
+                                          {format(m.timestamp, "h:mm a")}
+                                        </p>
+                                      )}
+                                    </div>
+                                  ))}
+                                </div>
+                              ))}
+                              <div ref={messagesEndRef} />
+                            </div>
+                          ) : (
+                            <div className="flex items-center justify-center w-full h-full">
+                              <div className="flex flex-col items-center text-gray-500 p-8 rounded-lg">
+                                <MessageCircleWarning size={30} />
+                                <h1 className="text-sm font-semibold mt-2">
+                                  Chat seems empty
+                                </h1>
+                                <p className="text-xs mt-1">
+                                  Start a conversation with{" "}
+                                  {selectedDashboard || selectedEmployee?.name}
+                                </p>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Input Area - Fixed */}
+                      <div className="w-full bg-gray-100 py-2 relative flex-shrink-0 dark:bg-gray-800 dark:border-t dark:border-gray-700">
+                        <Smile
+                          color={openEmoji ? "#1976D2" : "gray"}
+                          size={32}
+                          onClick={() => setOpenEmoji(!openEmoji)}
+                          className={`absolute top-3 left-2 cursor-pointer active:scale-95 transition-all rounded-full p-1`}
+                        />
+                        <form
+                          className="flex items-center gap-1 px-1"
+                          onSubmit={handleSendMessage}
+                        >
+                          <input
+                            type="text"
+                            placeholder="Message"
+                            className="w-full p-2 md:text-sm lg:text-base sm:text-xs px-4 rounded-full focus:outline-none ps-10 dark:bg-gray-900 dark:text-gray-200"
+                            value={typedMessage}
+                            onChange={(e) => setTypedMessage(e.target.value)}
+                          />
+                          <button
+                            type="submit"
+                            className="bg-[#1976D2] hover:bg-[#1976D2]/90 transition-all active:scale-95 rounded-full text-white p-2.5"
+                          >
+                            <SendHorizontal size={20} />
+                          </button>
+                        </form>
+                        {openEmoji && (
+                          <div className="absolute bottom-14 left-0 z-50">
+                            <MyEmojiPicker onEmojiSelect={handleEmojiSelect} />
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-center w-full h-full">
+                      <div className="flex flex-col items-center text-gray-500 p-8  rounded-lg">
+                        <MessageCircleWarning size={30} />
+                        <h1 className="text-sm font-semibold mt-2">
+                          No conversation selected
+                        </h1>
+                        <p className="text-xs mt-1">
+                          Please choose an employee to view messages
+                        </p>
+                      </div>
+                    </div>
+                  )}
                 </div>
-              </div>
+              </>
             )}
           </div>
         )}

@@ -1,5 +1,12 @@
 import { useState } from "react";
-import { Button, CircularProgress, IconButton, TextField } from "@mui/material";
+import {
+  Button,
+  CircularProgress,
+  IconButton,
+  TextField,
+  useMediaQuery,
+  useTheme,
+} from "@mui/material";
 import { Eye, SquarePen, Trash2 } from "lucide-react";
 import { format } from "date-fns";
 import { DataGrid } from "@mui/x-data-grid";
@@ -12,6 +19,10 @@ import { useForm } from "react-hook-form";
 import { useUser } from "../../../hooks/useUser.js";
 
 const OrdersForManager = () => {
+  const theme = useTheme();
+  const isMdUp = useMediaQuery(theme.breakpoints.up("md"));
+  const isSmDown = useMediaQuery(theme.breakpoints.down("sm"));
+
   const [singleOrderId, setSingleOrderId] = useState(null);
   const [openView, setOpenView] = useState(false);
   const [openCancel, setOpenCancel] = useState(false);
@@ -80,19 +91,21 @@ const OrdersForManager = () => {
       minWidth: 80,
       maxWidth: 100,
     },
-    { field: "product", headerName: "Product", flex: 1 },
-    { field: "party", headerName: "Party", flex: 1 },
-    { field: "date", headerName: "Date", flex: 1 },
-    { field: "quantity", headerName: "Quantity", flex: 1 },
+    { field: "product", headerName: "Product", flex: 1, minWidth: 120 },
+    { field: "party", headerName: "Party", flex: 1, minWidth: 100 },
+    { field: "date", headerName: "Date", flex: 1, minWidth: 100 },
+    { field: "quantity", headerName: "Quantity", flex: 1, minWidth: 100 },
     {
       field: "totalAmount",
       headerName: "Total Amount",
       flex: 1,
+      minWidth: 100,
     },
     {
       field: "advanceAmount",
       headerName: "Advance Amount",
       flex: 1,
+      minWidth: 100,
       renderCell: (params) => (
         <span className={`${params.value !== "₹0" && "text-green-700"}`}>
           {params.value}
@@ -103,6 +116,7 @@ const OrdersForManager = () => {
       field: "dueAmount",
       headerName: "Due Amount",
       flex: 1,
+      minWidth: 100,
       renderCell: (params) => (
         <span className={`${params.value !== "₹0" && "text-red-600"}`}>
           {params.value}
@@ -113,6 +127,7 @@ const OrdersForManager = () => {
       field: "orderStatus",
       headerName: "Status",
       flex: 1,
+      minWidth: 100,
       renderCell: (params) => (
         <span
           className={`${
@@ -131,7 +146,7 @@ const OrdersForManager = () => {
       field: "actions",
       headerName: "Actions",
       flex: 1,
-      minWidth: 150,
+      minWidth: 100,
       sortable: false,
       filterable: false,
       renderCell: (params) => (
@@ -219,10 +234,10 @@ const OrdersForManager = () => {
       {/* --- View Order Modal --- */}
       {openView && (
         <div className="transition-all bg-gradient-to-b from-black/20 to-black/60 backdrop-blur-sm w-full z-50 h-screen absolute top-0 left-0 flex items-center justify-center">
-          <div className="bg-white relative p-7 rounded-lg max-w-[60%] min-w-[45%] max-h-[95%] overflow-auto">
-            <div className="mb-5">
+          <div className="bg-white relative p-7 rounded-lg lg:max-w-[60%] lg:min-w-[50%] lg:max-h-[95%] w-[95%] max-h-[95%] overflow-auto">
+            <div className="lg:mb-5 mb-2">
               <div className="flex items-center justify-between">
-                <p className="text-xl font-bold">
+                <p className="lg:text-xl text-sm font-bold">
                   Order Details - #{singleOrderFromSalesManager?.orderId}
                 </p>
                 {singleOrderFromSalesManager?.orderStatus === "Placed" && (
@@ -231,13 +246,13 @@ const OrdersForManager = () => {
                     onClick={() =>
                       handleForwardOrder(singleOrderFromSalesManager?._id)
                     }
-                    variant="outlined"
+                    variant="text"
                     size="small"
                     disableElevation
                     sx={{
-                      borderRadius: "999px",
                       textTransform: "none",
-                      fontSize: "14px",
+                      fontSize: isSmDown ? "12px" : "14px",
+                      padding: 0,
                     }}
                   >
                     Forward to Authorizer
@@ -258,7 +273,7 @@ const OrdersForManager = () => {
 
             {/* products table */}
             <div className="relative overflow-x-auto mb-5 max-h-52">
-              <table className="w-full text-sm text-left text-gray-500 overflow-auto">
+              <table className="w-full lg:text-sm text-xs text-left text-gray-500 overflow-auto">
                 <thead className="sticky top-0 bg-gray-100 text-gray-800 z-10">
                   <tr>
                     <th scope="col" className="px-6 py-3">
@@ -275,7 +290,7 @@ const OrdersForManager = () => {
                     </th>
                   </tr>
                 </thead>
-                <tbody className="text-sm">
+                <tbody className="lg:text-sm text-xs">
                   {singleOrderFromSalesManager?.items?.map((item) => (
                     <tr className="bg-white border-b border-gray-200">
                       <th
@@ -295,10 +310,10 @@ const OrdersForManager = () => {
               </table>
             </div>
 
-            <div className="grid grid-cols-2 gap-7">
+            <div className="grid lg:grid-cols-2 sm:grid-cols-2 md:grid-cols-2 grid-cols-1 gap-7">
               <div className="flex flex-col gap-5">
-                <div className="flex flex-col gap-2 text-sm">
-                  <h1 className="font-semibold text-base text-gray-800">
+                <div className="flex flex-col gap-2 lg:text-sm text-xs">
+                  <h1 className="font-semibold lg:text-base text-sm text-gray-800">
                     Order Information
                   </h1>
                   <div className="flex items-center justify-between font-semibold">
@@ -317,8 +332,8 @@ const OrdersForManager = () => {
                     )}
                   </div>
                 </div>
-                <div className="flex flex-col gap-2 text-sm">
-                  <h1 className="font-semibold text-base text-gray-800">
+                <div className="flex flex-col gap-2 lg:text-sm text-xs">
+                  <h1 className="font-semibold lg:text-base text-sm text-gray-800">
                     Payment Information
                   </h1>
                   <div className="flex items-center justify-between font-semibold">
@@ -362,25 +377,25 @@ const OrdersForManager = () => {
                       </span>
                       {singleOrderFromSalesManager?.advancePaymentStatus ===
                         "Approved" && (
-                        <span className="text-green-700 font-semibold bg-green-100 p-1 px-3 rounded-full text-xs">
+                        <span className="text-green-700 font-semibold bg-green-100 p-0.5 px-2 rounded-full lg:text-xs text-[10px]">
                           Confirmed
                         </span>
                       )}
                       {singleOrderFromSalesManager?.advancePaymentStatus ===
                         "SentForApproval" && (
-                        <span className="text-indigo-700 font-semibold bg-indigo-100 p-1 px-3 rounded-full text-xs">
+                        <span className="text-indigo-700 font-semibold bg-indigo-100 p-0.5 px-2 rounded-full lg:text-xs text-[10px]">
                           Sent For Confirmation
                         </span>
                       )}
                       {singleOrderFromSalesManager?.advancePaymentStatus ===
                         "Pending" && (
-                        <span className="text-yellow-700 font-semibold bg-yellow-100 p-1 px-3 rounded-full text-xs">
+                        <span className="text-yellow-700 font-semibold bg-yellow-100 p-0.5 px-2 rounded-full lg:text-xs text-[10px]">
                           Pending
                         </span>
                       )}
                       {singleOrderFromSalesManager?.advancePaymentStatus ===
                         "Rejected" && (
-                        <span className="text-red-700 font-semibold bg-red-100 p-1 px-3 rounded-full text-xs">
+                        <span className="text-red-700 font-semibold bg-red-100 p-0.5 px-2 rounded-full lg:text-xs text-[10px]">
                           Rejected
                         </span>
                       )}
@@ -393,25 +408,25 @@ const OrdersForManager = () => {
                       </span>
                       {singleOrderFromSalesManager?.duePaymentStatus ===
                         "Approved" && (
-                        <span className="text-green-700 font-semibold bg-green-100 p-1 px-3 rounded-full text-xs">
+                        <span className="text-green-700 font-semibold bg-green-100 p-0.5 px-2 rounded-full lg:text-xs text-[10px]">
                           Confirmed
                         </span>
                       )}
                       {singleOrderFromSalesManager?.duePaymentStatus ===
                         "SentForApproval" && (
-                        <span className="text-indigo-700 font-semibold bg-indigo-100 p-1 px-3 rounded-full text-xs">
+                        <span className="text-indigo-700 font-semibold bg-indigo-100 p-0.5 px-2 rounded-full lg:text-xs text-[10px]">
                           Sent For Confirmation
                         </span>
                       )}
                       {singleOrderFromSalesManager?.duePaymentStatus ===
                         "Pending" && (
-                        <span className="text-yellow-700 font-semibold bg-yellow-100 p-1 px-3 rounded-full text-xs">
+                        <span className="text-yellow-700 font-semibold bg-yellow-100 p-0.5 px-2 rounded-full lg:text-xs text-[10px]">
                           Pending
                         </span>
                       )}
                       {singleOrderFromSalesManager?.duePaymentStatus ===
                         "Rejected" && (
-                        <span className="text-red-700 font-semibold bg-red-100 p-1 px-3 rounded-full text-xs">
+                        <span className="text-red-700 font-semibold bg-red-100 p-0.5 px-2 rounded-full lg:text-xs text-[10px]">
                           Rejected
                         </span>
                       )}
@@ -447,8 +462,8 @@ const OrdersForManager = () => {
               </div>
 
               <div className="flex flex-col gap-5">
-                <div className="flex flex-col gap-2 text-sm">
-                  <h1 className="font-semibold text-base text-gray-800">
+                <div className="flex flex-col gap-2 lg:text-sm text-xs">
+                  <h1 className="font-semibold lg:text-base text-sm text-gray-800">
                     Order Status
                   </h1>
                   <div className="flex items-center justify-between font-semibold">
@@ -457,16 +472,16 @@ const OrdersForManager = () => {
                     </span>
                     {singleOrderFromSalesManager?.orderStatus ===
                     "Delivered" ? (
-                      <span className="text-green-700 bg-green-100 p-1 px-3 rounded-full text-xs">
+                      <span className="text-green-700 bg-green-100 p-0.5 px-2 rounded-full lg:text-xs text-[10px]">
                         Delivered
                       </span>
                     ) : singleOrderFromSalesManager?.orderStatus ===
                       "Cancelled" ? (
-                      <span className="text-red-700 bg-red-100 p-1 px-3 rounded-full text-xs">
+                      <span className="text-red-700 bg-red-100 p-0.5 px-2 rounded-full lg:text-xs text-[10px]">
                         Cancelled
                       </span>
                     ) : (
-                      <span className="text-gray-700 bg-gray-200 p-1 px-3 rounded-full text-xs">
+                      <span className="text-gray-700 bg-gray-200 p-0.5 px-2 rounded-full lg:text-xs text-[10px]">
                         {singleOrderFromSalesManager?.orderStatus}
                       </span>
                     )}
@@ -477,18 +492,18 @@ const OrdersForManager = () => {
                     </span>
                     {singleOrderFromSalesManager?.paymentStatus ===
                       "PendingDues" && (
-                      <span className="text-red-700 bg-red-100 p-1 px-3 rounded-full text-xs">
+                      <span className="text-red-700 bg-red-100 p-0.5 px-2 rounded-full lg:text-xs text-[10px]">
                         Pending Dues
                       </span>
                     )}
                     {singleOrderFromSalesManager?.paymentStatus === "Paid" && (
-                      <span className="text-green-700 bg-green-100 p-1 px-3 rounded-full text-xs">
+                      <span className="text-green-700 bg-green-100 p-0.5 px-2 rounded-full lg:text-xs text-[10px]">
                         Paid
                       </span>
                     )}
                     {singleOrderFromSalesManager?.paymentStatus ===
                       "ConfirmationPending" && (
-                      <span className="text-yellow-700 bg-yellow-100 p-1 px-3 rounded-full text-xs">
+                      <span className="text-yellow-700 bg-yellow-100 p-0.5 px-2 rounded-full lg:text-xs text-[10px]">
                         Confirmation Pending
                       </span>
                     )}
@@ -498,19 +513,19 @@ const OrdersForManager = () => {
                       Invoice Generated:
                     </span>
                     {singleOrderFromSalesManager?.invoiceGenerated ? (
-                      <span className="text-green-800 bg-green-100 p-1 px-3 rounded-full text-xs">
+                      <span className="text-green-800 bg-green-100 p-0.5 px-2 rounded-full lg:text-xs text-[10px]">
                         Yes
                       </span>
                     ) : (
-                      <span className="text-red-700 bg-red-100 p-1 px-3 rounded-full text-xs">
+                      <span className="text-red-700 bg-red-100 p-0.5 px-2 rounded-full lg:text-xs text-[10px]">
                         No
                       </span>
                     )}
                   </div>
                 </div>
 
-                <div className="flex flex-col gap-2 text-sm">
-                  <h1 className="font-semibold text-base text-gray-800">
+                <div className="flex flex-col gap-2 lg:text-sm text-xs">
+                  <h1 className="font-semibold lg:text-base text-sm text-gray-800">
                     Shipping Details
                   </h1>
                   <div className="flex items-center justify-between font-semibold">
@@ -519,19 +534,19 @@ const OrdersForManager = () => {
                   </div>
                 </div>
 
-                <div className="flex flex-col gap-2 text-sm">
-                  <h1 className="font-semibold text-base text-gray-800">
+                <div className="flex flex-col gap-2 lg:text-sm text-xs">
+                  <h1 className="font-semibold lg:text-base text-sm text-gray-800">
                     Notes
                   </h1>
-                  <p className="bg-green-50 rounded-lg p-3">
+                  <p className="bg-yellow-50 rounded-lg p-3">
                     {singleOrderFromSalesManager?.notes}
                   </p>
                 </div>
               </div>
             </div>
             {singleOrderFromSalesManager?.assignedWarehouse && (
-              <div className="flex flex-col text-sm my-5">
-                <h1 className="font-semibold text-base text-gray-800">
+              <div className="flex flex-col lg:text-sm text-xs my-5">
+                <h1 className="font-semibold lg:text-base text-sm text-gray-800">
                   Assigned Plant
                 </h1>
                 <div className="flex items-center justify-between font-semibold">
@@ -552,7 +567,7 @@ const OrdersForManager = () => {
                       </p>
                     </div>
                   ) : (
-                    <span className="text-red-700 bg-red-100 p-1 px-3 rounded-full text-xs">
+                    <span className="text-red-700 bg-red-100 p-0.5 px-2 rounded-full lg:text-xs text-[10px]">
                       Not Assigned
                     </span>
                   )}
@@ -566,12 +581,11 @@ const OrdersForManager = () => {
       {/* Cancel Order Modal */}
       {openCancel && (
         <div className="transition-all bg-gradient-to-b from-black/20 to-black/60 backdrop-blur-sm w-full z-50 h-screen absolute top-0 left-0 flex items-center justify-center">
-          <div className="bg-white p-7 rounded-lg w-[29rem]">
-            <p className="text-lg font-semibold">
-              Are you sure you want to cancel "
-              {singleOrderFromSalesManager?.item?.name}"?
+          <div className="bg-white lg:p-7 p-5 rounded-lg lg:w-[29rem] md:w-[60%] w-[95%]">
+            <p className="lg:text-lg text-base font-semibold">
+              Are you sure you want to cancel this order ?
             </p>
-            <p className="text-gray-800 my-2">
+            <p className="lg:text-sm text-xs text-gray-800 my-2">
               Tell us why you are cancelling this order:
             </p>
             <form onSubmit={handleSubmit(handleCancelOrder)}>
@@ -597,12 +611,14 @@ const OrdersForManager = () => {
                   variant="outlined"
                   disableElevation
                   color="error"
+                  size="small"
                   sx={{ textTransform: "none" }}
                   onClick={() => setOpenCancel(false)}
                 >
                   Keep Order
                 </Button>
                 <Button
+                size="small"
                   disabled={!reason}
                   variant="contained"
                   disableElevation

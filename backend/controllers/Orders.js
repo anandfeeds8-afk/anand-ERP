@@ -166,6 +166,12 @@ const createOrder = async (req, res) => {
       });
     });
 
+    // const order = {
+    //   id: Date.now(),
+    //   items: req.body.items || [],
+    //   total: req.body.total || 0,
+    // };
+
     res.status(201).json({
       success: true,
       message: "Order placed successfully",
@@ -227,6 +233,11 @@ const getOrderDetails = async (req, res) => {
     const order = await orderModel
       .findById(req.params.id)
       .populate("items.product", "name category price")
+      .populate(
+        "dueInvoiceDetails.party",
+        "companyName address contactPersonNumber"
+      )
+      .populate("dueInvoiceDetails.invoicedBy", "name email phone")
       .populate(orderPopulateFields);
 
     if (!order) {

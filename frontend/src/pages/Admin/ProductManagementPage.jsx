@@ -7,6 +7,8 @@ import {
   MenuItem,
   Select,
   TextField,
+  useMediaQuery,
+  useTheme,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import { Controller, useForm } from "react-hook-form";
@@ -14,6 +16,9 @@ import { useProduct } from "../../hooks/useProduct";
 import Product from "../../components/Admin/ProductManagement/Product";
 
 const ProductManagementPage = () => {
+  const theme = useTheme();
+  const isSmDown = useMediaQuery(theme.breakpoints.down("sm"));
+
   const [openForm, setOpenForm] = useState(false);
   const { addProduct, isLoading, allProducts } = useProduct();
   const {
@@ -29,29 +34,30 @@ const ProductManagementPage = () => {
     setOpenForm(false);
   };
 
-  console.log("allProducts", allProducts);
-
   if (isLoading) return <CircularProgress />;
 
   return (
     <div>
-      <div className="lg:flex lg:justify-between lg:items-center mb-5">
-        <h1 className="lg:text-3xl lg:font-bold">Product Management</h1>
+      <div className="flex justify-between items-center lg:mb-5 md:mb-5 sm:mb-5 mb-2">
+        <h1 className="lg:text-3xl md:text-xl font-bold sm:text-lg text-base dark:text-gray-200">
+          Product Management
+        </h1>
         <Button
           size="small"
           variant="contained"
           disableElevation
           sx={{
             fontWeight: "600",
+            fontSize: isSmDown ? "10px" : "12px",
           }}
           startIcon={<AddIcon />}
           onClick={() => setOpenForm(true)}
         >
-          Add Product
+          {isSmDown ? "Add" : "Add Product"}
         </Button>
       </div>
 
-      <div className="grid lg:grid-cols-3 lg:gap-5">
+      <div className="grid md:grid-cols-2 lg:grid-cols-3 lg:gap-5 md:gap-3 sm:gap-3 gap-2">
         {allProducts?.map((product) => (
           <Product key={product._id} product={product} />
         ))}
@@ -60,8 +66,10 @@ const ProductManagementPage = () => {
       {/* Add Product Modal */}
       {openForm && (
         <div className="transition-all bg-gradient-to-b from-black/20 to-black/60 backdrop-blur-sm w-full z-50 h-screen absolute top-0 left-0 flex items-center justify-center">
-          <div className="bg-white p-7 rounded-lg w-[29rem]">
-            <p className="text-lg font-semibold mb-5">Add Product</p>
+          <div className="bg-white dark:bg-gray-800 p-7 rounded-lg lg:w-[29rem] md:w-[29rem] sm:w-[29rem] w-[95%]">
+            <p className="lg:text-lg text-base font-semibold mb-5 dark:text-gray-300">
+              Add Product
+            </p>
             <form className="space-y-5" onSubmit={handleSubmit(onSubmit)}>
               <FormControl
                 fullWidth

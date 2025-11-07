@@ -22,39 +22,51 @@ const Product = ({ product }) => {
   };
 
   return (
-    <div className="shadow bg-white lg:rounded-lg lg:p-4 lg:flex lg:flex-col justify-between hover:shadow-md transition-all">
+    <div className="shadow dark:bg-gray-900 bg-white dark:text-gray-100 rounded-lg lg:p-4 md:p-3 sm:p-3 p-3 lg:flex lg:flex-col justify-between hover:shadow-md transition-all">
       <div className="flex flex-col gap-2">
         <div className="flex items-center justify-between">
-          <p className="text-left lg:text-lg lg:font-bold">{product.name}</p>
-          <p className="bg-indigo-50 text-indigo-500 text-sm rounded-full p-1 px-3">
+          <p className="text-left lg:text-lg md:text-base sm:text-base text-sm font-semibold">
+            {product.name}
+          </p>
+          <p className="bg-indigo-50 dark:bg-indigo-500 text-indigo-500 dark:text-indigo-100 lg:text-sm md:text-xs sm:text-xs text-[10px] font-semibold rounded-full p-1 px-3">
             {product.category}
           </p>
         </div>
         <div className="flex flex-col gap-2">
-          <p className="text-sm">
+          <p className="text-xs sm:text-sm md:text-sm lg:text-base">
             <span className="font-semibold">Description:</span>{" "}
             {product.description}
           </p>
-          <p className="text-green-700 text-sm font-semibold">
+          <p className="text-green-700 dark:text-green-500 text-xs sm:text-sm md:text-sm lg:text-base font-semibold">
             <span className="font-semibold">Price:</span> ₹{product.price}
           </p>
         </div>
       </div>
       <div className="flex items-center justify-between mt-2">
-        <p className="text-xs text-gray-500">
+        <p className="text-xs text-gray-500 dark:text-gray-400">
           {format(product.createdAt, "dd/MM/yyyy")}
         </p>
-        <div className="flex items-center gap-1">
+        <div className="lg:flex md:flex hidden sm:hidden items-center gap-1">
           <SquarePen
-            color="green"
-            className="hover:bg-green-100 active:scale-95 transition-all p-1.5 rounded-lg"
+            className="hover:bg-green-100 text-green-600 dark:hover:bg-green-950 dark:text-green-500 active:scale-95 transition-all p-1.5 rounded-lg"
             size={30}
             onClick={() => setOpenEdit(true)}
           />
           <Trash2
-            color="red"
-            className="hover:bg-red-100 active:scale-95 transition-all p-1.5 rounded-lg"
+            className="hover:bg-red-100 text-red-600 dark:hover:bg-red-950 dark:text-red-500 active:scale-95 transition-all p-1.5 rounded-lg"
             size={30}
+            onClick={() => setOpenDelete(true)}
+          />
+        </div>
+        <div className="sm:flex flex items-center gap-1 md:hidden lg:hidden">
+          <SquarePen
+            className="hover:bg-green-100 text-green-600 dark:hover:bg-green-950 dark:text-green-500 active:scale-95 transition-all p-1.5 rounded-lg"
+            size={28}
+            onClick={() => setOpenEdit(true)}
+          />
+          <Trash2
+            className="hover:bg-red-100 text-red-600 dark:hover:bg-red-950 dark:text-red-500 active:scale-95 transition-all p-1.5 rounded-lg"
+            size={28}
             onClick={() => setOpenDelete(true)}
           />
         </div>
@@ -63,11 +75,11 @@ const Product = ({ product }) => {
       {/* --- Delete Product Modal --- */}
       {openDelete && (
         <div className="transition-all bg-gradient-to-b from-black/20 to-black/60 backdrop-blur-sm w-full z-50 h-screen absolute top-0 left-0 flex items-center justify-center">
-          <div className="bg-white p-7 rounded-lg w-[29rem]">
-            <p className="text-lg font-semibold">
+          <div className="bg-white dark:bg-gray-800 lg:p-7 p-5 rounded-lg lg:w-[29rem] md:w-[50%] sm:w-[60%] w-[95%]">
+            <p className="lg:text-lg text-base font-semibold dark:text-gray-300">
               Are you sure you want to delete {product.name}?
             </p>
-            <p className="text-gray-500 text-sm">
+            <p className="text-gray-500 lg:text-sm text-xs dark:text-gray-400">
               This action cannot be undone. {product.name}'s data will be
               permanently removed.
             </p>
@@ -100,8 +112,10 @@ const Product = ({ product }) => {
       {/* --- Edit Product Modal --- */}
       {openEdit && (
         <div className="transition-all bg-gradient-to-b from-black/20 to-black/60 backdrop-blur-sm w-full z-50 h-screen absolute top-0 left-0 flex items-center justify-center">
-          <div className="bg-white p-7 rounded-lg w-[29rem]">
-            <p className="text-xl font-semibold mb-7">Edit {product.name}</p>
+          <div className="bg-white dark:bg-gray-800 lg:p-7 p-5 rounded-lg lg:w-[29rem] md:w-[50%] sm:w-[60%] w-[95%]">
+            <p className="lg:text-xl text-base font-semibold mb-7 dark:text-gray-300">
+              Edit {product.name}
+            </p>
             <form className="space-y-5" onSubmit={handleSubmit(onEdit)}>
               <TextField
                 size="small"

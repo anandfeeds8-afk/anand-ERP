@@ -13,82 +13,162 @@ import SalesAuthorizerDashboardPage from "./pages/SalesAuthorizer/SalesAuthorize
 import SalesManagerDashboardPage from "./pages/SalesManager/SalesManagerDashboardPage";
 import PlantheadDashboardPage from "./pages/Planthead/PlantheadDashboardPage";
 import AccoutantDashboardPage from "./pages/Accountant/AccoutantDashboardPage";
-import ReportsPage from "./pages/Admin/ReportsPage";
 import ProductsManagementPage from "./pages/Planthead/ProductsManagementPage";
 import PartyManagementPage from "./pages/Salesman/PartyManagementPage";
 import PartyManagementPageAdmin from "./pages/Admin/PartyManagementPage";
+import { useNotificationContext } from "./context/NotificationContext";
+import { useUser } from "./hooks/useUser";
+import { useEffect, useMemo } from "react";
+import socket from "./utils/socket";
+import { ThemeProvider, createTheme } from "@mui/material";
+import { useTheme } from "./context/ThemeContext";
 
 const App = () => {
+  const { user } = useUser();
+
+  const { resolvedTheme } = useTheme();
+  const { sendNotification } = useNotificationContext();
+
+  useEffect(() => {
+    socket.connect();
+
+    const handleMessage = (data) => {
+      if (data.senderId !== user?._id) {
+        sendNotification({
+          senderName: data.senderName,
+          message: data.message,
+        });
+      }
+    };
+
+    socket.emit("join", user?._id);
+
+    const notificationEvents = [
+      "orderCreated",
+      "orderForwardedToAuthorizer",
+      "plantAssigned",
+      "plantApproved",
+      "dispatched",
+      "invoiceGenerated",
+      "orderCancelled",
+      "dueInvoiceGenerated",
+      "delivered",
+    ];
+
+    notificationEvents.forEach((event) => {
+      socket.on(event, handleMessage);
+    });
+
+    socket.on("receiveMessage", handleMessage);
+
+    return () => {
+      notificationEvents.forEach((event) => {
+        socket.off(event, handleMessage);
+      });
+      socket.off("receiveMessage", handleMessage);
+      socket.disconnect();
+    };
+  }, [sendNotification, user]);
+
+  // const prefersDarkMode = useMediaQuery("(prefers-color-scheme: dark)");
+
+  const theme = useMemo(
+    () =>
+      createTheme({
+        palette: {
+          mode: resolvedTheme === "dark" ? "dark" : "light",
+          primary: {
+            main: "#1976d2", // same rakho jo tumhe light mode me chahiye
+          },
+          secondary: {
+            main: "#9c27b0",
+          },
+          background: {
+            default: resolvedTheme === "dark" ? "#121212" : "#ffffff",
+            paper: resolvedTheme === "dark" ? "#1e1e1e" : "#f9f9f9",
+          },
+          text: {
+            primary: resolvedTheme === "dark" ? "#ffffff" : "#000000",
+          },
+        },
+      }),
+    [resolvedTheme]
+  );
+
   return (
-    <Routes>
-      <Route
-        path="/"
-        element={
-          <ProtectedRoutes>
-            <MainLayout />
-          </ProtectedRoutes>
-        }
-      >
-        {/* Admin routes*/}
-        <Route path="admin">
-          <Route index element={<Navigate to="dashboard" replace />} />
-          <Route path="dashboard" element={<AdminDashboardPage />} />
-          <Route
-            path="product-management"
-            element={<ProductManagementPage />}
-          />
-          <Route
-            path="employee-management"
-            element={<EmployeeManagementPage />}
-          />
-          <Route path="order-management" element={<OrderManagementPage />} />
-          <Route path="plant-management" element={<PlantManagementPage />} />
-          <Route
-            path="party-management"
-            element={<PartyManagementPageAdmin />}
-          />
-          <Route path="reports-module" element={<ReportsPage />} />
+    <ThemeProvider theme={theme}>
+      <Routes>
+        <Route
+          path="/"
+          element={
+            <ProtectedRoutes>
+              <MainLayout />
+            </ProtectedRoutes>
+          }
+        >
+          {/* Admin routes*/}
+          <Route path="admin">
+            <Route index element={<Navigate to="dashboard" replace />} />
+            <Route path="dashboard" element={<AdminDashboardPage />} />
+            <Route
+              path="product-management"
+              element={<ProductManagementPage />}
+            />
+            <Route
+              path="employee-management"
+              element={<EmployeeManagementPage />}
+            />
+            <Route path="order-management" element={<OrderManagementPage />} />
+            <Route path="plant-management" element={<PlantManagementPage />} />
+            <Route
+              path="party-management"
+              element={<PartyManagementPageAdmin />}
+            />
+          </Route>
+
+          {/* Salesman routes */}
+          <Route path="salesman">
+            <Route index element={<Navigate to="dashboard" replace />} />
+            <Route path="dashboard" element={<SalesmanDashboardPage />} />
+            <Route path="party-management" element={<PartyManagementPage />} />
+          </Route>
+
+          {/* Sales Manager routes */}
+          <Route path="salesmanager">
+            <Route index element={<Navigate to="dashboard" replace />} />
+            <Route path="dashboard" element={<SalesManagerDashboardPage />} />
+          </Route>
+
+          {/* Sales Authorizer routes */}
+          <Route path="salesauthorizer">
+            <Route index element={<Navigate to="dashboard" replace />} />
+            <Route
+              path="dashboard"
+              element={<SalesAuthorizerDashboardPage />}
+            />
+          </Route>
+
+          {/* Plant Head routes */}
+          <Route path="planthead">
+            <Route index element={<Navigate to="dashboard" replace />} />
+            <Route path="dashboard" element={<PlantheadDashboardPage />} />
+            <Route
+              path="product-management"
+              element={<ProductsManagementPage />}
+            />
+          </Route>
+
+          {/* Accountant routes */}
+          <Route path="accountant">
+            <Route index element={<Navigate to="dashboard" replace />} />
+            <Route path="dashboard" element={<AccoutantDashboardPage />} />
+          </Route>
         </Route>
 
-        {/* Salesman routes */}
-        <Route path="salesman">
-          <Route index element={<Navigate to="dashboard" replace />} />
-          <Route path="dashboard" element={<SalesmanDashboardPage />} />
-          <Route path="party-management" element={<PartyManagementPage />} />
-        </Route>
-
-        {/* Sales Manager routes */}
-        <Route path="salesmanager">
-          <Route index element={<Navigate to="dashboard" replace />} />
-          <Route path="dashboard" element={<SalesManagerDashboardPage />} />
-        </Route>
-
-        {/* Sales Authorizer routes */}
-        <Route path="salesauthorizer">
-          <Route index element={<Navigate to="dashboard" replace />} />
-          <Route path="dashboard" element={<SalesAuthorizerDashboardPage />} />
-        </Route>
-
-        {/* Plant Head routes */}
-        <Route path="planthead">
-          <Route index element={<Navigate to="dashboard" replace />} />
-          <Route path="dashboard" element={<PlantheadDashboardPage />} />
-          <Route
-            path="product-management"
-            element={<ProductsManagementPage />}
-          />
-        </Route>
-
-        {/* Accountant routes */}
-        <Route path="accountant">
-          <Route index element={<Navigate to="dashboard" replace />} />
-          <Route path="dashboard" element={<AccoutantDashboardPage />} />
-        </Route>
-      </Route>
-
-      {/* Login route */}
-      <Route path="/login" element={<LoginPage />} />
-    </Routes>
+        {/* Login route */}
+        <Route path="/login" element={<LoginPage />} />
+      </Routes>
+    </ThemeProvider>
   );
 };
 
