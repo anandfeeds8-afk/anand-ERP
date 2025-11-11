@@ -32,8 +32,8 @@ const LoginPage = () => {
     login(data, {
       onSuccess: (data) => {
         subscribeUser(
-          data.data?._id,
-          data.data?.role,
+          data?.data?._id,
+          data?.data?.role,
           browserId,
           "BNcMT8wY9rjGtM_SBQGFyLbrL-Q9r6TVknSCjLWcJYl5Yj3TlERQDjIYbTuAKTolgHw4tAinWVLCzcZyOZG5iS8"
         );
