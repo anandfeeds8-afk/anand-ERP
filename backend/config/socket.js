@@ -9,7 +9,8 @@ let io;
 const initSocket = (server) => {
   io = new Server(server, {
     cors: {
-      origin: ["https://poultry-feed-management-software-4.onrender.com"],
+      origin: "https://poultry-feed-management-software-4.onrender.com",
+      // origin: "http://localhost:5173",
       methods: ["GET", "POST"],
       credentials: true,
     },
@@ -68,7 +69,9 @@ const initSocket = (server) => {
           partnerId: readerId,
           count: forPartner,
         });
-      } catch {}
+      } catch (err) {
+        console.log(err);
+      }
     });
 
     // Client can request unread counts for multiple partners

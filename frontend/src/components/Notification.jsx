@@ -566,7 +566,7 @@ const Notification = ({ setIsOpenNotification }) => {
               )}
 
               {/* Chat Area */}
-              <div className="flex-1 flex flex-col min-h-0 min-w-0 dark:border-l dark:border-gray-700">
+              <div className="flex-1 flex flex-col min-h-0 min-w-0">
                 {/* Chat Header */}
                 {selectedAdmin?._id && (
                   <div className="flex-shrink-0 border-b dark:border-b dark:border-gray-700">
@@ -806,7 +806,7 @@ const Notification = ({ setIsOpenNotification }) => {
               )}
 
               {/* Chat Area */}
-              <div className="flex-1 flex flex-col min-h-0 min-w-0 dark:border-l dark:border-gray-700">
+              <div className="flex-1 flex flex-col min-h-0 min-w-0">
                 {/* Chat Header */}
                 {selectedAdmin?._id && (
                   <div className="flex-shrink-0 border-b dark:border-b dark:border-gray-700">
@@ -815,7 +815,7 @@ const Notification = ({ setIsOpenNotification }) => {
                         onClick={leaveChatRoom}
                         className="active:bg-gray-300 dark:active:bg-gray-700 dark:text-gray-400 rounded-full p-1 transition-all"
                       />
-                      <Avatar size={40} name={selectedAdmin?.name} />
+                      <Avatar size={35} name={selectedAdmin?.name} />
                       <div className="flex flex-col">
                         <p className="font-semibold lg:text-base dark:text-gray-200 md:text-sm sm:text-sm text-sm">
                           {selectedAdmin.name}

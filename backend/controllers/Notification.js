@@ -1,18 +1,35 @@
 const Notification = require("../models/Notification");
 const Subscription = require("../models/Subscription");
 const sendPushNotification = require("../sendPushNotification");
+const jwt = require("jsonwebtoken");
+const dotenv = require("dotenv");
+dotenv.config();
 
-// ✅ Save subscription
+//  Save subscription
 const saveSubscription = async (req, res) => {
-  const { employeeId, role, subscription, browserId } = req.body;
+  const token = req.header("Authorization")?.replace("Bearer ", "");
+  const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-  const subs = await Subscription.findOneAndUpdate(
-    { employeeId, browserId },
-    { role, subscription, browserId },
-    { upsert: true }
-  );
+  try {
+    const { employeeId, role, subscription, browserId } = req.body;
 
-  res.json({ success: true });
+    await Subscription.findOneAndUpdate(
+      { employeeId, browserId },
+      {
+        role,
+        browserId,
+        subscription,
+        // expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
+        expiresAt: new Date(decoded.exp * 1000),
+      },
+      { upsert: true, new: true }
+    );
+
+    res.json({ success: true });
+  } catch (err) {
+    console.log(err);
+    return res.status(401).json({ message: "Failed to save subscription" });
+  }
 };
 
 const removeSubscription = async (req, res) => {

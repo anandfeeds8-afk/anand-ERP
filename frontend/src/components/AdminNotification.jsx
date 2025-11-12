@@ -662,7 +662,7 @@ const AdminNotification = ({ setIsOpenNotification }) => {
 
                   {/* Chat Area */}
                   {selectedEmployee ? (
-                    <div className="w-full flex-1 flex flex-col min-h-0 min-w-0 dark:border-l dark:border-gray-700">
+                    <div className="w-full flex-1 flex flex-col min-h-0 min-w-0">
                       {/* Header - Fixed */}
                       <div className="flex-shrink-0 border-b dark:border-b dark:border-gray-700">
                         <div className="p-2 bg-gray-50 dark:bg-gray-800 w-full flex items-center gap-2">
@@ -857,7 +857,7 @@ const AdminNotification = ({ setIsOpenNotification }) => {
                 <div className="flex w-full flex-1 min-h-0 mt-2 sm:hidden md:hidden lg:hidden rounded-b-lg overflow-hidden">
                   {/* Employee List Sidebar */}
                   {!selectedEmployee && (
-                    <div className="overflow-y-auto custom-scrollbar w-full border-gray-200 flex-shrink-0">
+                    <div className="overflow-y-auto custom-scrollbar w-full flex-shrink-0">
                       <div className="flex flex-col items-start gap-2 w-full px-2">
                         <EmployeeListForMobile
                           title="Salesmen"

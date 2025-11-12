@@ -45,11 +45,7 @@ const sendPushNotification = async (role, payload) => {
     pushPayload.body = pushPayload.message;
   }
 
-  console.log("payload", payload);
-  console.log(`Sending push to ${list.length} subscriptions`);
-
   for (let item of list) {
-    console.log("item", item);
     try {
       await webpush.sendNotification(
         item.subscription,
