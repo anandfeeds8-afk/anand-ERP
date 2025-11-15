@@ -1,6 +1,23 @@
 import { useEffect, useState } from "react";
 import NotificationsIcon from "@mui/icons-material/Notifications";
 import { Badge, Button, Dialog, IconButton, useTheme } from "@mui/material";
+
+import MenuItem from "@mui/material/MenuItem";
+import Menu from "@mui/material/Menu";
+import ListItemIcon from "@mui/material/ListItemIcon";
+import Divider from "@mui/material/Divider";
+import Tooltip from "@mui/material/Tooltip";
+import PersonAdd from "@mui/icons-material/PersonAdd";
+import Settings from "@mui/icons-material/Settings";
+import Logout from "@mui/icons-material/Logout";
+import {
+  Box,
+  Handshake,
+  LayoutDashboard,
+  ShoppingBag,
+  Users,
+  Warehouse,
+} from "lucide-react";
 import { useUser } from "../hooks/useUser";
 import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
@@ -14,23 +31,14 @@ import {
   Sun,
   Moon,
   Monitor,
-  Menu,
+  Menu as MenuIcon,
   X,
   Bell,
-  MessageCircleMore,
   MessageCircle,
 } from "lucide-react";
 import { useTheme as myTheme } from "../context/ThemeContext.jsx";
 import Notification from "./Notification.jsx";
 import AdminNotification from "./AdminNotification.jsx";
-import { MdDashboard } from "react-icons/md";
-import { MdOutlineDashboard } from "react-icons/md";
-import { RiBox3Fill, RiBox3Line } from "react-icons/ri";
-import { FaRegUser, FaUser } from "react-icons/fa6";
-import { IoCartOutline, IoCart } from "react-icons/io5";
-import { MdOutlineWarehouse, MdWarehouse } from "react-icons/md";
-import { HiMiniUsers, HiOutlineUsers } from "react-icons/hi2";
-import { GiGrain } from "react-icons/gi";
 import { useMediaQuery } from "@mui/material";
 import { unsubscribeUser } from "../unsubscribeUser";
 import useNotification from "../hooks/useNotification.js";
@@ -39,18 +47,34 @@ import { useUnreadChatsContext } from "../context/UnreadChatsContext";
 import socket from "../utils/socket";
 
 const Header = ({ isCollapsed, setIsCollapsed }) => {
+  const [anchorEl, setAnchorEl] = useState(null);
+  const open = Boolean(anchorEl);
+  const handleClick = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+  const { changeStatus, user } = useUser();
   const theme = useTheme();
   const isSmDown = useMediaQuery(theme.breakpoints.down("sm"));
-  const { unread } = useUnreadChatsContext();
+  const {
+    unread,
+    unreadForOthers,
+    unreadNotifications,
+    setUnreadNotifications,
+  } = useUnreadChatsContext();
   const totalUnread = Object.values(unread || {}).reduce((a, b) => a + b, 0);
-  console.log(totalUnread);
+  const totalUnreadForOthers = Object.values(unreadForOthers || {}).reduce(
+    (a, b) => a + b,
+    0
+  );
+  const myUnreadNotifications = unreadNotifications?.[user?._id] || 0;
 
   const { theme: themeContext, setTheme } = myTheme();
-  const { changeStatus, user } = useUser();
   const [isOpen, setIsOpen] = useState(false);
   const [isOpenNotification, setIsOpenNotification] = useState(false);
   const navigate = useNavigate();
-  const [unReadNotificationsCount, setUnReadNotificationsCount] = useState(0);
 
   const handleLogout = async () => {
     await unsubscribeUser();
@@ -62,21 +86,13 @@ const Header = ({ isCollapsed, setIsCollapsed }) => {
   //fetch notifications
   const { notifications, markRead } = useNotification(user._id);
 
-  //count unread notifications
-  useEffect(() => {
-    if (notifications?.length > 0) {
-      const unReadNotifications = notifications.filter(
-        (notification) => !notification.read
-      ).length;
-      setUnReadNotificationsCount(unReadNotifications);
-    }
-  }, [notifications]);
-
   //mark notification as read
   useEffect(() => {
     if (isOpenNotification) {
       markRead();
-      setUnReadNotificationsCount(0);
+      if (user?._id) {
+        setUnreadNotifications((prev) => ({ ...(prev || {}), [user._id]: 0 }));
+      }
     }
   }, [isOpenNotification]);
 
@@ -87,7 +103,10 @@ const Header = ({ isCollapsed, setIsCollapsed }) => {
 
     const onNotification = () => {
       if (isOpenNotification) return;
-      setUnReadNotificationsCount((prev) => prev + 1);
+      setUnreadNotifications((prev) => ({
+        ...(prev || {}),
+        [user._id]: (prev?.[user._id] || 0) + 1,
+      }));
     };
 
     socket.on("notification", onNotification);
@@ -97,449 +116,182 @@ const Header = ({ isCollapsed, setIsCollapsed }) => {
     };
   }, [user?._id, isOpenNotification]);
 
+  let items = [];
+
+  switch (user.role) {
+    case "Admin":
+      items = [
+        {
+          icon: <LayoutDashboard className="w-4 h-4" />,
+          label: "Dashboard",
+          href: "/admin/dashboard",
+        },
+        {
+          icon: <Box className="w-4 h-4" />,
+          label: "Product Management",
+          href: "/admin/product-management",
+        },
+        {
+          icon: <Users className="w-4 h-4" />,
+          label: "Employee Management",
+          href: "/admin/employee-management",
+        },
+        {
+          icon: <ShoppingBag className="w-4 h-4" />,
+          label: "Order Management",
+          href: "/admin/order-management",
+        },
+        {
+          icon: <Warehouse className="w-4 h-4" />,
+          label: "Plant Management",
+          href: "/admin/plant-management",
+        },
+        {
+          icon: <Handshake className="w-4 h-4" />,
+          label: "Party Management",
+          href: "/admin/party-management",
+        },
+      ];
+      break;
+
+    case "Salesman":
+      items = [
+        {
+          icon: <LayoutDashboard className="w-4 h-4" />,
+          label: "Dashboard",
+          href: "/salesman/dashboard",
+        },
+        {
+          icon: <Handshake className="w-4 h-4" />,
+          label: "Party Management",
+          href: "/salesman/party-management",
+        },
+      ];
+      break;
+
+    case "SalesManager":
+      items = [
+        {
+          icon: <LayoutDashboard className="w-4 h-4" />,
+          label: "Dashboard",
+          href: "/salesmanager/dashboard",
+        },
+      ];
+      break;
+
+    case "SalesAuthorizer":
+      items = [
+        {
+          icon: <LayoutDashboard className="w-4 h-4" />,
+          label: "Dashboard",
+          href: "/salesauthorizer/dashboard",
+        },
+      ];
+      break;
+
+    case "PlantHead":
+      items = [
+        {
+          icon: <LayoutDashboard className="w-4 h-4" />,
+          label: "Dashboard",
+          href: "/planthead/dashboard",
+        },
+        {
+          icon: <Box className="w-4 h-4" />,
+          label: "Product Management",
+          href: "/planthead/product-management",
+        },
+      ];
+      break;
+
+    case "Accountant":
+      items = [
+        {
+          icon: <LayoutDashboard className="w-4 h-4" />,
+          label: "Dashboard",
+          href: "/accountant/dashboard",
+        },
+      ];
+      break;
+
+    default:
+      items = [];
+      break;
+  }
+
   return (
     <div className="dark:border-gray-700 h-14 dark:bg-gray-900 transition-all ease-in-out border-b border-neutral-100 z-50">
-      <div className="flex lg:justify-end justify-between items-center gap-8 h-full px-10">
+      <div className="flex lg:justify-end justify-between items-center gap-8 h-full lg:px-10 px-5">
         <div className="hidden lg:block w-full">
-          <div className="flex items-center justify-start gap-2 bg-[#1976D2] bg-clip-text text-transparent text-xl line-clamp-1 truncate font-bold">
-            <img src={logo} alt="" className="w-7 h-7 dark:invert-[100%]" />
-            <span className="text-[#1976D2] logo">Feed manager</span>
+          <div className="flex items-center justify-start gap-2 text-[#1976D2] text-xl font-bold">
+            <img src={logo} alt="" className="w-7 h-7" />
+            <span className="logo">Feed manager</span>
           </div>
         </div>
-        <div className="md:block lg:hidden">
+        <div className="lg:hidden">
           {isCollapsed && (
             <div className="flex items-center gap-5">
-              <Menu
+              <MenuIcon
                 onClick={() => setIsCollapsed(false)}
                 className="text-blue-600 cursor-pointer"
                 size={20}
               />
-              <div className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-violet-600 bg-clip-text text-transparent line-clamp-1 truncate font-bold">
-                <GiGrain className="text-xl text-blue-600" /> Feed manager
+              <div className="flex items-center justify-start gap-2 text-[#1976D2] text- font-bold">
+                <img src={logo} alt="" className="w-5 h-5" />
+                <span className="logo">Feed manager</span>
               </div>
             </div>
           )}
 
           {!isCollapsed && (
-            <div className="lg:hidden md:block absolute top-0 left-0 h-lvh p-2 border border-gray-100 bg-white shadow-lg backdrop-blur-sm z-50 flex flex-col items-start justify-between pb-5">
-              <div>
+            <div className="lg:hidden md:block absolute top-0 left-0 min-h-full max-h-lvh w-60 p-2 border-r dark:border-gray-700 border-gray-100 bg-white dark:bg-gray-900 transition-all ease-out overflow-hidden shadow-lg backdrop-blur-sm z-50 flex flex-col items-start justify-between pb-5">
+              <div className="w-full">
                 <div className="flex items-center justify-between p-4 w-full">
-                  <div className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-violet-600 bg-clip-text text-transparent line-clamp-1 truncate font-bold">
-                    <GiGrain className="lg:text-xl md:text-lg text-blue-600" />
-                    <span className="text-base lg:text-base md:text-base">
-                      Feed manager
-                    </span>
-                  </div>
+                  <span className="logo text-[#1976D2]">Menu</span>
+
                   <X
                     onClick={() => setIsCollapsed(true)}
-                    className="text-blue-600 cursor-pointer"
+                    className="text-[#1976D2] cursor-pointer"
                     size={20}
                   />
                 </div>
 
-                {user?.role === "Admin" && (
-                  <div className="flex flex-col items-center justify-center md:m-2 lg:m-2 lg:gap-3 md:gap-2 gap-1 text-sm md:text-sm">
+                <nav className="flex-1 overflow-y-auto px-2 space-y-2 w-full">
+                  {items.map((item, index) => (
                     <NavLink
-                      to="/admin/dashboard"
+                      key={index}
+                      to={item.href}
                       className={({ isActive }) =>
                         isActive
-                          ? "transition-all bg-blue-100 p-2 w-full text-left rounded-lg"
-                          : "transition-all hover:bg-blue-50 p-2 w-full text-gray-800 rounded-lg text-left"
+                          ? "group flex items-center w-full text-sm gap-4 p-2 rounded-lg font-semibold text-black dark:text-gray-100 bg-blue-100 dark:bg-blue-800 transition-all duration-200 cursor-pointer"
+                          : "group flex items-center w-full text-sm gap-4 p-2 rounded-lg font-medium text-gray-500 dark:text-gray-400 hover:bg-blue-100 dark:hover:bg-blue-800 hover:text-black dark:hover:text-gray-100 transition-all duration-200 cursor-pointer"
                       }
                     >
                       {({ isActive }) => (
-                        <div className="flex items-center gap-2 font-semibold w-56 h-6">
-                          <div className="w-6 flex items-center justify-center">
-                            {isActive ? (
-                              <MdDashboard className="text-blue-600 text-lg" />
-                            ) : (
-                              <MdOutlineDashboard className="text-blue-600 text-lg" />
-                            )}
+                        <>
+                          <div
+                            className={`flex-shrink-0 ${
+                              isActive
+                                ? "text-blue-600 dark:text-gray-100"
+                                : "group-hover:text-blue-600 dark:group-hover:text-gray-100 text-gray-500 dark:text-gray-400"
+                            } transition-colors`}
+                          >
+                            {item.icon}
                           </div>
                           <span
-                            className={`${
-                              isCollapsed
-                                ? "hidden"
-                                : "block line-clamp-1 truncate w-full text-gray-800"
+                            className={`whitespace-nowrap transition-all duration-200 ${
+                              !isCollapsed
+                                ? "opacity-100 w-auto"
+                                : "opacity-0 w-0"
                             }`}
                           >
-                            Dashboard
+                            {item.label}
                           </span>
-                        </div>
+                        </>
                       )}
                     </NavLink>
-
-                    <NavLink
-                      to="/admin/product-management"
-                      className={({ isActive }) =>
-                        isActive
-                          ? "transition-all bg-blue-100 p-2 w-full text-left rounded-lg"
-                          : "transition-all hover:bg-blue-50 p-2 w-full text-gray-800 rounded-lg text-left"
-                      }
-                    >
-                      {({ isActive }) => (
-                        <div className="flex items-center gap-2 font-semibold w-56 h-6">
-                          <div className="w-6 flex items-center justify-center">
-                            {isActive ? (
-                              <RiBox3Fill className="text-blue-600 text-lg" />
-                            ) : (
-                              <RiBox3Line className="text-blue-600 text-lg" />
-                            )}
-                          </div>
-                          <span
-                            className={`${
-                              isCollapsed
-                                ? "hidden"
-                                : "block line-clamp-1 truncate w-full text-gray-800"
-                            }`}
-                          >
-                            Product Management
-                          </span>
-                        </div>
-                      )}
-                    </NavLink>
-
-                    <NavLink
-                      to="/admin/employee-management"
-                      className={({ isActive }) =>
-                        isActive
-                          ? "transition-all bg-blue-100 p-2 w-full text-left rounded-lg"
-                          : "transition-all hover:bg-blue-50 p-2 w-full text-gray-800 rounded-lg text-left"
-                      }
-                    >
-                      {({ isActive }) => (
-                        <div className="flex items-center gap-2 font-semibold w-56 h-6">
-                          <div className="w-6 flex items-center justify-center">
-                            {isActive ? (
-                              <FaUser className="text-blue-600" />
-                            ) : (
-                              <FaRegUser className="text-blue-600" />
-                            )}
-                          </div>
-                          <span
-                            className={`${
-                              isCollapsed
-                                ? "hidden"
-                                : "block line-clamp-1 truncate w-full text-gray-800"
-                            }`}
-                          >
-                            Employee Management
-                          </span>
-                        </div>
-                      )}
-                    </NavLink>
-                    <NavLink
-                      to="/admin/order-management"
-                      className={({ isActive }) =>
-                        isActive
-                          ? "transition-all bg-blue-100 p-2 w-full text-left rounded-lg"
-                          : "transition-all hover:bg-blue-50 p-2 w-full text-gray-800 rounded-lg text-left"
-                      }
-                    >
-                      {({ isActive }) => (
-                        <div className="flex items-center gap-2 font-semibold w-56 h-6">
-                          <div className="w-6 flex items-center justify-center">
-                            {isActive ? (
-                              <IoCart className="text-blue-600 text-xl" />
-                            ) : (
-                              <IoCartOutline className="text-blue-600 text-xl" />
-                            )}
-                          </div>
-                          <span
-                            className={`${
-                              isCollapsed
-                                ? "hidden"
-                                : "block line-clamp-1 truncate w-full text-gray-800"
-                            }`}
-                          >
-                            Order Management
-                          </span>
-                        </div>
-                      )}
-                    </NavLink>
-                    <NavLink
-                      to="/admin/plant-management"
-                      className={({ isActive }) =>
-                        isActive
-                          ? "transition-all bg-blue-100 p-2 w-full text-left rounded-lg"
-                          : "transition-all hover:bg-blue-50 p-2 w-full text-gray-800 rounded-lg text-left"
-                      }
-                    >
-                      {({ isActive }) => (
-                        <div className="flex items-center gap-2 font-semibold w-56 h-6">
-                          <div className="w-6 flex items-center justify-center">
-                            {isActive ? (
-                              <MdWarehouse className="text-blue-600 text-lg" />
-                            ) : (
-                              <MdOutlineWarehouse className="text-blue-600 text-lg" />
-                            )}
-                          </div>
-                          <span
-                            className={`${
-                              isCollapsed
-                                ? "hidden"
-                                : "block line-clamp-1 truncate w-full text-gray-800"
-                            }`}
-                          >
-                            Plant Management
-                          </span>
-                        </div>
-                      )}
-                    </NavLink>
-                    <NavLink
-                      to="/admin/party-management"
-                      className={({ isActive }) =>
-                        isActive
-                          ? "transition-all bg-blue-100 p-2 w-full text-left rounded-lg"
-                          : "transition-all hover:bg-blue-50 p-2 w-full text-gray-800 rounded-lg text-left"
-                      }
-                    >
-                      {({ isActive }) => (
-                        <div className="flex items-center gap-2 font-semibold w-56 h-6">
-                          <div className="w-6 flex items-center justify-center">
-                            {isActive ? (
-                              <HiMiniUsers className="text-blue-600 text-xl" />
-                            ) : (
-                              <HiOutlineUsers className="text-blue-600 text-xl" />
-                            )}
-                          </div>
-                          <span
-                            className={`${
-                              isCollapsed
-                                ? "hidden"
-                                : "block line-clamp-1 truncate w-full text-gray-800"
-                            }`}
-                          >
-                            Party Management
-                          </span>
-                        </div>
-                      )}
-                    </NavLink>
-                  </div>
-                )}
-                {user?.role === "Salesman" && (
-                  <div className="flex flex-col items-center justify-center md:m-2 lg:m-2 lg:gap-3 md:gap-2 gap-1 text-sm md:text-sm">
-                    <NavLink
-                      to="/salesman/dashboard"
-                      className={({ isActive }) =>
-                        isActive
-                          ? "transition-all bg-blue-100 dark:border-blue-200 border-blue-500 p-2 w-full text-left rounded-lg"
-                          : "transition-all hover:bg-blue-50 dark:hover:bg-blue-700 p-2 w-full dark:text-gray-200 text-gray-800 rounded-lg text-left"
-                      }
-                    >
-                      {({ isActive }) => (
-                        <div className="flex items-center gap-2 font-semibold w-56 h-6">
-                          <div className="w-6 flex items-center justify-center">
-                            {isActive ? (
-                              <IoCart className="text-blue-600 dark:text-gray-300 text-xl" />
-                            ) : (
-                              <IoCartOutline className="text-blue-600 dark:text-blue-500 text-xl" />
-                            )}
-                          </div>
-                          <span
-                            className={`${
-                              isCollapsed
-                                ? "hidden"
-                                : "block line-clamp-1 truncate w-full text-gray-800 dark:text-gray-300"
-                            }`}
-                          >
-                            Order Management
-                          </span>
-                        </div>
-                      )}
-                    </NavLink>
-                    <NavLink
-                      to="/salesman/party-management"
-                      className={({ isActive }) =>
-                        isActive
-                          ? "transition-all bg-blue-100 dark:border-blue-200 border-blue-500 p-2 w-full text-left rounded-lg"
-                          : "transition-all hover:bg-blue-50 dark:hover:bg-blue-700 p-2 w-full dark:text-gray-200 text-gray-800 rounded-lg text-left"
-                      }
-                    >
-                      {({ isActive }) => (
-                        <div className="flex items-center gap-2 font-semibold w-56 h-6">
-                          <div className="w-6 flex items-center justify-center">
-                            {isActive ? (
-                              <HiMiniUsers className="text-blue-600 dark:text-gray-300 text-xl" />
-                            ) : (
-                              <HiOutlineUsers className="text-blue-600 dark:text-blue-500 text-xl" />
-                            )}
-                          </div>
-                          <span
-                            className={`${
-                              isCollapsed
-                                ? "hidden"
-                                : "block line-clamp-1 truncate w-full text-gray-800 dark:text-gray-300"
-                            }`}
-                          >
-                            Party Management
-                          </span>
-                        </div>
-                      )}
-                    </NavLink>
-                  </div>
-                )}
-                {user?.role === "SalesManager" && (
-                  <div className="flex flex-col items-center justify-center md:m-2 lg:m-2 lg:gap-3 md:gap-2 gap-1 text-sm md:text-sm">
-                    <NavLink
-                      to="/salesmanager/dashboard"
-                      className={({ isActive }) =>
-                        isActive
-                          ? "transition-all bg-blue-100 p-2 w-full text-left rounded-lg"
-                          : "transition-all hover:bg-blue-50 p-2 w-full text-gray-800 rounded-lg text-left"
-                      }
-                    >
-                      {({ isActive }) => (
-                        <div className="flex items-center gap-2 font-semibold w-56 h-6">
-                          <div className="w-6 flex items-center justify-center">
-                            {isActive ? (
-                              <IoCart className="text-blue-600 text-xl" />
-                            ) : (
-                              <IoCartOutline className="text-blue-600 text-xl" />
-                            )}
-                          </div>
-                          <span
-                            className={`${
-                              isCollapsed
-                                ? "hidden"
-                                : "block line-clamp-1 truncate w-full text-gray-800"
-                            }`}
-                          >
-                            Order Management
-                          </span>
-                        </div>
-                      )}
-                    </NavLink>
-                  </div>
-                )}
-                {user?.role === "SalesAuthorizer" && (
-                  <div className="flex flex-col items-center justify-center md:m-2 lg:m-2 lg:gap-3 md:gap-2 gap-1 text-sm md:text-sm">
-                    <NavLink
-                      to="/salesauthorizer/dashboard"
-                      className={({ isActive }) =>
-                        isActive
-                          ? "transition-all bg-blue-100 p-2 w-full text-left rounded-lg"
-                          : "transition-all hover:bg-blue-50 p-2 w-full text-gray-800 rounded-lg text-left"
-                      }
-                    >
-                      {({ isActive }) => (
-                        <div className="flex items-center gap-2 font-semibold w-56 h-6">
-                          <div className="w-6 flex items-center justify-center">
-                            {isActive ? (
-                              <IoCart className="text-blue-600 text-xl" />
-                            ) : (
-                              <IoCartOutline className="text-blue-600 text-xl" />
-                            )}
-                          </div>
-                          <span
-                            className={`${
-                              isCollapsed
-                                ? "hidden"
-                                : "block line-clamp-1 truncate w-full text-gray-800"
-                            }`}
-                          >
-                            Order Management
-                          </span>
-                        </div>
-                      )}
-                    </NavLink>
-                  </div>
-                )}
-                {user?.role === "PlantHead" && (
-                  <div className="flex flex-col items-center justify-center md:m-2 lg:m-2 lg:gap-3 md:gap-2 gap-1 text-sm md:text-sm">
-                    <NavLink
-                      to="/planthead/dashboard"
-                      className={({ isActive }) =>
-                        isActive
-                          ? "transition-all bg-blue-100 p-2 w-full text-left rounded-lg"
-                          : "transition-all hover:bg-blue-50 p-2 w-full text-gray-800 rounded-lg text-left"
-                      }
-                    >
-                      {({ isActive }) => (
-                        <div className="flex items-center gap-2 font-semibold w-56 h-6">
-                          <div className="w-6 flex items-center justify-center">
-                            {isActive ? (
-                              <IoCart className="text-blue-600 text-xl" />
-                            ) : (
-                              <IoCartOutline className="text-blue-600 text-xl" />
-                            )}
-                          </div>
-                          <span
-                            className={`${
-                              isCollapsed
-                                ? "hidden"
-                                : "block line-clamp-1 truncate w-full text-gray-800"
-                            }`}
-                          >
-                            Order Management
-                          </span>
-                        </div>
-                      )}
-                    </NavLink>
-                    <NavLink
-                      to="/planthead/product-management"
-                      className={({ isActive }) =>
-                        isActive
-                          ? "transition-all bg-blue-100 p-2 w-full text-left rounded-lg"
-                          : "transition-all hover:bg-blue-50 p-2 w-full text-gray-800 rounded-lg text-left"
-                      }
-                    >
-                      {({ isActive }) => (
-                        <div className="flex items-center gap-2 font-semibold w-56 h-6">
-                          <div className="w-6 flex items-center justify-center">
-                            {isActive ? (
-                              <RiBox3Fill className="text-blue-600 text-lg" />
-                            ) : (
-                              <RiBox3Line className="text-blue-600 text-lg" />
-                            )}
-                          </div>
-                          <span
-                            className={`${
-                              isCollapsed
-                                ? "hidden"
-                                : "block line-clamp-1 truncate w-full text-gray-800"
-                            }`}
-                          >
-                            Product Management
-                          </span>
-                        </div>
-                      )}
-                    </NavLink>
-                  </div>
-                )}
-                {user?.role === "Accountant" && (
-                  <div className="flex flex-col items-center justify-center md:m-2 lg:m-2 lg:gap-3 md:gap-2 gap-1 text-sm md:text-sm">
-                    <NavLink
-                      to="/accountant/dashboard"
-                      className={({ isActive }) =>
-                        isActive
-                          ? "transition-all bg-blue-100 p-2 w-full text-left rounded-lg"
-                          : "transition-all hover:bg-blue-50 p-2 w-full text-gray-800 rounded-lg text-left"
-                      }
-                    >
-                      {({ isActive }) => (
-                        <div className="flex items-center gap-2 font-semibold w-56 h-6">
-                          <div className="w-6 flex items-center justify-center">
-                            {isActive ? (
-                              <IoCart className="text-blue-600 text-xl" />
-                            ) : (
-                              <IoCartOutline className="text-blue-600 text-xl" />
-                            )}
-                          </div>
-                          <span
-                            className={`${
-                              isCollapsed
-                                ? "hidden"
-                                : "block line-clamp-1 truncate w-full text-gray-800"
-                            }`}
-                          >
-                            Order Management
-                          </span>
-                        </div>
-                      )}
-                    </NavLink>
-                  </div>
-                )}
+                  ))}
+                </nav>
               </div>
 
               <div className="lg:hidden md:hidden w-full">
@@ -563,9 +315,6 @@ const Header = ({ isCollapsed, setIsCollapsed }) => {
                         textAlign: "left",
                         justifyContent: "flex-start",
                         paddingLeft: "1.5rem",
-                        "&:hover": {
-                          backgroundColor: "#f3f4f6",
-                        },
                       }}
                     >
                       {user.isActive
@@ -638,8 +387,10 @@ const Header = ({ isCollapsed, setIsCollapsed }) => {
                       online={user?.isActive}
                     />
                     <div className="flex flex-col">
-                      <p className="text-xs">{user?.name}</p>
-                      <p className="text-[10px]">{user?.email}</p>
+                      <p className="text-xs dark:text-gray-100">{user?.name}</p>
+                      <p className="text-[10px] dark:text-gray-300">
+                        {user?.email}
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -649,27 +400,57 @@ const Header = ({ isCollapsed, setIsCollapsed }) => {
         </div>
 
         <div className="flex items-center gap-12">
-          <div className="hidden lg:block md:block">
+          <div className="hidden lg:block md:block me-5">
             <p className="dark:text-gray-300 text-sm">{user?.role}</p>
           </div>
 
           <IconButton
             onClick={() => setIsOpenNotification(!isOpenNotification)}
           >
-            {unReadNotificationsCount > 0 && (
-              <div className="flex transition-all items-center gap-1 bg-red-600/20 absolute bottom-6 right-8 backdrop-blur-sm p-0.5 text-xs text-red-600 font-semibold px-1.5 rounded-full">
-                <Bell size={12} strokeWidth={3} />
-                {unReadNotificationsCount > 20
-                  ? "20+"
-                  : unReadNotificationsCount}
-              </div>
-            )}
-            {totalUnread > 0 && (
-              <div className="flex transition-all items-center gap-1 bg-blue-600/20 absolute bottom-6 left-8 backdrop-blur-sm p-0.5 text-xs text-blue-600 font-semibold px-1.5 rounded-full">
-                <MessageCircle size={12} strokeWidth={3} />
-                {totalUnread > 20 ? "20+" : totalUnread}
-              </div>
-            )}
+            <div className="absolute right-9 flex flex-col items-center justify-center gap-1">
+              {user.role === "Admin" ? (
+                <>
+                  {myUnreadNotifications > 0 && (
+                    <div className="flex transition-all items-center gap-1 bg-red-600/20 backdrop-blur-sm p-0.5 text-xs text-red-600 font-semibold px-1.5 rounded-full">
+                      <Bell size={12} strokeWidth={3} />
+                      {myUnreadNotifications > 20
+                        ? "20+"
+                        : myUnreadNotifications}
+                    </div>
+                  )}
+                </>
+              ) : (
+                <>
+                  {myUnreadNotifications > 0 && (
+                    <div className="flex transition-all items-center gap-1 bg-red-600/20 backdrop-blur-sm p-0.5 text-xs text-red-600 font-semibold px-1.5 rounded-full">
+                      <Bell size={12} strokeWidth={3} />
+                      {myUnreadNotifications > 20
+                        ? "20+"
+                        : myUnreadNotifications}
+                    </div>
+                  )}
+                </>
+              )}
+              {user.role === "Admin" ? (
+                <>
+                  {totalUnread > 0 && (
+                    <div className="flex transition-all items-center gap-1 bg-blue-600/20 backdrop-blur-sm p-0.5 text-xs text-blue-600 font-semibold px-1.5 rounded-full">
+                      <MessageCircle size={12} strokeWidth={3} />
+                      {totalUnread > 20 ? "20+" : totalUnread}
+                    </div>
+                  )}
+                </>
+              ) : (
+                <>
+                  {totalUnreadForOthers > 0 && (
+                    <div className="flex transition-all items-center gap-1 bg-blue-600/20 backdrop-blur-sm p-0.5 text-xs text-blue-600 font-semibold px-1.5 rounded-full">
+                      <MessageCircle size={12} strokeWidth={3} />
+                      {totalUnreadForOthers > 20 ? "20+" : totalUnreadForOthers}
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
 
             <NotificationsIcon className="dark:text-gray-300" />
           </IconButton>
@@ -719,7 +500,7 @@ const Header = ({ isCollapsed, setIsCollapsed }) => {
             </div>
           </div>
 
-          <div className="items-center gap-2 hidden lg:flex md:flex">
+          {/* <div className="items-center gap-2 hidden lg:flex md:flex">
             <Avatar
               alt={user?.name}
               src="/static/images/avatar/1.jpg"
@@ -742,9 +523,91 @@ const Header = ({ isCollapsed, setIsCollapsed }) => {
                 <KeyboardArrowDownIcon />
               </div>
             )}
-          </div>
+          </div> */}
         </div>
-        {isOpen && (
+
+        <div className="lg:flex md:flex hidden">
+          {/* <Tooltip title="Account settings"> */}
+          <IconButton
+            onClick={handleClick}
+            size="small"
+            sx={{ ml: 2 }}
+            aria-controls={open ? "account-menu" : undefined}
+            aria-haspopup="true"
+            aria-expanded={open ? "true" : undefined}
+          >
+            <Avatar
+              alt={user?.name}
+              src="/static/images/avatar/1.jpg"
+              size={40}
+              name={user?.name}
+              online={user?.isActive}
+            />
+          </IconButton>
+          {/* </Tooltip> */}
+
+          <Menu
+            anchorEl={anchorEl}
+            id="account-menu"
+            open={open}
+            onClose={handleClose}
+            onClick={handleClose}
+            slotProps={{
+              paper: {
+                elevation: 0,
+                sx: {
+                  overflow: "visible",
+                  filter: "drop-shadow(0px 2px 8px rgba(0,0,0,0.32))",
+                  mt: 1.5,
+                  "& .MuiAvatar-root": {
+                    width: 32,
+                    height: 32,
+                    ml: -0.5,
+                    mr: 1,
+                  },
+                  "&::before": {
+                    content: '""',
+                    display: "block",
+                    position: "absolute",
+                    top: 0,
+                    right: 14,
+                    width: 10,
+                    height: 10,
+                    bgcolor: "background.paper",
+                    transform: "translateY(-50%) rotate(45deg)",
+                    zIndex: 0,
+                  },
+                },
+              },
+            }}
+            transformOrigin={{ horizontal: "right", vertical: "top" }}
+            anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
+          >
+            <MenuItem>
+              <div className="flex items-center gap-2">
+                <Avatar
+                  alt={user?.name}
+                  src="/static/images/avatar/1.jpg"
+                  size={40}
+                  name={user?.name}
+                  online={user?.isActive}
+                />
+                <div className="flex flex-col">
+                  <p className="text-sm">{user?.name}</p>
+                  <p className="text-xs">{user?.email}</p>
+                </div>
+              </div>
+            </MenuItem>
+            <Divider />
+            <MenuItem onClick={handleLogout}>
+              <ListItemIcon>
+                <Logout fontSize="small" />
+              </ListItemIcon>
+              Logout
+            </MenuItem>
+          </Menu>
+        </div>
+        {/* {isOpen && (
           <div onClick={() => setIsOpen(false)} className="fixed inset-0 z-40">
             <div
               onClick={(e) => e.stopPropagation()}
@@ -806,7 +669,7 @@ const Header = ({ isCollapsed, setIsCollapsed }) => {
               </div>
             </div>
           </div>
-        )}
+        )} */}
       </div>
     </div>
   );

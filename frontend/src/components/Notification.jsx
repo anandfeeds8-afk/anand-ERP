@@ -31,6 +31,7 @@ import useNotification from "../hooks/useNotification.js";
 import { useTheme as useThemeContext } from "../context/ThemeContext.jsx";
 import { useMediaQuery } from "@mui/material";
 import { API_PATHS, BASE_URL } from "../utils/apiPaths.js";
+import { useUnreadChatsContext } from "../context/UnreadChatsContext.jsx";
 
 const Notification = ({ setIsOpenNotification }) => {
   const theme = useTheme();
@@ -52,8 +53,9 @@ const Notification = ({ setIsOpenNotification }) => {
   const [openEmoji, setOpenEmoji] = useState(false);
   const tabType = ["notifications", "messages"];
   const { clearNotifications, loadingClearNotifications } = useNotification();
-  const [unreadCounts, setUnreadCounts] = useState({});
-  const prevCountsRef = useRef({});
+  const { unreadForOthers } = useUnreadChatsContext();
+
+  console.log(unreadForOthers);
 
   const handleClearNotifications = () => {
     clearNotifications();
@@ -158,53 +160,6 @@ const Notification = ({ setIsOpenNotification }) => {
     setNotifications((prev) => [normalized, ...prev]);
   }, []);
 
-  // Memoized admin list nodes to reduce re-render while typing
-  // const adminItems = useMemo(() => admins || [], [admins]);
-
-  // const AdminList = memo(
-  //   ({ list, selectedId, onSelect, isMdUp, resolvedTheme, unreadCounts }) => (
-  //     <div className="flex flex-col items-start w-36 flex-shrink-0 overflow-y-auto custom-scrollbar px-2">
-  //       {list?.map((admin) => (
-  //         <Button
-  //           key={admin._id}
-  //           disableElevation
-  //           disableRipple={selectedId === admin._id}
-  //           disabled={selectedId === admin._id}
-  //           variant={selectedId === admin._id ? "contained" : "text"}
-  //           sx={{
-  //             textTransform: "none",
-  //             color:
-  //               selectedId === admin._id
-  //                 ? "white"
-  //                 : `${resolvedTheme === "dark" ? "white" : "#1f2937"}`,
-  //             marginBottom: "5px",
-  //             padding: "4px 15px",
-  //             justifyContent: "flex-start",
-  //             fontSize: isMdUp ? "16px" : "13px",
-  //             fontWeight: "400",
-  //             width: "100%",
-  //             fontFamily: "'Inter', sans-serif",
-  //             "&.Mui-disabled": {
-  //               backgroundColor: "#1976D2",
-  //               color: "white",
-  //             },
-  //           }}
-  //           onClick={() => onSelect(admin)}
-  //         >
-  //           <div className="flex items-center justify-between w-full">
-  //             <span>{admin?.name}</span>
-  //             {unreadCounts?.[admin._id] > 0 && (
-  //               <span className="ml-2 text-[10px] rounded-full bg-red-600 text-white px-2 py-[1px]">
-  //                 {unreadCounts[admin._id]}
-  //               </span>
-  //             )}
-  //           </div>
-  //         </Button>
-  //       ))}
-  //     </div>
-  //   )
-  // );
-
   const handleIncomingMessage = useCallback(
     async (data) => {
       if (!data) return;
@@ -269,45 +224,45 @@ const Notification = ({ setIsOpenNotification }) => {
     });
 
     // Request unread counts for all admins
-    const partnerIds = (admins || []).map((a) => a._id);
-    if (partnerIds.length) {
-      socket.emit("request-unread", { userId: user._id, partners: partnerIds });
-    }
+    // const partnerIds = (admins || []).map((a) => a._id);
+    // if (partnerIds.length) {
+    //   socket.emit("request-unread", { userId: user._id, partners: partnerIds });
+    // }
 
-    const shallowEqualCounts = (a = {}, b = {}) => {
-      const ak = Object.keys(a);
-      const bk = Object.keys(b);
-      if (ak.length !== bk.length) return false;
-      for (let k of ak) if (a[k] !== b[k]) return false;
-      return true;
-    };
+    // const shallowEqualCounts = (a = {}, b = {}) => {
+    //   const ak = Object.keys(a);
+    //   const bk = Object.keys(b);
+    //   if (ak.length !== bk.length) return false;
+    //   for (let k of ak) if (a[k] !== b[k]) return false;
+    //   return true;
+    // };
 
-    socket.on("unread-counts", ({ userId, counts }) => {
-      if (userId === user._id && counts) {
-        if (!shallowEqualCounts(prevCountsRef.current, counts)) {
-          prevCountsRef.current = counts;
-          setUnreadCounts(counts);
-        }
-      }
-    });
+    // socket.on("unread-counts", ({ userId, counts }) => {
+    //   if (userId === user._id && counts) {
+    //     if (!shallowEqualCounts(prevCountsRef.current, counts)) {
+    //       prevCountsRef.current = counts;
+    //       setUnreadCounts(counts);
+    //     }
+    //   }
+    // });
 
-    socket.on("unread-count", ({ userId, partnerId, count }) => {
-      if (userId === user._id && partnerId) {
-        setUnreadCounts((prev) => {
-          if (prev[partnerId] === count) return prev;
-          const next = { ...prev, [partnerId]: count };
-          prevCountsRef.current = next;
-          return next;
-        });
-      }
-    });
+    // socket.on("unread-count", ({ userId, partnerId, count }) => {
+    //   if (userId === user._id && partnerId) {
+    //     setUnreadCounts((prev) => {
+    //       if (prev[partnerId] === count) return prev;
+    //       const next = { ...prev, [partnerId]: count };
+    //       prevCountsRef.current = next;
+    //       return next;
+    //     });
+    //   }
+    // });
 
     return () => {
       socket.off("notification", handleNotification);
       socket.off("receiveMessage", handleIncomingMessage);
       socket.off("read-update");
-      socket.off("unread-counts");
-      socket.off("unread-count");
+      // socket.off("unread-counts");
+      // socket.off("unread-count");
     };
   }, [user?._id, handleNotification, handleIncomingMessage, admins]);
 
@@ -555,9 +510,15 @@ const Notification = ({ setIsOpenNotification }) => {
                       onClick={() => setSelectedAdmin(admin)}
                     >
                       {admin?.name}
-                      {unreadCounts?.[admin._id] > 0 && (
-                        <span className="ml-2 text-[10px] rounded-full bg-[#1976D2] text-white px-2 py-[1px]">
-                          {unreadCounts[admin._id]}
+                      {unreadForOthers?.[admin._id] > 0 && (
+                        <span
+                          className={`ml-2 text-[10px] rounded-full px-2 py-[1px] ${
+                            selectedAdmin._id === admin._id
+                              ? "bg-white text-[#1976D2]"
+                              : "bg-[#1976D2] text-white"
+                          }`}
+                        >
+                          {unreadForOthers[admin._id]}
                         </span>
                       )}
                     </Button>
@@ -797,6 +758,17 @@ const Notification = ({ setIsOpenNotification }) => {
                           <div className="flex items-center gap-2">
                             <Avatar size={35} name={admin?.name} />
                             <p className="text-sm">{admin?.name}</p>
+                            {unreadForOthers?.[admin._id] > 0 && (
+                              <span
+                                className={`ml-2 text-[10px] rounded-full px-2 py-[1px] ${
+                                  selectedAdmin._id === admin._id
+                                    ? "bg-white text-[#1976D2]"
+                                    : "bg-[#1976D2] text-white"
+                                }`}
+                              >
+                                {unreadForOthers[admin._id]}
+                              </span>
+                            )}
                           </div>
                         </Button>
                       ))}

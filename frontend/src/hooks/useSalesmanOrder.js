@@ -99,6 +99,7 @@ export const useSalesmanOrder = (id) => {
   // DELIVER Order in Salesman
   const { mutate: deliverOrder, isPending: isDeliveringOrder } = useMutation({
     mutationFn: async (orderId) => {
+      if (!orderId) return null;
       const response = await axios.patch(
         BASE_URL + API_PATHS.SALESMAN.DELIVER_ORDER,
         { orderId },

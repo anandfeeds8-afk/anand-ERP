@@ -463,7 +463,7 @@ const AdminNotification = ({ setIsOpenNotification }) => {
   //sorted notifications (newest first)
   const sortedNotifications = [...notifications].sort(
     (a, b) => new Date(b?.createdAt) - new Date(a?.createdAt)
-  ); 
+  );
 
   const groupedByDateNotifications = sortedNotifications.reduce((groups, m) => {
     const msgDate = new Date(m?.createdAt);

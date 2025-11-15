@@ -245,6 +245,36 @@ const AllOrdersForSalesman = () => {
     });
   };
 
+  const ProductsCell = ({ items }) => {
+    return (
+      <div className="w-full">
+        <table className="w-full">
+          <thead className="bg-blue-50 dark:bg-blue-950">
+            <tr>
+              <th className="text-left font-normal">Product</th>
+              <th className="text-right font-normal">Qty (in bags)</th>
+            </tr>
+          </thead>
+          <tbody>
+            {items?.map((p, i) => (
+              <tr
+                key={i}
+                className={
+                  i % 2 === 0
+                    ? "bg-white dark:bg-gray-900"
+                    : "bg-gray-50 dark:bg-gray-950"
+                }
+              >
+                <td className="text-left">{p.product?.name}</td>
+                <td className="text-right">{p.quantity}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    );
+  };
+
   const columns = [
     {
       field: "orderId",
@@ -257,7 +287,12 @@ const AllOrdersForSalesman = () => {
       field: "product",
       headerName: "Product",
       flex: 1,
-      minWidth: 120,
+      minWidth: 250,
+      renderCell: (params) => (
+        <div className="w-full h-full">
+          <ProductsCell items={params.row.product} />
+        </div>
+      ),
     },
     { field: "party", headerName: "Party", flex: 1, minWidth: 100 },
     { field: "date", headerName: "Date", flex: 1, minWidth: 100 },
@@ -416,7 +451,7 @@ const AllOrdersForSalesman = () => {
     orderId: `#${order.orderId}`,
     party: order?.party?.companyName,
     date: format(order?.createdAt, "dd MMM yyyy"),
-    product: order?.items?.map((p) => p.product?.name).join(", "),
+    product: order?.items,
     quantity: order?.items?.map((p) => `${p.quantity} bags`).join(", "),
     totalAmount: formatRupee(order.totalAmount),
     advanceAmount: formatRupee(order.advanceAmount),
@@ -449,6 +484,7 @@ const AllOrdersForSalesman = () => {
         pagination
         autoHeight
         disableColumnResize={false}
+        getRowHeight={() => "auto"}
         sx={{
           width: "100%",
           borderRadius: "6px",
@@ -476,14 +512,8 @@ const AllOrdersForSalesman = () => {
 
           "& .MuiDataGrid-columnHeaderTitle": {
             fontWeight: "600",
-            // fontSize: "0.8rem",
-          },
-
-          // 🔹 Cells
-          "& .MuiDataGrid-cell": {
-            borderColor: resolvedTheme === "dark" ? "#374151" : "#e5e7eb",
-            backgroundColor: resolvedTheme === "dark" ? "#0f172a" : "#fff",
-            color: resolvedTheme === "dark" ? "#9ca3af" : "#000",
+            textTransform: "uppercase",
+            fontSize: "12px",
           },
 
           // ❌ Remove blue outline when cell is active/focused
@@ -517,6 +547,53 @@ const AllOrdersForSalesman = () => {
 
           "& .MuiPaginationItem-root:hover": {
             backgroundColor: resolvedTheme === "dark" ? "#1e3a8a" : "#dbeafe",
+          },
+
+          // ✅ Add these styles for multi-line rows:
+          "& .MuiDataGrid-cell": {
+            display: "flex",
+            alignItems: "center",
+            padding: "8px",
+            lineHeight: "normal",
+            overflowY: "auto",
+
+            scrollbarColor: "#80808040 transparent",
+            scrollbarWidth: "thin",
+            scrollbarGutter: "stable",
+
+            borderColor: resolvedTheme === "dark" ? "#374151" : "#e5e7eb",
+            backgroundColor: resolvedTheme === "dark" ? "#0f172a" : "#fff",
+            color: resolvedTheme === "dark" ? "#9ca3af" : "#000",
+
+            "&::-webkit-scrollbar": {
+              width: "4px",
+              height: "4px",
+            },
+
+            "&::-webkit-scrollbar-thumb": {
+              backgroundColor: "#80808080",
+              borderRadius: "4px",
+            },
+
+            "&::-webkit-scrollbar-button:single-button": {
+              display: "none",
+              width: "0px",
+              height: "0px",
+              background: "transparent",
+              border: "none",
+            },
+
+            "&::-webkit-scrollbar-button": {
+              display: "none",
+              width: 0,
+              height: 0,
+              background: "transparent",
+            },
+          },
+
+          "& .MuiDataGrid-row": {
+            maxHeight: "100px !important",
+            minHeight: "50px !important",
           },
         }}
       />

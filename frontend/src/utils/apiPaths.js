@@ -112,7 +112,7 @@ export const API_PATHS = {
     GET_APPROVED_PARTIES: "/api/salesman/get-approved-parties",
     GET_REJECTED_PARTIES: "/api/salesman/get-rejected-parties",
     APPROVE_PARTY: "/api/salesman/send-party-for-approval",
-    DELIVER_ORDER: "api/salesman/deliver-order",
+    DELIVER_ORDER: "/api/salesman/deliver-order",
   },
 
   MANAGER: {

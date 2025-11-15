@@ -1,8 +1,8 @@
 // socket.js
 const { Server } = require("socket.io");
 const Message = require("../models/Message");
+const Notification = require("../models/Notification");
 const sendPushNotification = require("../sendPushNotification");
-// const { client } = require("./redis");
 
 let io;
 
@@ -31,6 +31,18 @@ const initSocket = (server) => {
       try {
         return await Message.countDocuments({
           senderId: partnerId,
+          receiverId: userId,
+          read: false,
+        });
+      } catch (e) {
+        console.error("Unread count error:", e?.message || e);
+        return 0;
+      }
+    };
+
+    const getUnreadNotificationCount = async (userId) => {
+      try {
+        return await Notification.countDocuments({
           receiverId: userId,
           read: false,
         });
@@ -89,6 +101,19 @@ const initSocket = (server) => {
         socket.emit("unread-counts", { userId, counts: results });
       } catch (e) {
         console.error("request-unread failed:", e?.message || e);
+      }
+    });
+
+    socket.on("request-unread-notification", async ({ userId }) => {
+      try {
+        const count = await getUnreadNotificationCount(userId);
+        // respond only to requesting socket
+        socket.emit("unread-notification-count", {
+          userId,
+          count,
+        });
+      } catch (e) {
+        console.error("request-unread-notification failed:", e?.message || e);
       }
     });
 

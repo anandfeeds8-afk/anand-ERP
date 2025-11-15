@@ -1,16 +1,17 @@
 import { useState } from "react";
 import { Button, CircularProgress, IconButton, Tooltip } from "@mui/material";
-import { ClipboardCheck, Download, Eye, File, FileImage } from "lucide-react";
+import { ClipboardCheck, Download, Eye, FileImage } from "lucide-react";
 import { format } from "date-fns";
 import { DataGrid } from "@mui/x-data-grid";
 import CloseIcon from "@mui/icons-material/Close";
 import { formatRupee } from "../../utils/formatRupee.js";
 import { useAccountantOrder } from "../../hooks/useAccountant.js";
-import { TbFileInvoice } from "react-icons/tb";
 import { downloadFile } from "../../utils/downloadFile.js";
 import { useUser } from "../../hooks/useUser.js";
+import { useTheme } from "../../context/ThemeContext";
 
 const ApproveAdvancePaymentOrders = () => {
+  const { resolvedTheme } = useTheme();
   const [singleOrderId, setSingleOrderId] = useState(null);
   const [openView, setOpenView] = useState(false);
   const [openInvoice, setOpenInvoice] = useState(false);
@@ -40,6 +41,36 @@ const ApproveAdvancePaymentOrders = () => {
     setOpenView(true);
   };
 
+  const ProductsCell = ({ items }) => {
+    return (
+      <div className="w-full">
+        <table className="w-full">
+          <thead className="bg-blue-50 dark:bg-blue-950">
+            <tr>
+              <th className="text-left font-normal">Product</th>
+              <th className="text-right font-normal">Qty (in bags)</th>
+            </tr>
+          </thead>
+          <tbody>
+            {items?.map((p, i) => (
+              <tr
+                key={i}
+                className={
+                  i % 2 === 0
+                    ? "bg-white dark:bg-gray-900"
+                    : "bg-gray-50 dark:bg-gray-950"
+                }
+              >
+                <td className="text-left">{p.product?.name}</td>
+                <td className="text-right">{p.quantity}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    );
+  };
+
   const columns = [
     {
       field: "orderId",
@@ -48,19 +79,31 @@ const ApproveAdvancePaymentOrders = () => {
       minWidth: 80,
       maxWidth: 100,
     },
-    { field: "product", headerName: "Product", flex: 1 },
-    { field: "party", headerName: "Party", flex: 1 },
-    { field: "date", headerName: "Date", flex: 1 },
-    { field: "quantity", headerName: "Quantity", flex: 1 },
+    {
+      field: "product",
+      headerName: "Product",
+      flex: 1,
+      minWidth: 250,
+      renderCell: (params) => (
+        <div className="w-full h-full">
+          <ProductsCell items={params.row.product} />
+        </div>
+      ),
+    },
+    { field: "party", headerName: "Party", flex: 1, minWidth: 100 },
+    { field: "date", headerName: "Date", flex: 1, minWidth: 100 },
+    { field: "quantity", headerName: "Quantity", flex: 1, minWidth: 100 },
     {
       field: "totalAmount",
       headerName: "Total Amount",
       flex: 1,
+      minWidth: 100,
     },
     {
       field: "advanceAmount",
       headerName: "Advance Amount",
       flex: 1,
+      minWidth: 100,
       renderCell: (params) => (
         <span className={`${params.value !== "₹0" && "text-green-700"}`}>
           {params.value}
@@ -71,6 +114,7 @@ const ApproveAdvancePaymentOrders = () => {
       field: "dueAmount",
       headerName: "Due Amount",
       flex: 1,
+      minWidth: 100,
       renderCell: (params) => (
         <span className={`${params.value !== "₹0" && "text-red-600"}`}>
           {params.value}
@@ -81,6 +125,7 @@ const ApproveAdvancePaymentOrders = () => {
       field: "orderStatus",
       headerName: "Status",
       flex: 1,
+      minWidth: 100,
       renderCell: (params) => (
         <span
           className={`${
@@ -138,7 +183,7 @@ const ApproveAdvancePaymentOrders = () => {
     orderId: `#${order.orderId}`,
     party: order?.party?.companyName,
     date: format(order?.createdAt, "dd MMM yyyy"),
-    product: order?.items?.map((p) => p.product?.name).join(", "),
+    product: order?.items,
     quantity: order?.items?.map((p) => `${p.quantity} bags`).join(", "),
     totalAmount: formatRupee(order.totalAmount),
     advanceAmount: formatRupee(order.advanceAmount),
@@ -164,33 +209,119 @@ const ApproveAdvancePaymentOrders = () => {
         pageSizeOptions={[5, 10, 20, 50, 100]}
         pagination
         autoHeight
+        disableColumnResize={false}
+        getRowHeight={() => "auto"}
         sx={{
           width: "100%",
-          borderRadius: "8px",
-          minWidth: "100%",
-          "& .MuiDataGrid-cell:focus": {
-            outline: "none",
-            backgroundColor: "none !important",
-          },
-          "& .MuiDataGrid-cell:focus-within": {
-            outline: "none",
-            backgroundColor: "none !important",
-          },
+          borderRadius: "6px",
+          borderColor: resolvedTheme === "dark" ? "transparent" : "#e5e7eb",
+          backgroundColor: resolvedTheme === "dark" ? "#0f172a" : "#fff",
+          color: resolvedTheme === "dark" ? "#e5e7eb" : "#111827",
+
+          // 🔹 Header Row Background
           "& .MuiDataGrid-columnHeaders": {
-            position: "sticky",
-            top: 0,
-            backgroundColor: "#fff",
-            zIndex: 1,
+            backgroundColor:
+              resolvedTheme === "dark"
+                ? "#1e293b !important"
+                : "#f9fafb !important",
+            color: resolvedTheme === "dark" ? "#f1f5f9" : "#000",
           },
-          "& .MuiDataGrid-virtualScroller": {
-            overflowX: "auto !important",
+
+          // 🔹 Header Cell
+          "& .MuiDataGrid-columnHeader": {
+            backgroundColor:
+              resolvedTheme === "dark"
+                ? "#1e293b !important"
+                : "#f9fafb !important",
+            color: resolvedTheme === "dark" ? "#9ca3af" : "#000",
+          },
+
+          "& .MuiDataGrid-columnHeaderTitle": {
+            fontWeight: "600",
+            textTransform: "uppercase",
+            fontSize: "12px",
+          },
+
+          // ❌ Remove blue outline when cell is active/focused
+          "& .MuiDataGrid-cell:focus, & .MuiDataGrid-cell:focus-within": {
+            outline: "none !important",
+          },
+
+          // 🔹 Hover row (lighter shade)
+          "& .MuiDataGrid-row:hover": {
+            backgroundColor:
+              resolvedTheme === "dark"
+                ? "rgba(59,130,246,0.1)"
+                : "rgba(59,130,246,0.05)",
+            transition: "background-color 0.2s ease-in-out",
+          },
+
+          // 🔹 Pagination buttons
+          "& .MuiTablePagination-root": {
+            color: resolvedTheme === "dark" ? "#e5e7eb" : "#111827",
+          },
+
+          "& .MuiPaginationItem-root": {
+            borderRadius: "6px",
+            color: resolvedTheme === "dark" ? "#e5e7eb" : "#111827",
+          },
+
+          "& .MuiPaginationItem-root.Mui-selected": {
+            backgroundColor: resolvedTheme === "dark" ? "#1e40af" : "#2563eb",
+            color: "#fff",
+          },
+
+          "& .MuiPaginationItem-root:hover": {
+            backgroundColor: resolvedTheme === "dark" ? "#1e3a8a" : "#dbeafe",
+          },
+
+          // ✅ Add these styles for multi-line rows:
+          "& .MuiDataGrid-cell": {
+            display: "flex",
+            alignItems: "center",
+            padding: "8px",
+            lineHeight: "normal",
             overflowY: "auto",
+
+            scrollbarColor: "#80808040 transparent",
+            scrollbarWidth: "thin",
+            scrollbarGutter: "stable",
+
+            borderColor: resolvedTheme === "dark" ? "#374151" : "#e5e7eb",
+            backgroundColor: resolvedTheme === "dark" ? "#0f172a" : "#fff",
+            color: resolvedTheme === "dark" ? "#9ca3af" : "#000",
+
+            "&::-webkit-scrollbar": {
+              width: "4px",
+              height: "4px",
+            },
+
+            "&::-webkit-scrollbar-thumb": {
+              backgroundColor: "#80808080",
+              borderRadius: "4px",
+            },
+
+            "&::-webkit-scrollbar-button:single-button": {
+              display: "none",
+              width: "0px",
+              height: "0px",
+              background: "transparent",
+              border: "none",
+            },
+
+            "&::-webkit-scrollbar-button": {
+              display: "none",
+              width: 0,
+              height: 0,
+              background: "transparent",
+            },
           },
-          "& .MuiDataGrid-main": {
-            maxWidth: "100%",
+
+          "& .MuiDataGrid-row": {
+            maxHeight: "100px !important",
+            minHeight: "50px !important",
           },
         }}
-        disableColumnResize={false}
       />
       {/* --- View Order Modal --- */}
       {openView && (

@@ -8,7 +8,6 @@ const SECRET_TOKEN = process.env.JWT_SECRET;
 const imagekit = require("../config/imagekit");
 const Admin = require("../models/Admin");
 const { getIO } = require("../config/socket");
-const { formatRupee } = require("../../frontend/src/utils/formatRupee");
 const Notification = require("../models/Notification");
 const sendNotificationToRole = require("../sendNotification");
 
@@ -116,6 +115,7 @@ const deleteOrder = async (req, res) => {
       "Delivered",
       "Paid",
     ];
+
     if (forwardSteps.includes(order.orderStatus)) {
       return res.status(403).json({
         success: false,
@@ -245,24 +245,6 @@ const updatePayment = async (req, res) => {
     );
 
     const accountantId = warehouse?.accountant.toString();
-
-    // const message = `Check and confirm due payment of ₹${amount} for Order #${order.orderId} from ${party?.companyName}.`;
-    // await Notification.insertOne({
-    //   orderId: order.orderId,
-    //   message,
-    //   type: "dueSentForApproval",
-    //   senderId: salesmanId,
-    //   receiverId: accountantId,
-    // });
-
-    // const io = getIO();
-
-    // io.to(accountantId).emit("dueSentForApproval", {
-    //   orderId,
-    //   message,
-    //   type: "dueSentForApproval",
-    //   senderId: salesmanId,
-    // });
 
     const payload = {
       title: `Check and confirm due payment`,
@@ -437,29 +419,43 @@ const deliverOrder = async (req, res) => {
 
     const adminIds = admins.map((u) => u._id.toString());
 
-    const message = `Order #${order?.orderId} has been delivered by ${order?.placedBy?.name}`;
+    // const message = `Order #${order?.orderId} has been delivered by ${order?.placedBy?.name}`;
 
-    const notifications = adminIds.map((r_id) => ({
-      orderId: order?.orderId,
-      message,
+    // const notifications = adminIds.map((r_id) => ({
+    //   orderId: order?.orderId,
+    //   message,
+    //   type: "delivered",
+    //   senderId: salesmanId,
+    //   receiverId: r_id,
+    //   read: false,
+    // }));
+
+    // await Notification.insertMany(notifications);
+
+    // const io = getIO();
+
+    // adminIds.forEach((r_id) => {
+    //   io.to(r_id).emit("delivered", {
+    //     orderId: order?.orderId,
+    //     message,
+    //     type: "delivered",
+    //     senderId: salesmanId,
+    //   });
+    // });
+
+    const payload = {
+      title: `Order #${order?.orderId} delivered`,
+      message: `Order #${order?.orderId} has been delivered by ${order?.placedBy?.name}.`,
+      orderId: order.orderId,
       type: "delivered",
       senderId: salesmanId,
-      receiverId: r_id,
+      receiverId: [adminIds],
       read: false,
-    }));
+    };
 
-    await Notification.insertMany(notifications);
+    const sendToRoles = ["Admin"];
 
-    const io = getIO();
-
-    adminIds.forEach((r_id) => {
-      io.to(r_id).emit("delivered", {
-        orderId: order?.orderId,
-        message,
-        type: "delivered",
-        senderId: salesmanId,
-      });
-    });
+    await sendNotificationToRole(sendToRoles, payload);
 
     return res.json({
       message: "Order delivered successfully",

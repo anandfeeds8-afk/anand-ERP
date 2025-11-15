@@ -4,8 +4,10 @@ import { Button, CircularProgress, TextField, Tooltip } from "@mui/material";
 import { useForm } from "react-hook-form";
 import { usePlantheadOrder } from "../../hooks/usePlanthead";
 import { DataGrid } from "@mui/x-data-grid";
+import { useTheme } from "../../context/ThemeContext";
 
 const ProductsTable = () => {
+  const { resolvedTheme } = useTheme();
   const [openEdit, setOpenEdit] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [productId, setProductId] = useState(null);
@@ -30,8 +32,6 @@ const ProductsTable = () => {
       setValue("quantity", product.quantity);
     }
   }, [productId]);
-
-  console.log(selectedProduct);
 
   const {
     updateProductQuantity,
@@ -96,33 +96,119 @@ const ProductsTable = () => {
         pageSizeOptions={[5, 10, 20, 50, 100]}
         pagination
         autoHeight
+        disableColumnResize={false}
+        getRowHeight={() => "auto"}
         sx={{
           width: "100%",
-          borderRadius: "8px",
-          minWidth: "100%",
-          "& .MuiDataGrid-cell:focus": {
-            outline: "none",
-            backgroundColor: "none !important",
-          },
-          "& .MuiDataGrid-cell:focus-within": {
-            outline: "none",
-            backgroundColor: "none !important",
-          },
+          borderRadius: "6px",
+          borderColor: resolvedTheme === "dark" ? "transparent" : "#e5e7eb",
+          backgroundColor: resolvedTheme === "dark" ? "#0f172a" : "#fff",
+          color: resolvedTheme === "dark" ? "#e5e7eb" : "#111827",
+
+          // 🔹 Header Row Background
           "& .MuiDataGrid-columnHeaders": {
-            position: "sticky",
-            top: 0,
-            backgroundColor: "#fff",
-            zIndex: 1,
+            backgroundColor:
+              resolvedTheme === "dark"
+                ? "#1e293b !important"
+                : "#f9fafb !important",
+            color: resolvedTheme === "dark" ? "#f1f5f9" : "#000",
           },
-          "& .MuiDataGrid-virtualScroller": {
-            overflowX: "auto !important",
+
+          // 🔹 Header Cell
+          "& .MuiDataGrid-columnHeader": {
+            backgroundColor:
+              resolvedTheme === "dark"
+                ? "#1e293b !important"
+                : "#f9fafb !important",
+            color: resolvedTheme === "dark" ? "#9ca3af" : "#000",
+          },
+
+          "& .MuiDataGrid-columnHeaderTitle": {
+            fontWeight: "600",
+            textTransform: "uppercase",
+            fontSize: "12px",
+          },
+
+          // ❌ Remove blue outline when cell is active/focused
+          "& .MuiDataGrid-cell:focus, & .MuiDataGrid-cell:focus-within": {
+            outline: "none !important",
+          },
+
+          // 🔹 Hover row (lighter shade)
+          "& .MuiDataGrid-row:hover": {
+            backgroundColor:
+              resolvedTheme === "dark"
+                ? "rgba(59,130,246,0.1)"
+                : "rgba(59,130,246,0.05)",
+            transition: "background-color 0.2s ease-in-out",
+          },
+
+          // 🔹 Pagination buttons
+          "& .MuiTablePagination-root": {
+            color: resolvedTheme === "dark" ? "#e5e7eb" : "#111827",
+          },
+
+          "& .MuiPaginationItem-root": {
+            borderRadius: "6px",
+            color: resolvedTheme === "dark" ? "#e5e7eb" : "#111827",
+          },
+
+          "& .MuiPaginationItem-root.Mui-selected": {
+            backgroundColor: resolvedTheme === "dark" ? "#1e40af" : "#2563eb",
+            color: "#fff",
+          },
+
+          "& .MuiPaginationItem-root:hover": {
+            backgroundColor: resolvedTheme === "dark" ? "#1e3a8a" : "#dbeafe",
+          },
+
+          // ✅ Add these styles for multi-line rows:
+          "& .MuiDataGrid-cell": {
+            display: "flex",
+            alignItems: "center",
+            padding: "8px",
+            lineHeight: "normal",
             overflowY: "auto",
+
+            scrollbarColor: "#80808040 transparent",
+            scrollbarWidth: "thin",
+            scrollbarGutter: "stable",
+
+            borderColor: resolvedTheme === "dark" ? "#374151" : "#e5e7eb",
+            backgroundColor: resolvedTheme === "dark" ? "#0f172a" : "#fff",
+            color: resolvedTheme === "dark" ? "#9ca3af" : "#000",
+
+            "&::-webkit-scrollbar": {
+              width: "4px",
+              height: "4px",
+            },
+
+            "&::-webkit-scrollbar-thumb": {
+              backgroundColor: "#80808080",
+              borderRadius: "4px",
+            },
+
+            "&::-webkit-scrollbar-button:single-button": {
+              display: "none",
+              width: "0px",
+              height: "0px",
+              background: "transparent",
+              border: "none",
+            },
+
+            "&::-webkit-scrollbar-button": {
+              display: "none",
+              width: 0,
+              height: 0,
+              background: "transparent",
+            },
           },
-          "& .MuiDataGrid-main": {
-            maxWidth: "100%",
+
+          "& .MuiDataGrid-row": {
+            maxHeight: "100px !important",
+            minHeight: "50px !important",
           },
         }}
-        disableColumnResize={false}
       />
 
       {/* --- Edit Product Modal --- */}

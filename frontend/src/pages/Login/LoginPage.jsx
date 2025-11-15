@@ -54,7 +54,7 @@ const LoginPage = () => {
     <div className="flex flex-col justify-center items-center h-screen w-full dark:bg-gray-950">
       <div className="mb-5">
         <h1 className="font-semibold text-center flex flex-col items-center text-2xl dark:text-gray-300">
-          <img src={logo} alt="" className="w-14 h-14 dark:invert-[100%]" />
+          <img src={logo} alt="" className="w-14 h-14" />
           <span className="text-[#1976D2] text-3xl mt-1 text-center logo">
             Welcome Back
           </span>
