@@ -35,7 +35,6 @@ import { useUnreadChatsContext } from "../context/UnreadChatsContext.jsx";
 
 const Notification = ({ setIsOpenNotification }) => {
   const theme = useTheme();
-  const isSmDown = useMediaQuery(theme.breakpoints.down("sm"));
   const isMdUp = useMediaQuery(theme.breakpoints.up("md"));
 
   const { resolvedTheme } = useThemeContext();
@@ -222,47 +221,10 @@ const Notification = ({ setIsOpenNotification }) => {
         );
       }
     });
-
-    // Request unread counts for all admins
-    // const partnerIds = (admins || []).map((a) => a._id);
-    // if (partnerIds.length) {
-    //   socket.emit("request-unread", { userId: user._id, partners: partnerIds });
-    // }
-
-    // const shallowEqualCounts = (a = {}, b = {}) => {
-    //   const ak = Object.keys(a);
-    //   const bk = Object.keys(b);
-    //   if (ak.length !== bk.length) return false;
-    //   for (let k of ak) if (a[k] !== b[k]) return false;
-    //   return true;
-    // };
-
-    // socket.on("unread-counts", ({ userId, counts }) => {
-    //   if (userId === user._id && counts) {
-    //     if (!shallowEqualCounts(prevCountsRef.current, counts)) {
-    //       prevCountsRef.current = counts;
-    //       setUnreadCounts(counts);
-    //     }
-    //   }
-    // });
-
-    // socket.on("unread-count", ({ userId, partnerId, count }) => {
-    //   if (userId === user._id && partnerId) {
-    //     setUnreadCounts((prev) => {
-    //       if (prev[partnerId] === count) return prev;
-    //       const next = { ...prev, [partnerId]: count };
-    //       prevCountsRef.current = next;
-    //       return next;
-    //     });
-    //   }
-    // });
-
     return () => {
       socket.off("notification", handleNotification);
       socket.off("receiveMessage", handleIncomingMessage);
       socket.off("read-update");
-      // socket.off("unread-counts");
-      // socket.off("unread-count");
     };
   }, [user?._id, handleNotification, handleIncomingMessage, admins]);
 
@@ -416,7 +378,7 @@ const Notification = ({ setIsOpenNotification }) => {
                         </div>
                         {group?.items?.map((n, i) => (
                           <div key={n?._id || `notification-${group.key}-${i}`}>
-                            <div className="lg:p-3 md:p-3 sm:p-3 p-2 text-sm my-2 relative bg-gray-50 dark:bg-gray-900 border-l-4 border-blue-500 rounded-lg shadow-sm hover:bg-gray-100 transition-colors duration-200">
+                            <div className="lg:p-3 md:p-3 sm:p-3 p-2 text-sm my-2 relative bg-gray-50 dark:bg-gray-900 border-l-4 border-[#1976D2] rounded-lg shadow-sm hover:bg-gray-100 transition-colors duration-200">
                               <div className="flex justify-between items-center">
                                 <p className="text-gray-800 dark:text-gray-300 font-medium lg:text-sm md:text-xs sm:text-xs text-xs">
                                   {n?.message}

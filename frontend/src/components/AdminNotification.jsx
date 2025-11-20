@@ -43,10 +43,6 @@ const AdminNotification = ({ setIsOpenNotification }) => {
   const { salesman, salesmanager, salesauthorizer, planthead, accountant } =
     useEmployees();
 
-  const handleEmojiSelect = (emoji) => {
-    setTypedMessage((prev) => prev + emoji.emoji);
-  };
-
   const [selectedTab, setSelectedTab] = useState("all-dashboards");
   const [selectedDashboard, setSelectedDashboard] = useState("All");
 
@@ -71,6 +67,11 @@ const AdminNotification = ({ setIsOpenNotification }) => {
     setNotifications([]);
   };
 
+  // Memoize emoji select handler
+  const handleEmojiSelect = useCallback((emoji) => {
+    setTypedMessage((prev) => prev + emoji.emoji);
+  }, []);
+
   // Scroll to bottom when messages or context change
   useEffect(() => {
     const pickVisible = () => {
@@ -87,7 +88,7 @@ const AdminNotification = ({ setIsOpenNotification }) => {
     });
   }, [messages, loadingMessages, activeTab]);
 
-  // Memoize all employees array
+  // Memoize all employees array - FIXED: Added stable dependencies
   const allEmployees = useMemo(
     () => [
       ...(salesman || []),
@@ -99,8 +100,9 @@ const AdminNotification = ({ setIsOpenNotification }) => {
     [salesman, salesmanager, salesauthorizer, planthead, accountant]
   );
 
-  // Memoize selected employee
+  // Memoize selected employee - FIXED: Only recalculate when necessary
   const selectedEmployee = useMemo(() => {
+    if (selectedTab === "all-dashboards" || !selectedTab) return null;
     return allEmployees.find((e) => e._id === selectedTab) || null;
   }, [selectedTab, allEmployees]);
 
@@ -120,12 +122,14 @@ const AdminNotification = ({ setIsOpenNotification }) => {
     [currentRoomId]
   );
 
-  const leaveChatRoom = () => {
+  const leaveChatRoom = useCallback(() => {
     setSelectedTab(null);
     setCurrentRoomId(null);
-    socket.emit("leaveRoom", currentRoomId);
+    if (currentRoomId) {
+      socket.emit("leaveRoom", currentRoomId);
+    }
     setMessages([]);
-  };
+  }, [currentRoomId]);
 
   // Stable handlers to avoid duplicate bindings
   const handleNotification = useCallback((data) => {
@@ -144,10 +148,7 @@ const AdminNotification = ({ setIsOpenNotification }) => {
             ) < 1000)
       );
 
-      if (exists) {
-        return prev;
-      }
-
+      if (exists) return prev;
       return [normalized, ...prev];
     });
   }, []);
@@ -201,24 +202,28 @@ const AdminNotification = ({ setIsOpenNotification }) => {
     [user?._id, selectedEmployee]
   );
 
-  // function to mark the messages as read
-  const markAsRead = async () => {
-    if (!selectedEmployee) return;
-    await axios.put(
-      BASE_URL +
-        API_PATHS.MESSAGES.MARK_AS_READ(
-          user._id,
-          selectedEmployee._id,
-          user._id
-        ),
-      {},
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
-  };
+  // function to mark the messages as read - MEMOIZED
+  const markAsRead = useCallback(async () => {
+    if (!selectedEmployee || !user?._id) return;
+    try {
+      await axios.put(
+        BASE_URL +
+          API_PATHS.MESSAGES.MARK_AS_READ(
+            user._id,
+            selectedEmployee._id,
+            user._id
+          ),
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+    } catch (error) {
+      console.error("Error marking messages as read:", error);
+    }
+  }, [selectedEmployee, user?._id, token]);
 
   //mark messages as read
   useEffect(() => {
@@ -229,27 +234,31 @@ const AdminNotification = ({ setIsOpenNotification }) => {
         partnerId: selectedEmployee._id,
       });
     }
-  }, [selectedEmployee]);
+  }, [selectedEmployee, markAsRead, user?._id]);
 
-  const handleSendMessage = (e) => {
-    e.preventDefault();
+  // MEMOIZED: Handle send message
+  const handleSendMessage = useCallback(
+    (e) => {
+      e.preventDefault();
 
-    if (!typedMessage.trim()) return;
+      if (!typedMessage.trim()) return;
 
-    const data = {
-      senderId: user._id,
-      senderName: user.name,
-      receiverId: selectedEmployee._id,
-      receiverName: selectedEmployee.name,
-      message: typedMessage.trim(),
-      roomId: selectedEmployee._id || selectedDashboard,
-      timestamp: new Date(),
-      type: "message",
-    };
+      const data = {
+        senderId: user._id,
+        senderName: user.name,
+        receiverId: selectedEmployee._id,
+        receiverName: selectedEmployee.name,
+        message: typedMessage.trim(),
+        roomId: selectedEmployee._id || selectedDashboard,
+        timestamp: new Date(),
+        type: "message",
+      };
 
-    socket.emit("sendMessage", data);
-    setTypedMessage("");
-  };
+      socket.emit("sendMessage", data);
+      setTypedMessage("");
+    },
+    [typedMessage, user, selectedEmployee, selectedDashboard]
+  );
 
   // Fetch notifications history
   useEffect(() => {
@@ -269,7 +278,7 @@ const AdminNotification = ({ setIsOpenNotification }) => {
         const sorted = (res?.data?.data || []).slice().sort((a, b) => {
           const ta = a?.createdAt ? new Date(a.createdAt).getTime() : 0;
           const tb = b?.createdAt ? new Date(b.createdAt).getTime() : 0;
-          return tb - ta; // newest first
+          return tb - ta;
         });
         setNotifications(sorted);
       } catch (err) {
@@ -281,7 +290,7 @@ const AdminNotification = ({ setIsOpenNotification }) => {
 
     fetchHistory();
     queryClient.invalidateQueries(["notifications", user._id]);
-  }, [user?._id]);
+  }, [user?._id, token, queryClient]);
 
   // Fetch message history
   useEffect(() => {
@@ -313,7 +322,7 @@ const AdminNotification = ({ setIsOpenNotification }) => {
 
     fetchHistory();
     queryClient.invalidateQueries(["notifications", user?._id]);
-  }, [selectedEmployee]);
+  }, [selectedEmployee, user?._id, token, queryClient]);
 
   // handling notifications & messages
   useEffect(() => {
@@ -321,11 +330,7 @@ const AdminNotification = ({ setIsOpenNotification }) => {
 
     socket.emit("join", user._id);
 
-    //attach listeners
-    socket.on("notification", handleNotification);
-
-    socket.on("receiveMessage", handleMessage);
-    socket.on("read-update", ({ readerId, partnerId }) => {
+    const handleReadUpdate = ({ readerId, partnerId }) => {
       if (partnerId === user._id) {
         setMessages((prev) =>
           prev.map((m) => ({
@@ -334,16 +339,67 @@ const AdminNotification = ({ setIsOpenNotification }) => {
           }))
         );
       }
-    });
+    };
+
+    socket.on("notification", handleNotification);
+    socket.on("receiveMessage", handleMessage);
+    socket.on("read-update", handleReadUpdate);
 
     return () => {
       socket.off("notification", handleNotification);
       socket.off("receiveMessage", handleMessage);
-      socket.off("read-update");
+      socket.off("read-update", handleReadUpdate);
     };
-  }, [user?._id, handleNotification, handleMessage, allEmployees]);
+  }, [user?._id, handleNotification, handleMessage]);
 
-  // Employee list component
+  // MEMOIZED: Sorted messages
+  const sortedMessages = useMemo(() => {
+    return [...messages].sort(
+      (a, b) => new Date(a.timestamp) - new Date(b.timestamp)
+    );
+  }, [messages]);
+
+  // MEMOIZED: Grouped by date
+  const groupedByDate = useMemo(() => {
+    return sortedMessages.reduce((groups, m) => {
+      const msgDate = new Date(m.timestamp);
+      const key = format(msgDate, "yyyy-MM-dd");
+      const lastGroup = groups[groups.length - 1];
+      if (!lastGroup || lastGroup.key !== key) {
+        groups.push({ key, date: msgDate, items: [m] });
+      } else {
+        lastGroup.items.push(m);
+      }
+      return groups;
+    }, []);
+  }, [sortedMessages]);
+
+  // MEMOIZED: Sorted notifications
+  const sortedNotifications = useMemo(() => {
+    return [...notifications].sort(
+      (a, b) => new Date(b?.createdAt) - new Date(a?.createdAt)
+    );
+  }, [notifications]);
+
+  // MEMOIZED: Grouped notifications
+  const groupedByDateNotifications = useMemo(() => {
+    return sortedNotifications.reduce((groups, m) => {
+      const msgDate = new Date(m?.createdAt);
+      const key = format(msgDate, "yyyy-MM-dd");
+      const lastGroup = groups[groups.length - 1];
+      if (!lastGroup || lastGroup.key !== key) {
+        groups.push({ key, date: msgDate, items: [m] });
+      } else {
+        lastGroup.items.push(m);
+      }
+      return groups;
+    }, []);
+  }, [sortedNotifications]);
+
+  const emojiRegex =
+    /^(?:\p{Emoji_Presentation}|\p{Emoji}\uFE0F|\p{Emoji_Modifier_Base}(?:\p{Emoji_Modifier})?|\p{Emoji_Component})+$/u;
+
+  // Employee list component - FULLY MEMOIZED
   const EmployeeList = memo(({ title, employees }) => (
     <div className="flex flex-col items-start w-full px-2 transition-all">
       <p className="text-gray-500 lg:text-sm sm:text-xs text-[10px] mb-1 dark:text-gray-400 md:text-[11px]">
@@ -389,7 +445,7 @@ const AdminNotification = ({ setIsOpenNotification }) => {
     </div>
   ));
 
-  // Employee list component for mobile
+  // Employee list component for mobile - FULLY MEMOIZED
   const EmployeeListForMobile = memo(({ title, employees }) => (
     <div className="flex flex-col items-start w-full px-2 transition-all">
       <p className="text-gray-500 lg:text-sm sm:text-xs text-[10px] mb-1 dark:text-gray-400 md:text-[11px]">
@@ -438,47 +494,6 @@ const AdminNotification = ({ setIsOpenNotification }) => {
       ))}
     </div>
   ));
-
-  //sorted messages
-  const sortedMessages = useMemo(() => {
-    return [...messages].sort(
-      (a, b) => new Date(a.timestamp) - new Date(b.timestamp)
-    );
-  }, [messages]);
-
-  const groupedByDate = useMemo(() => {
-    return sortedMessages.reduce((groups, m) => {
-      const msgDate = new Date(m.timestamp);
-      const key = format(msgDate, "yyyy-MM-dd");
-      const lastGroup = groups[groups.length - 1];
-      if (!lastGroup || lastGroup.key !== key) {
-        groups.push({ key, date: msgDate, items: [m] });
-      } else {
-        lastGroup.items.push(m);
-      }
-      return groups;
-    }, []);
-  }, [sortedMessages]);
-
-  //sorted notifications (newest first)
-  const sortedNotifications = [...notifications].sort(
-    (a, b) => new Date(b?.createdAt) - new Date(a?.createdAt)
-  );
-
-  const groupedByDateNotifications = sortedNotifications.reduce((groups, m) => {
-    const msgDate = new Date(m?.createdAt);
-    const key = format(msgDate, "yyyy-MM-dd");
-    const lastGroup = groups[groups.length - 1];
-    if (!lastGroup || lastGroup.key !== key) {
-      groups.push({ key, date: msgDate, items: [m] });
-    } else {
-      lastGroup.items.push(m);
-    }
-    return groups;
-  }, []);
-
-  const emojiRegex =
-    /^(?:\p{Emoji_Presentation}|\p{Emoji}\uFE0F|\p{Emoji_Modifier_Base}(?:\p{Emoji_Modifier})?|\p{Emoji_Component})+$/u;
 
   return (
     <div className="flex items-center justify-center w-full h-full absolute top-0 right-0 bg-gradient-to-b from-black/20 to-black/60 backdrop-blur-sm z-50 transition-all">

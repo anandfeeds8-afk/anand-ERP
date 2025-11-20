@@ -19,8 +19,6 @@ import {
   Select,
   TextField,
   Tooltip,
-  useMediaQuery,
-  useTheme,
 } from "@mui/material";
 import { Controller, useForm } from "react-hook-form";
 import useEmployees from "../../../hooks/useEmployees.js";
@@ -31,9 +29,6 @@ import useFilteredProducts from "../../../hooks/useFilteredProducts.js";
 import { formatRupee } from "../../../utils/formatRupee.js";
 
 const Plant = ({ warehouse }) => {
-  const theme = useTheme();
-  const isMdUp = useMediaQuery(theme.breakpoints.up("md"));
-  const isSmDown = useMediaQuery(theme.breakpoints.down("sm"));
   const { planthead, accountant } = useEmployees();
   const { updateWarehouse, deleteWarehouse, isLoading } = useWarehouse();
   const { singleWarehouse, singleWarehouseLoading } = useSingleWarehouse(
@@ -83,19 +78,19 @@ const Plant = ({ warehouse }) => {
   if (singleWarehouseLoading || isPending) return <CircularProgress />;
 
   return (
-    <div className="bg-white rounded-lg p-5 shadow hover:shadow-md transition-all">
+    <div className="bg-white dark:bg-gray-900 rounded-lg p-5 shadow hover:shadow-md transition-all">
       <div className="flex items-center justify-between w-full">
         <div className="flex items-center gap-3">
-          <div className="p-3 bg-pink-100 rounded-full">
-            <SiDecentraland className="lg:text-4xl md:text-3xl sm:text-2xl opacity-70 text-pink-600" />
+          <div className="p-3 bg-pink-100 dark:bg-pink-800 rounded-full">
+            <SiDecentraland className="lg:text-4xl md:text-3xl sm:text-2xl opacity-70 text-pink-600 dark:text-pink-200" />
           </div>
           <div>
-            <p className="font-semibold lg:text-lg md:text-base sm:text-sm text-sm">
+            <p className="font-semibold lg:text-lg md:text-base sm:text-sm text-sm dark:text-gray-200">
               {warehouse?.name}
             </p>
             <div className="flex items-center gap-1">
-              <IoLocationOutline className="text-gray-600 lg:text-lg md:text-sm sm:text-sm text-xs" />
-              <p className="lg:text-sm md:text-xs sm:text-xs text-gray-600 text-xs">
+              <IoLocationOutline className="text-gray-600 dark:text-gray-300 lg:text-lg md:text-sm sm:text-sm text-xs" />
+              <p className="lg:text-sm md:text-xs sm:text-xs text-gray-600 text-xs dark:text-gray-300">
                 {warehouse?.location}
               </p>
             </div>
@@ -107,51 +102,57 @@ const Plant = ({ warehouse }) => {
         <div className="lg:text-sm md:text-xs sm:text-xs text-xs text-gray-600 flex justify-between">
           <span className="flex items-center gap-1">
             <MdOutlineManageAccounts className="text-pink-600" />
-            Plant Head:
+            <span className="dark:text-gray-300">Plant Head:</span>
           </span>
-          <span className="text-black">{warehouse?.plantHead?.name}</span>
+          <span className="text-black dark:text-gray-300">
+            {warehouse?.plantHead?.name}
+          </span>
         </div>
         <div className="lg:text-sm md:text-xs sm:text-xs text-xs text-gray-600 flex justify-between">
           <span className="flex items-center gap-1">
             <MdOutlineAccountBalance className="text-green-600" />
-            Accountant:
+            <span className="dark:text-gray-300">Accountant:</span>
           </span>
-          <span className="text-black">{warehouse?.accountant?.name}</span>
+          <span className="text-black dark:text-gray-300">
+            {warehouse?.accountant?.name}
+          </span>
         </div>
         <div className="lg:text-sm md:text-xs sm:text-xs text-xs text-gray-600 flex justify-between">
           <span className="flex items-center gap-1">
             <Box className="text-blue-600" size={15} strokeWidth={1.5} />
-            Stock items:
+            <span className="dark:text-gray-300">Stock items:</span>
           </span>
-          <span className="text-black">{warehouse?.stock?.length}</span>
+          <span className="text-black dark:text-gray-300">
+            {warehouse?.stock?.length}
+          </span>
         </div>
       </div>
 
       <div className="flex gap-1 mt-5">
         <button
           onClick={() => setOpenManageStock(true)}
-          className="p-1 px-2 rounded-lg bg-violet-100 text-violet-800 w-full text-sm hover:bg-violet-200 active:scale-95 transition-all flex items-center justify-center gap-2"
+          className="p-1 px-2 rounded-lg bg-violet-100 dark:bg-violet-800 text-violet-800 w-full text-sm dark:text-gray-300 hover:bg-violet-200 active:scale-95 transition-all flex items-center justify-center gap-2"
         >
           <Box size={15} strokeWidth={1.5} />
-          <span className="lg:text-sm md:text-xs sm:text-xs text-xs">
+          <span className="lg:text-sm md:text-xs sm:text-xs text-xs dark:text-gray-300">
             Manage Products
           </span>
         </button>
         <Eye
           color="blue"
-          className="hover:bg-blue-100 active:scale-95 transition-all p-0.5 px-2 rounded-lg"
+          className="hover:bg-blue-100 dark:hover:bg-blue-950 active:scale-95 transition-all p-0.5 px-2 rounded-lg"
           size={40}
           onClick={() => setOpenView(true)}
         />
         <SquarePen
           color="green"
-          className="hover:bg-green-100 active:scale-95 transition-all p-0.5 px-2 rounded-lg"
+          className="hover:bg-green-100 dark:hover:bg-green-950 active:scale-95 transition-all p-0.5 px-2 rounded-lg"
           size={40}
           onClick={() => setOpenEdit(true)}
         />
         <Trash2
           color="red"
-          className="hover:bg-red-100 active:scale-95 transition-all p-0.5 px-2 rounded-lg"
+          className="hover:bg-red-100 dark:hover:bg-red-950 active:scale-95 transition-all p-0.5 px-2 rounded-lg"
           size={40}
           onClick={() => setOpenDelete(true)}
         />
@@ -160,8 +161,8 @@ const Plant = ({ warehouse }) => {
       {/* --- Edit Plant Modal --- */}
       {openEdit && (
         <div className="transition-all bg-gradient-to-b from-black/20 to-black/60 backdrop-blur-sm w-full z-50 h-screen absolute top-0 left-0 flex items-center justify-center">
-          <div className="bg-white lg:p-7 p-5 rounded-lg lg:w-[29rem] md:w-[50%] sm:w-[60%] w-[95%]">
-            <p className="lg:text-xl text-base font-semibold mb-7">
+          <div className="bg-white dark:bg-gray-800 lg:p-7 p-5 rounded-lg lg:w-[29rem] md:w-[50%] sm:w-[60%] w-[95%]">
+            <p className="lg:text-xl dark:text-gray-200 text-base font-semibold mb-7">
               Edit Plant
             </p>
             <form
@@ -262,7 +263,7 @@ const Plant = ({ warehouse }) => {
 
               <div className="flex items-center justify-end gap-3 mt-5">
                 <Button
-                size="small"
+                  size="small"
                   variant="outlined"
                   disableElevation
                   sx={{ textTransform: "none" }}
@@ -271,7 +272,7 @@ const Plant = ({ warehouse }) => {
                   Cancel
                 </Button>
                 <Button
-                size="small"
+                  size="small"
                   loading={isLoading}
                   loadingPosition="start"
                   variant="contained"
@@ -290,17 +291,17 @@ const Plant = ({ warehouse }) => {
       {/* --- Delete Plant Modal --- */}
       {openDelete && (
         <div className="transition-all bg-gradient-to-b from-black/20 to-black/60 backdrop-blur-sm w-full z-50 h-screen absolute top-0 left-0 flex items-center justify-center">
-          <div className="bg-white lg:p-7 p-5 rounded-lg lg:w-[29rem] md:w-[50%] sm:w-[60%] w-[95%]">
-            <p className="lg:text-lg text-base font-semibold">
+          <div className="bg-white dark:bg-gray-800 lg:p-7 p-5 rounded-lg lg:w-[29rem] md:w-[50%] sm:w-[60%] w-[95%]">
+            <p className="lg:text-base font-semibold dark:text-gray-200">
               Are you sure you want to delete {warehouse.name}?
             </p>
-            <p className="text-gray-500 lg:text-sm text-xs">
+            <p className="text-gray-500 lg:text-sm text-xs dark:text-gray-400">
               This action cannot be undone. {warehouse.name}'s data will be
               permanently removed.
             </p>
             <div className="flex items-center justify-end gap-3 mt-5">
               <Button
-              size="small"
+                size="small"
                 variant="outlined"
                 disableElevation
                 color="error"
@@ -310,7 +311,7 @@ const Plant = ({ warehouse }) => {
                 Cancel
               </Button>
               <Button
-              size="small"
+                size="small"
                 variant="contained"
                 disableElevation
                 color="error"
@@ -327,10 +328,10 @@ const Plant = ({ warehouse }) => {
       {/* --- View Plant Modal --- */}
       {openView && (
         <div className="transition-all bg-gradient-to-b from-black/20 to-black/60 backdrop-blur-sm w-full z-50 h-screen absolute top-0 left-0 flex items-center justify-center">
-          <div className="bg-white relative lg:p-7 p-5 rounded-lg lg:w-[90%] lg:h-[90%] md:w-[95%] sm:w-[60%] md:h-[95%] w-[95%] h-[95%] overflow-auto">
+          <div className="bg-white dark:bg-gray-800 relative lg:p-7 p-5 rounded-lg lg:w-[90%] lg:h-[90%] md:w-[95%] sm:w-[60%] md:h-[95%] w-[95%] h-[95%] overflow-auto">
             <div>
               <div className="flex items-center justify-between">
-                <p className="lg:text-xl text-base font-semibold">
+                <p className="lg:text-xl text-base font-semibold dark:text-gray-200">
                   Plant Details
                 </p>
                 <IconButton size="small" onClick={() => setOpenView(false)}>
@@ -341,16 +342,16 @@ const Plant = ({ warehouse }) => {
                 <div className="lg:pe-5">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <div className="p-3 bg-pink-100 rounded-full">
-                        <SiDecentraland className="lg:text-4xl text-2xl opacity-70 text-pink-600" />
+                      <div className="p-3 bg-pink-100 dark:bg-pink-800 rounded-full">
+                        <SiDecentraland className="lg:text-4xl text-2xl opacity-70 text-pink-600 dark:text-pink-200" />
                       </div>
                       <div>
-                        <p className="font-semibold lg:text-lg text-sm">
+                        <p className="font-semibold lg:text-lg text-sm dark:text-gray-200">
                           {warehouse.name}
                         </p>
                         <div className="flex items-center gap-1">
-                          <IoLocationOutline className="text-gray-600 lg:text-base text-xs" />
-                          <p className="lg:text-sm text-xs text-gray-600">
+                          <IoLocationOutline className="text-gray-600 lg:text-base text-xs dark:text-gray-300" />
+                          <p className="lg:text-sm text-xs text-gray-600 dark:text-gray-300">
                             {warehouse.location}
                           </p>
                         </div>
@@ -359,24 +360,24 @@ const Plant = ({ warehouse }) => {
                   </div>
 
                   {/* Total Earnings */}
-                  <div className="border p-3 rounded-lg flex justify-between items-center mt-5">
+                  <div className="border dark:border-none p-3 rounded-lg flex justify-between items-center mt-5 dark:bg-gray-900">
                     <div>
-                      <p className="font-semibold mb-1 lg:text-base text-xs">
+                      <p className="font-semibold mb-1 lg:text-base text-xs dark:text-gray-300">
                         Total Earnings
                       </p>
-                      <p className="lg:text-2xl font-semibold text-xl">
+                      <p className="lg:text-2xl font-semibold text-xl dark:text-gray-200">
                         {formatRupee(singleWarehouse?.totalEarnings)}
                       </p>
                     </div>
-                    <div className="lg:w-12 lg:h-12 w-10 h-10 flex items-center justify-center bg-green-100 rounded-full">
-                      <CgDollar className="lg:text-3xl text-2xl opacity-70 text-green-600" />
+                    <div className="lg:w-12 lg:h-12 w-10 h-10 flex items-center justify-center bg-green-100 dark:bg-green-800 rounded-full">
+                      <CgDollar className="lg:text-3xl text-2xl opacity-70 text-green-600 dark:text-green-200" />
                     </div>
                   </div>
 
                   {/* Plant Head and Accountant */}
                   <div className="grid lg:grid-cols-2 md:grid-cols-2 grid-cols-1 lg:gap-5 md:gap-2 gap-2 lg:mt-5 mt-2">
-                    <div className="bg-white border rounded-lg p-3">
-                      <h3 className="font-semibold lg:text-base text-sm">
+                    <div className="bg-white dark:bg-gray-900 dark:border-none border rounded-lg p-3">
+                      <h3 className="font-semibold lg:text-base text-sm dark:text-gray-200">
                         Plant Head
                       </h3>
 
@@ -389,8 +390,8 @@ const Plant = ({ warehouse }) => {
                           className="text-green-600 mr-2 md:hidden lg:hidden"
                           size={15}
                         />
-                        <span className="font-medium lg:text-sm text-xs">
-                          {warehouse.plantHead.name}
+                        <span className="font-medium lg:text-sm text-xs dark:text-gray-300">
+                          {warehouse?.plantHead?.name}
                         </span>
                       </div>
 
@@ -404,10 +405,10 @@ const Plant = ({ warehouse }) => {
                           size={15}
                         />
                         <a
-                          href={`mailto:${warehouse.plantHead.email}`}
-                          className="hover:underline lg:text-sm text-xs font-medium"
+                          href={`mailto:${warehouse?.plantHead?.email}`}
+                          className="hover:underline lg:text-sm text-xs font-medium dark:text-gray-300"
                         >
-                          {warehouse.plantHead.email}
+                          {warehouse?.plantHead?.email}
                         </a>
                       </div>
                       <div className="flex items-center my-1">
@@ -419,13 +420,13 @@ const Plant = ({ warehouse }) => {
                           className="text-violet-600 mr-2 md:hidden lg:hidden"
                           size={14}
                         />
-                        <span className="font-medium lg:text-sm text-xs">
-                          {warehouse.plantHead.phone}
+                        <span className="font-medium lg:text-sm text-xs dark:text-gray-300">
+                          {warehouse?.plantHead?.phone}
                         </span>
                       </div>
                     </div>
-                    <div className="bg-white border rounded-lg p-3">
-                      <h3 className="font-semibold lg:text-base text-sm">
+                    <div className="bg-white dark:bg-gray-900 dark:border-none border rounded-lg p-3">
+                      <h3 className="font-semibold lg:text-base text-sm dark:text-gray-200">
                         Accountant
                       </h3>
 
@@ -438,8 +439,8 @@ const Plant = ({ warehouse }) => {
                           className="text-green-600 mr-2 md:hidden lg:hidden"
                           size={15}
                         />
-                        <span className="font-medium lg:text-sm text-xs">
-                          {warehouse.accountant.name}
+                        <span className="font-medium lg:text-sm text-xs dark:text-gray-300">
+                          {warehouse?.accountant?.name}
                         </span>
                       </div>
 
@@ -453,10 +454,10 @@ const Plant = ({ warehouse }) => {
                           size={15}
                         />
                         <a
-                          href={`mailto:${warehouse.accountant.email}`}
-                          className="hover:underline lg:text-sm text-xs font-medium"
+                          href={`mailto:${warehouse?.accountant?.email}`}
+                          className="hover:underline lg:text-sm text-xs font-medium dark:text-gray-300"
                         >
-                          {warehouse.accountant.email}
+                          {warehouse?.accountant?.email}
                         </a>
                       </div>
                       <div className="flex items-center my-1">
@@ -468,8 +469,8 @@ const Plant = ({ warehouse }) => {
                           className="text-violet-600 mr-2 md:hidden lg:hidden"
                           size={14}
                         />
-                        <span className="font-medium lg:text-sm text-xs">
-                          {warehouse.accountant.phone}
+                        <span className="font-medium lg:text-sm text-xs dark:text-gray-300">
+                          {warehouse?.accountant?.phone}
                         </span>
                       </div>
                     </div>
@@ -477,20 +478,28 @@ const Plant = ({ warehouse }) => {
                 </div>
 
                 {/* Stock Items */}
-                <div className="lg:border-s lg:border-gray-100 lg:ps-5">
+                <div>
                   <div>
-                    <p className="font-semibold lg:text-base text-sm text-black">
+                    <p className="font-semibold lg:text-base text-sm dark:text-gray-200">
                       Stock Items
                     </p>
 
-                    <div className="relative max-h-[17rem] md:h-[15rem] lg:h-[17rem] border overflow-auto rounded mt-2">
+                    <div className="relative max-h-[17rem] md:h-[15rem] lg:h-[17rem] border dark:border-2 dark:border-gray-900 overflow-auto rounded mt-2">
                       <table className="w-full text-center border-collapse">
-                        <thead className="sticky top-0 bg-blue-50 text-blue-800 z-10">
+                        <thead className="sticky top-0 bg-blue-50 text-blue-800 z-10 dark:bg-gray-900 dark:text-gray-300">
                           <tr className="lg:text-sm text-xs">
-                            <th className="p-3 border-b">Product Name</th>
-                            <th className="p-3 border-b">Description</th>
-                            <th className="p-3 border-b">Quantity</th>
-                            <th className="p-3 border-b">Price</th>
+                            <th className="p-3 border-b dark:border-none">
+                              Product Name
+                            </th>
+                            <th className="p-3 border-b dark:border-none">
+                              Description
+                            </th>
+                            <th className="p-3 border-b dark:border-none">
+                              Quantity
+                            </th>
+                            <th className="p-3 border-b dark:border-none">
+                              Price
+                            </th>
                           </tr>
                         </thead>
                         <tbody>
@@ -498,19 +507,19 @@ const Plant = ({ warehouse }) => {
                             singleWarehouse?.stock.map((item, index) => (
                               <tr
                                 key={index}
-                                className="hover:bg-gray-50 lg:text-sm text-xs"
+                                className="hover:bg-gray-50 lg:text-sm text-xs dark:bg-gray-800 dark:text-gray-300"
                               >
-                                <td className="p-3 border-b">
-                                  {item.product.name}
+                                <td className="p-3 border-b dark:border-gray-900">
+                                  {item?.product?.name}
                                 </td>
-                                <td className="p-3 border-b">
-                                  {item.product.description}
+                                <td className="p-3 border-b dark:border-gray-900">
+                                  {item?.product?.description}
                                 </td>
-                                <td className="p-3 border-b">
-                                  {item.quantity} bags
+                                <td className="p-3 border-b dark:border-gray-900">
+                                  {item?.quantity} bags
                                 </td>
-                                <td className="p-3 border-b">
-                                  {formatRupee(item.product.price)}
+                                <td className="p-3 border-b dark:border-gray-900">
+                                  {formatRupee(item?.product?.price)}
                                 </td>
                               </tr>
                             ))
@@ -518,7 +527,7 @@ const Plant = ({ warehouse }) => {
                             <tr>
                               <td
                                 colSpan="4"
-                                className="p-4 text-center lg:text-sm text-xs text-gray-500"
+                                className="p-4 text-center lg:text-sm text-xs text-gray-500 dark:text-gray-300"
                               >
                                 No available stock
                               </td>
@@ -534,17 +543,23 @@ const Plant = ({ warehouse }) => {
               <div className="lg:flex flex-col items-center justify-between gap-5">
                 {/* Assigned Orders */}
                 <div className="mt-5 w-full">
-                  <p className="font-semibold text-base text-black">
+                  <p className="font-semibold text-base text-black dark:text-gray-200">
                     Assigned Orders
                   </p>
 
-                  <div className="relative max-h-52 overflow-auto rounded mt-2 border">
+                  <div className="relative max-h-52 overflow-auto rounded mt-2 border dark:border-2 dark:border-gray-900">
                     <table className="w-full text-center border-collapse">
-                      <thead className="sticky top-0 bg-violet-50 text-violet-800 z-10">
+                      <thead className="sticky top-0 bg-violet-50 text-violet-800 z-10 dark:bg-gray-900 dark:text-gray-300">
                         <tr className="lg:text-sm text-xs">
-                          <th className="p-3 border-b">Product Name</th>
-                          <th className="p-3 border-b">Quantity</th>
-                          <th className="p-3 border-b">Total Amount</th>
+                          <th className="p-3 border-b dark:border-gray-900">
+                            Product Name
+                          </th>
+                          <th className="p-3 border-b dark:border-gray-900">
+                            Quantity
+                          </th>
+                          <th className="p-3 border-b dark:border-gray-900">
+                            Total Amount
+                          </th>
                         </tr>
                       </thead>
                       <tbody>
@@ -553,11 +568,11 @@ const Plant = ({ warehouse }) => {
                             (order, index) => (
                               <tr
                                 key={index}
-                                className="hover:bg-gray-50 lg:text-sm text-xs"
+                                className="hover:bg-gray-50 lg:text-sm text-xs dark:bg-gray-800 dark:text-gray-300"
                               >
-                                <td className="p-3 border-b">
+                                <td className="p-3 border-b dark:border-gray-900">
                                   <div className="flex flex-col gap-1 items-center">
-                                    {order.items?.map((item, idx) => (
+                                    {order?.items?.map((item, idx) => (
                                       <span key={idx}>
                                         {item?.product?.name}
                                       </span>
@@ -565,15 +580,15 @@ const Plant = ({ warehouse }) => {
                                   </div>
                                 </td>
 
-                                <td className="p-3 border-b">
+                                <td className="p-3 border-b dark:border-gray-900">
                                   <div className="flex flex-col gap-1">
-                                    {order.items?.map((item, idx) => (
+                                    {order?.items?.map((item, idx) => (
                                       <span key={idx}>{item?.quantity}</span>
                                     ))}
                                   </div>
                                 </td>
 
-                                <td className="p-3 border-b">
+                                <td className="p-3 border-b dark:border-gray-900">
                                   {formatRupee(order?.totalAmount)}
                                 </td>
                               </tr>
@@ -583,7 +598,7 @@ const Plant = ({ warehouse }) => {
                           <tr>
                             <td
                               colSpan="3"
-                              className="p-4 text-center lg:text-sm text-xs text-gray-500"
+                              className="p-4 text-center lg:text-sm text-xs text-gray-500 dark:text-gray-400"
                             >
                               No assigned orders
                             </td>
@@ -596,17 +611,23 @@ const Plant = ({ warehouse }) => {
 
                 {/* Dispatched Orders */}
                 <div className="mt-5 w-full">
-                  <p className="font-semibold text-base text-black">
+                  <p className="font-semibold text-base text-black dark:text-gray-200">
                     Dispatched Orders
                   </p>
 
-                  <div className="relative max-h-52 overflow-auto rounded mt-2 border">
+                  <div className="relative max-h-52 overflow-auto rounded mt-2 border dark:border-2 dark:border-gray-900">
                     <table className="w-full text-center border-collapse">
-                      <thead className="sticky top-0 bg-green-50 text-green-800 z-10">
+                      <thead className="sticky top-0 bg-green-50 text-green-800 z-10 dark:bg-gray-900 dark:text-gray-300">
                         <tr className="lg:text-sm text-xs">
-                          <th className="p-3 border-b">Product Name</th>
-                          <th className="p-3 border-b">Quantity</th>
-                          <th className="p-3 border-b">Total Amount</th>
+                          <th className="p-3 border-b dark:border-gray-900">
+                            Product Name
+                          </th>
+                          <th className="p-3 border-b dark:border-gray-900">
+                            Quantity
+                          </th>
+                          <th className="p-3 border-b dark:border-gray-900">
+                            Total Amount
+                          </th>
                         </tr>
                       </thead>
                       <tbody>
@@ -615,11 +636,11 @@ const Plant = ({ warehouse }) => {
                             (order, index) => (
                               <tr
                                 key={index}
-                                className="hover:bg-gray-50 lg:text-sm text-xs"
+                                className="hover:bg-gray-50 lg:text-sm text-xs dark:bg-gray-800 dark:text-gray-300"
                               >
-                                <td className="p-3 border-b">
+                                <td className="p-3 border-b dark:border-gray-900">
                                   <div className="flex flex-col gap-1 items-center">
-                                    {order.items?.map((item, idx) => (
+                                    {order?.items?.map((item, idx) => (
                                       <span key={idx}>
                                         {item?.product?.name}
                                       </span>
@@ -627,15 +648,15 @@ const Plant = ({ warehouse }) => {
                                   </div>
                                 </td>
 
-                                <td className="p-3 border-b">
+                                <td className="p-3 border-b dark:border-gray-900">
                                   <div className="flex flex-col gap-1">
-                                    {order.items?.map((item, idx) => (
+                                    {order?.items?.map((item, idx) => (
                                       <span key={idx}>{item?.quantity}</span>
                                     ))}
                                   </div>
                                 </td>
 
-                                <td className="p-3 border-b">
+                                <td className="p-3 border-b dark:border-gray-900">
                                   {formatRupee(order?.totalAmount)}
                                 </td>
                               </tr>
@@ -645,7 +666,7 @@ const Plant = ({ warehouse }) => {
                           <tr>
                             <td
                               colSpan="4"
-                              className="p-4 text-center lg:text-sm text-xs text-gray-500"
+                              className="p-4 text-center lg:text-sm text-xs text-gray-400"
                             >
                               No dispatched orders
                             </td>
@@ -664,9 +685,9 @@ const Plant = ({ warehouse }) => {
       {/* --- Manage Products Modal --- */}
       {openManageStock && (
         <div className="transition-all bg-gradient-to-b from-black/20 to-black/60 backdrop-blur-sm w-full z-50 h-screen absolute top-0 left-0 flex items-center justify-center">
-          <div className="bg-white lg:p-7 p-5 rounded-lg lg:w-[60rem] md:w-[90%] w-[95%] max-h-[95%] overflow-auto">
+          <div className="bg-white dark:bg-gray-800 lg:p-7 p-5 rounded-lg lg:w-[60rem] md:w-[90%] w-[95%] max-h-[95%] overflow-auto">
             <div className="flex items-center justify-between">
-              <p className="lg:text-xl text-base font-semibold">
+              <p className="lg:text-xl text-base font-semibold dark:text-gray-200">
                 Product Management - {warehouse?.name}
               </p>
               <IconButton
@@ -678,13 +699,13 @@ const Plant = ({ warehouse }) => {
             </div>
             <div className="grid lg:grid-cols-3 grid-cols-1 gap-5 mt-2">
               <div className="col-span-2">
-                <p className="font-semibold mb-3 lg:text-base text-sm">
+                <p className="font-semibold mb-3 lg:text-base text-sm dark:text-gray-300">
                   Available Products
                 </p>
                 <div className="relative lg:max-h-64 md:max-h-64 max-h-56 overflow-auto rounded mt-2">
-                  <table className="w-full">
+                  <table className="w-full dark:border-2 dark:border-gray-900">
                     <thead>
-                      <tr className="bg-blue-50 sticky z-50 top-0 text-blue-800 text-center lg:text-sm text-xs">
+                      <tr className="bg-blue-50 sticky z-50 top-0 text-blue-800 dark:text-gray-300 dark:bg-gray-900 text-center lg:text-sm text-xs">
                         <th className="p-2">Product Name</th>
                         <th className="p-2">Category</th>
                         <th className="p-2">Quantity</th>
@@ -697,7 +718,7 @@ const Plant = ({ warehouse }) => {
                         singleWarehouse?.stock?.map((item, index) => (
                           <tr
                             key={index}
-                            className="text-center lg:text-sm text-xs"
+                            className="text-center lg:text-sm text-xs dark:text-gray-300"
                           >
                             <td className="p-2">{item?.product?.name}</td>
                             <td className="p-2">{item?.product?.category}</td>
@@ -707,7 +728,7 @@ const Plant = ({ warehouse }) => {
                               <Tooltip title="Remove Product" placement="right">
                                 <CircleMinus
                                   color="red"
-                                  className="hover:bg-red-100 active:scale-95 transition-all p-1.5 rounded-lg"
+                                  className="hover:bg-red-100 dark:hover:bg-red-950 active:scale-95 transition-all p-1.5 rounded-lg"
                                   size={30}
                                   onClick={() =>
                                     handleDeleteProduct(item?.product?._id)
@@ -721,7 +742,7 @@ const Plant = ({ warehouse }) => {
                         <tr>
                           <td
                             colSpan="4"
-                            className="p-4 text-center lg:text-sm text-xs text-gray-500"
+                            className="p-4 text-center lg:text-sm text-xs text-gray-500 dark:text-gray-400"
                           >
                             No available products
                           </td>
@@ -733,7 +754,9 @@ const Plant = ({ warehouse }) => {
               </div>
               <div>
                 <div className="flex items-center justify-between mb-3">
-                  <p className="font-semibold lg:text-base text-sm">Add Products</p>
+                  <p className="font-semibold lg:text-base text-sm dark:text-gray-300">
+                    Add Products
+                  </p>
                 </div>
                 <div>
                   <form onSubmit={handleSubmit(handleAddProduct)}>
@@ -842,10 +865,10 @@ const Plant = ({ warehouse }) => {
                         )}
                       </FormControl>
                       <Button
-                      size="small"
+                        size="small"
                         fullWidth
                         color="success"
-                        variant="contained"
+                        variant="outlined"
                         disableElevation
                         type="submit"
                       >

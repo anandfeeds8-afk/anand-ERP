@@ -134,7 +134,7 @@ const SalesManager = ({ item }) => {
       {openDelete && (
         <div className="transition-all bg-gradient-to-b from-black/20 to-black/60 backdrop-blur-sm w-full z-50 h-screen absolute top-0 left-0 flex items-center justify-center">
           <div className="bg-white dark:bg-gray-800 lg:p-7 p-5 rounded-lg lg:w-[29rem] sm:w-[60%] md:w-[50%] w-[95%]">
-            <p className="lg:text-xl text-base font-semibold dark:text-gray-300">
+            <p className="lg:text-base font-semibold dark:text-gray-300">
               Are you sure you want to delete {item.name}?
             </p>
             <p className="text-gray-500 lg:text-sm text-xs dark:text-gray-400">
@@ -146,12 +146,14 @@ const SalesManager = ({ item }) => {
                 variant="outlined"
                 disableElevation
                 color="error"
+                size="small"
                 sx={{ textTransform: "none" }}
                 onClick={() => setOpenDelete(false)}
               >
                 Cancel
               </Button>
               <Button
+                size="small"
                 loading={isLoading}
                 variant="contained"
                 disableElevation
@@ -292,6 +294,7 @@ const SalesManager = ({ item }) => {
               />
               <div className="flex items-center justify-end gap-3 mt-5">
                 <Button
+                  size="small"
                   variant="outlined"
                   disableElevation
                   sx={{ textTransform: "none" }}
@@ -300,6 +303,7 @@ const SalesManager = ({ item }) => {
                   Cancel
                 </Button>
                 <Button
+                  size="small"
                   loading={isLoading}
                   loadingPosition="start"
                   variant="contained"

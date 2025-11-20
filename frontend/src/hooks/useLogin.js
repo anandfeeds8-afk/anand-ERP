@@ -6,7 +6,7 @@ import { toast } from "react-hot-toast";
 
 const useLogin = () => {
   const navigate = useNavigate();
- 
+
   const {
     mutate: login,
     isPending,
@@ -20,12 +20,14 @@ const useLogin = () => {
       return response.data;
     },
     onSuccess: (data) => {
-      if (data.data.role === "Admin") navigate("/admin");
-      if (data.data.role === "Salesman") navigate("/salesman");
-      if (data.data.role === "SalesManager") navigate("/salesmanager");
-      if (data.data.role === "SalesAuthorizer") navigate("/salesauthorizer");
-      if (data.data.role === "PlantHead") navigate("/planthead");
-      if (data.data.role === "Accountant") navigate("/accountant");
+      if (data.data.role === "Admin") navigate("/admin/dashboard");
+      if (data.data.role === "Salesman") navigate("/salesman/dashboard");
+      if (data.data.role === "SalesManager")
+        navigate("/salesmanager/dashboard");
+      if (data.data.role === "SalesAuthorizer")
+        navigate("/salesauthorizer/dashboard");
+      if (data.data.role === "PlantHead") navigate("/planthead/dashboard");
+      if (data.data.role === "Accountant") navigate("/accountant/dashboard");
     },
     onError: (error) => {
       toast.error(error.response.data.message);

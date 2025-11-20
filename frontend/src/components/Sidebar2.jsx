@@ -137,8 +137,8 @@ function Sidebar2() {
               to={item.href}
               className={({ isActive }) =>
                 isActive
-                  ? "group flex items-center gap-4 p-2 rounded-lg font-semibold text-black dark:text-gray-100 bg-blue-100 dark:bg-blue-800 transition-colors duration-200 cursor-pointer"
-                  : "group flex items-center gap-4 p-2 rounded-lg font-medium text-gray-500 dark:text-gray-400 hover:bg-blue-100 dark:hover:bg-blue-800 hover:text-black dark:hover:text-gray-100 transition-colors duration-200 cursor-pointer"
+                  ? "group flex items-center gap-4 p-2 rounded-lg font-semibold text-black dark:text-gray-100 bg-[#1976D2]/20 dark:bg-[#1976D2] transition-colors duration-200 cursor-pointer"
+                  : "group flex items-center gap-4 p-2 rounded-lg font-medium text-gray-500 dark:text-gray-400 hover:bg-[#1976D2]/20 dark:hover:bg-[#1976D2] hover:text-black dark:hover:text-gray-100 transition-colors duration-200 cursor-pointer"
               }
             >
               {({ isActive }) => (
@@ -146,8 +146,8 @@ function Sidebar2() {
                   <div
                     className={`flex-shrink-0 ${
                       isActive
-                        ? "text-blue-600 dark:text-gray-100"
-                        : "group-hover:text-blue-600 dark:group-hover:text-gray-100 text-gray-500 dark:text-gray-400"
+                        ? "text-[#1976D2] dark:text-gray-100"
+                        : "group-hover:text-[#1976D2] dark:group-hover:text-gray-100 text-gray-500 dark:text-gray-400"
                     } transition-colors`}
                   >
                     {item.icon}

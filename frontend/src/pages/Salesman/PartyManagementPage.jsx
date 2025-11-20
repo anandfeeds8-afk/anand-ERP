@@ -155,8 +155,8 @@ const PartyManagementPage = () => {
       {/* --- Add Party Modal --- */}
       {openAdd && (
         <div className="transition-all bg-gradient-to-b from-black/20 to-black/60 backdrop-blur-sm w-full z-50 h-screen absolute top-0 left-0 flex items-center justify-center">
-          <div className="bg-white p-7 rounded-lg lg:w-[29rem] md:w-[29rem] sm:w-[29rem] w-[95%] max-h-[95%] overflow-y-auto">
-            <p className="lg:text-lg md:text-lg sm:text-base text-base font-semibold mb-7">
+          <div className="bg-white dark:bg-gray-800 p-7 rounded-lg lg:w-[29rem] md:w-[29rem] sm:w-[29rem] w-[95%] max-h-[95%] overflow-y-auto">
+            <p className="lg:text-lg md:text-lg dark:text-gray-200 sm:text-base text-base font-semibold mb-7">
               Add a new party
             </p>
             <form className="space-y-5" onSubmit={handleSubmit(onSubmit)}>
@@ -251,16 +251,16 @@ const PartyManagementPage = () => {
               />
 
               <div>
-                <h1 className="font-semibold text-gray-700 text-sm mb-2">
+                <h1 className="font-semibold text-gray-700 text-sm mb-2 dark:text-gray-300">
                   Sub Agents
                 </h1>
                 {fields.map((field, index) => (
                   <div
                     key={field.id}
-                    className="flex flex-col gap-3 border-b-2 pb-5 mb-4"
+                    className="flex flex-col gap-3 border-b-2 dark:border-gray-600 pb-5 mb-4"
                   >
                     <div className="flex items-center justify-between">
-                      <p className="text-sm font-semibold text-gray-700">
+                      <p className="text-sm font-semibold text-gray-700 dark:text-gray-300">
                         Agent {index + 1}
                       </p>
                       <Button

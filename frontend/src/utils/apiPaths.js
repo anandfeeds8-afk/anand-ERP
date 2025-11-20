@@ -1,7 +1,7 @@
 // BASE URL
-export const BASE_URL =
-  "https://poultry-feed-management-software-3.onrender.com";
-// export const BASE_URL = "http://localhost:5000";
+// export const BASE_URL =
+//   "https://poultry-feed-management-software-3.onrender.com";
+export const BASE_URL = "http://localhost:5000";
 
 export const API_PATHS = {
   AUTH: {
@@ -176,8 +176,8 @@ export const API_PATHS = {
 
   MESSAGES: {
     GET_ALL_ADMINS: "/api/messages/get-all-admins",
-    GET_MESSAGES: (userId, selectedEmployeeId) =>
-      `/api/messages/${userId}/${selectedEmployeeId}`,
+    GET_MESSAGES: (userId, selectedEmployeeId, pageNumber) =>
+      `/api/messages/${userId}/${selectedEmployeeId}?page=${pageNumber}&limit=50`,
     MARK_AS_READ: (userId, selectedEmployeeId, currentUserId) =>
       `/api/messages/mark-as-read/${userId}/${selectedEmployeeId}/${currentUserId}`,
   },

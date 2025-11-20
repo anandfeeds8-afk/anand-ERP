@@ -25,7 +25,7 @@ const PartyToApproveForAdmin = ({ party }) => {
       companyName: party.companyName,
       contactPersonNumber: party.contactPersonNumber,
       address: party.address,
-      discount: party.discount,
+      limit: party.limit,
     },
   });
 
@@ -40,10 +40,10 @@ const PartyToApproveForAdmin = ({ party }) => {
   };
 
   return (
-    <div className="shadow bg-white rounded-lg md:p-3 lg:p-4 sm:p-3 p-3 lg:flex lg:flex-col justify-between hover:shadow-md transition-all">
+    <div className="shadow bg-white dark:bg-gray-900 rounded-lg md:p-3 lg:p-4 sm:p-3 p-3 lg:flex lg:flex-col justify-between hover:shadow-md transition-all">
       <div className="flex flex-col gap-2">
         <div className="flex items-center justify-between">
-          <p className="text-left lg:text-lg md:text-lg sm:text-base text-base font-semibold">
+          <p className="text-left lg:text-lg md:text-lg dark:text-gray-200 sm:text-base text-base font-semibold">
             {party.companyName}
           </p>
           {party?.partyStatus === "sentForApproval" && (
@@ -83,20 +83,20 @@ const PartyToApproveForAdmin = ({ party }) => {
         </div>
         <div className="flex flex-col gap-5 mt-2">
           <div className="flex flex-col gap-2 lg:text-sm md:text-xs sm:text-xs text-xs">
-            <div className="flex items-center justify-between font-semibold">
-              <span className="text-gray-600 font-normal text-right">
+            <div className="flex items-center justify-between font-semibold dark:text-gray-300">
+              <span className="text-gray-600 dark:text-gray-400 font-normal text-right">
                 Address:
               </span>
               <span className="text-right">{party?.address}</span>
             </div>
-            <div className="flex items-center justify-between font-semibold">
-              <span className="text-gray-600 font-normal text-right">
+            <div className="flex items-center justify-between font-semibold dark:text-gray-300">
+              <span className="text-gray-600 dark:text-gray-400 font-normal text-right">
                 Contact Person Number:
               </span>
               {party?.contactPersonNumber}
             </div>
-            <div className="flex items-center justify-between font-semibold">
-              <span className="text-gray-600 font-normal text-right">
+            <div className="flex items-center justify-between font-semibold dark:text-gray-300">
+              <span className="text-gray-600 dark:text-gray-400 font-normal text-right">
                 Limit:
               </span>
               {formatRupee(party?.limit)}
@@ -107,7 +107,7 @@ const PartyToApproveForAdmin = ({ party }) => {
           <div className="flex items-center gap-1">
             <SquarePen
               color="green"
-              className="hover:bg-green-100 active:scale-95 transition-all p-1.5 rounded-lg"
+              className="hover:bg-green-100 dark:hover:bg-green-950 active:scale-95 transition-all p-1.5 rounded-lg"
               size={30}
               onClick={() => setOpenEdit(true)}
             />
@@ -118,8 +118,8 @@ const PartyToApproveForAdmin = ({ party }) => {
       {/* --- Edit party Modal --- */}
       {openEdit && (
         <div className="transition-all bg-gradient-to-b from-black/20 to-black/60 backdrop-blur-sm w-full z-50 h-screen absolute top-0 left-0 flex items-center justify-center">
-          <div className="bg-white lg:p-7 p-5 rounded-lg lg:w-[29rem] sm:w-[60%] md:w-[29rem] w-[95%]">
-            <p className="text-xl font-semibold mb-7">
+          <div className="bg-white dark:bg-gray-800 lg:p-7 p-5 rounded-lg lg:w-[29rem] sm:w-[60%] md:w-[29rem] w-[95%]">
+            <p className="lg:text-xl text-base dark:text-gray-200 font-semibold mb-7">
               Edit {party?.companyName}
             </p>
             <form
@@ -140,9 +140,9 @@ const PartyToApproveForAdmin = ({ party }) => {
                     },
                   })}
                 />
-                {errors?.companyName && (
+                {errors.companyName && (
                   <span className="text-red-500 text-xs mt-1">
-                    {errors?.companyName?.message}
+                    {errors.companyName.message}
                   </span>
                 )}
               </div>
@@ -167,43 +167,45 @@ const PartyToApproveForAdmin = ({ party }) => {
                   </span>
                 )}
               </div>
-              <div>
-                <TextField
-                  size="small"
-                  fullWidth
-                  id="outlined-basic"
-                  label="Address"
-                  variant="outlined"
-                  {...register("address", {
-                    required: { value: true, message: "Address is required" },
-                  })}
-                />
-                {errors.address && (
-                  <span className="text-red-500 text-xs mt-1">
-                    {errors.address.message}
-                  </span>
-                )}
-              </div>
-              <div>
-                <TextField
-                  error={!!errors.discount}
-                  size="small"
-                  fullWidth
-                  id="outlined-basic"
-                  label="Discount"
-                  variant="outlined"
-                  {...register("discount", {
-                    required: { value: true, message: "Discount is required" },
-                  })}
-                />
-                {errors.discount && (
-                  <span className="text-red-500 text-xs mt-1">
-                    {errors.discount.message}
-                  </span>
-                )}
-              </div>
+              <TextField
+                size="small"
+                fullWidth
+                id="outlined-basic"
+                label="Address"
+                variant="outlined"
+                helperText={
+                  errors.address && (
+                    <span className="text-red-500 text-xs mt-1">
+                      {errors.address.message}
+                    </span>
+                  )
+                }
+                {...register("address", {
+                  required: { value: true, message: "Address is required" },
+                })}
+              />
+              <TextField
+                error={!!errors.discount}
+                size="small"
+                fullWidth
+                id="outlined-basic"
+                label="Limit"
+                helperText={
+                  errors.limit && (
+                    <span className="text-red-500 text-xs mt-1">
+                      {errors.limit.message}
+                    </span>
+                  )
+                }
+                variant="outlined"
+                {...register("limit", {
+                  required: { value: true, message: "Limit is required" },
+                })}
+              />
+
               <div className="flex items-center justify-end gap-3 mt-5">
                 <Button
+                  size="small"
                   variant="outlined"
                   disableElevation
                   sx={{ textTransform: "none" }}
@@ -212,6 +214,7 @@ const PartyToApproveForAdmin = ({ party }) => {
                   Cancel
                 </Button>
                 <Button
+                  size="small"
                   loading={isUpdatingParty}
                   loadingPosition="start"
                   variant="contained"

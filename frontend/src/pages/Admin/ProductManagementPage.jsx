@@ -60,11 +60,17 @@ const ProductManagementPage = () => {
         </Button>
       </div>
 
-      <div className="grid md:grid-cols-2 lg:grid-cols-3 lg:gap-5 md:gap-3 sm:gap-3 gap-2">
-        {allProducts?.map((product) => (
-          <Product key={product._id} product={product} />
-        ))}
-      </div>
+      {allProducts?.length > 0 ? (
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 lg:gap-5 md:gap-3 sm:gap-3 gap-2">
+          {allProducts?.map((product) => (
+            <Product key={product._id} product={product} />
+          ))}
+        </div>
+      ) : (
+        <div className="flex items-center justify-center w-full h-96 flex-1">
+          <p className="text-center dark:text-gray-400">No products found</p>
+        </div>
+      )}
 
       {/* Add Product Modal */}
       {openForm && (

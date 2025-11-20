@@ -6,41 +6,12 @@ const getAllMessages = async (req, res) => {
   try {
     const { userId, adminId } = req.params;
 
-    // const chatKey = `chat:${userId}:${adminId}`;
-
-    // 1. Check Redis Cache
-    // let cachedMessages = await client.zRange(chatKey, 0, -1);
-
-    // if (cachedMessages.length > 0) {
-    //   const parsed = cachedMessages.map(JSON.parse);
-
-    //   return res.status(200).json({
-    //     data: parsed,
-    //     success: true,
-    //     message: "Messages fetched from Redis",
-    //   });
-    // }
-
-    // 2. Fetch from MongoDB (cache miss)
     const messages = await Message.find({
       $or: [
         { senderId: adminId, receiverId: userId },
         { senderId: userId, receiverId: adminId },
       ],
     }).sort({ timestamp: 1 });
-
-    // 3. Store messages in Redis ZSET
-    // for (const msg of messages) {
-    //   await client.zAdd(chatKey, [
-    //     {
-    //       score: new Date(msg.timestamp).getTime(),
-    //       value: JSON.stringify(msg),
-    //     },
-    //   ]);
-    // }
-
-    // Optional: set expiry (to avoid infinite storage)
-    // await client.expire(chatKey, 60 * 60); // 1 hour TTL
 
     return res.status(200).json({
       data: messages,

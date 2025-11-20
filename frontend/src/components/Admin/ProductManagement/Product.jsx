@@ -4,6 +4,7 @@ import { format } from "date-fns";
 import { Button, TextField } from "@mui/material";
 import { useForm } from "react-hook-form";
 import { useProduct } from "../../../hooks/useProduct";
+import { formatRupee } from "../../../utils/formatRupee";
 
 const Product = ({ product }) => {
   const [openEdit, setOpenEdit] = useState(false);
@@ -28,17 +29,18 @@ const Product = ({ product }) => {
           <p className="text-left lg:text-lg md:text-base sm:text-base text-sm font-semibold">
             {product.name}
           </p>
-          <p className="bg-indigo-50 dark:bg-indigo-500 text-indigo-500 dark:text-indigo-100 lg:text-sm md:text-xs sm:text-xs text-[10px] font-semibold rounded-full p-1 px-3">
+          <p className="bg-indigo-50 dark:bg-indigo-800 text-indigo-500 dark:text-indigo-100 lg:text-xs md:text-xs sm:text-xs text-[10px] font-semibold rounded-full p-1 px-3">
             {product.category}
           </p>
         </div>
         <div className="flex flex-col gap-2">
-          <p className="text-xs sm:text-sm md:text-sm lg:text-base">
+          <p className="text-xs sm:text-sm md:text-sm lg:text-sm">
             <span className="font-semibold">Description:</span>{" "}
             {product.description}
           </p>
-          <p className="text-green-700 dark:text-green-500 text-xs sm:text-sm md:text-sm lg:text-base font-semibold">
-            <span className="font-semibold">Price:</span> ₹{product.price}
+          <p className="text-green-700 dark:text-green-500 text-xs sm:text-sm md:text-sm lg:text-sm font-semibold">
+            <span className="font-semibold">Price:</span>{" "}
+            {formatRupee(product.price)}
           </p>
         </div>
       </div>
@@ -76,7 +78,7 @@ const Product = ({ product }) => {
       {openDelete && (
         <div className="transition-all bg-gradient-to-b from-black/20 to-black/60 backdrop-blur-sm w-full z-50 h-screen absolute top-0 left-0 flex items-center justify-center">
           <div className="bg-white dark:bg-gray-800 lg:p-7 p-5 rounded-lg lg:w-[29rem] md:w-[50%] sm:w-[60%] w-[95%]">
-            <p className="lg:text-lg text-base font-semibold dark:text-gray-300">
+            <p className="lg:text-base font-semibold dark:text-gray-300">
               Are you sure you want to delete {product.name}?
             </p>
             <p className="text-gray-500 lg:text-sm text-xs dark:text-gray-400">
@@ -85,6 +87,7 @@ const Product = ({ product }) => {
             </p>
             <div className="flex items-center justify-end gap-3 mt-5">
               <Button
+                size="small"
                 variant="outlined"
                 disableElevation
                 color="error"
@@ -94,6 +97,7 @@ const Product = ({ product }) => {
                 Cancel
               </Button>
               <Button
+                size="small"
                 loading={isLoading}
                 loadingPosition="start"
                 variant="contained"
@@ -163,6 +167,7 @@ const Product = ({ product }) => {
               )}
               <div className="flex items-center justify-end gap-3 mt-5">
                 <Button
+                  size="small"
                   variant="outlined"
                   disableElevation
                   sx={{ textTransform: "none" }}
@@ -171,6 +176,7 @@ const Product = ({ product }) => {
                   Cancel
                 </Button>
                 <Button
+                  size="small"
                   loading={isLoading}
                   loadingPosition="start"
                   variant="contained"

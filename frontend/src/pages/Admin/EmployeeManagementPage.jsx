@@ -356,6 +356,7 @@ const EmployeeManagementPage = () => {
               />
               <div className="flex items-center justify-end gap-3 mt-5">
                 <Button
+                  size="small"
                   variant="outlined"
                   disableElevation
                   sx={{ textTransform: "none" }}
@@ -365,6 +366,7 @@ const EmployeeManagementPage = () => {
                 </Button>
                 <Button
                   variant="contained"
+                  size="small"
                   disableElevation
                   sx={{ textTransform: "none" }}
                   type="submit"

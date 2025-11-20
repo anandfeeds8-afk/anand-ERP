@@ -6,9 +6,6 @@ import MenuItem from "@mui/material/MenuItem";
 import Menu from "@mui/material/Menu";
 import ListItemIcon from "@mui/material/ListItemIcon";
 import Divider from "@mui/material/Divider";
-import Tooltip from "@mui/material/Tooltip";
-import PersonAdd from "@mui/icons-material/PersonAdd";
-import Settings from "@mui/icons-material/Settings";
 import Logout from "@mui/icons-material/Logout";
 import {
   Box,
@@ -19,8 +16,6 @@ import {
   Warehouse,
 } from "lucide-react";
 import { useUser } from "../hooks/useUser";
-import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
-import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import Avatar from "./Avatar";
 import { NavLink, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
@@ -72,7 +67,6 @@ const Header = ({ isCollapsed, setIsCollapsed }) => {
   const myUnreadNotifications = unreadNotifications?.[user?._id] || 0;
 
   const { theme: themeContext, setTheme } = myTheme();
-  const [isOpen, setIsOpen] = useState(false);
   const [isOpenNotification, setIsOpenNotification] = useState(false);
   const navigate = useNavigate();
 
@@ -84,7 +78,7 @@ const Header = ({ isCollapsed, setIsCollapsed }) => {
   };
 
   //fetch notifications
-  const { notifications, markRead } = useNotification(user._id);
+  const { markRead } = useNotification(user._id);
 
   //mark notification as read
   useEffect(() => {
@@ -233,8 +227,8 @@ const Header = ({ isCollapsed, setIsCollapsed }) => {
             <div className="flex items-center gap-5">
               <MenuIcon
                 onClick={() => setIsCollapsed(false)}
-                className="text-blue-600 cursor-pointer"
-                size={20}
+                className="text-[#1976D2] cursor-pointer active:bg-[#1976D2]/20 rounded-full transition-all p-1.5"
+                size={30}
               />
               <div className="flex items-center justify-start gap-2 text-[#1976D2] text- font-bold">
                 <img src={logo} alt="" className="w-5 h-5" />
@@ -251,8 +245,8 @@ const Header = ({ isCollapsed, setIsCollapsed }) => {
 
                   <X
                     onClick={() => setIsCollapsed(true)}
-                    className="text-[#1976D2] cursor-pointer"
-                    size={20}
+                    className="text-[#1976D2] cursor-pointer active:bg-[#1976D2]/20 rounded-full transition-all p-1.5"
+                    size={30}
                   />
                 </div>
 
@@ -263,8 +257,8 @@ const Header = ({ isCollapsed, setIsCollapsed }) => {
                       to={item.href}
                       className={({ isActive }) =>
                         isActive
-                          ? "group flex items-center w-full text-sm gap-4 p-2 rounded-lg font-semibold text-black dark:text-gray-100 bg-blue-100 dark:bg-blue-800 transition-all duration-200 cursor-pointer"
-                          : "group flex items-center w-full text-sm gap-4 p-2 rounded-lg font-medium text-gray-500 dark:text-gray-400 hover:bg-blue-100 dark:hover:bg-blue-800 hover:text-black dark:hover:text-gray-100 transition-all duration-200 cursor-pointer"
+                          ? "group flex items-center w-full text-sm gap-4 p-2 rounded-lg font-semibold text-black dark:text-gray-100 bg-[#1976D2]/20 dark:bg-[#1976D2] transition-colors duration-200 cursor-pointer"
+                          : "group flex items-center w-full text-sm gap-4 p-2 rounded-lg font-medium text-gray-500 dark:text-gray-400 hover:bg-[#1976D2]/20 dark:hover:bg-[#1976D2] hover:text-black dark:hover:text-gray-100 transition-colors duration-200 cursor-pointer"
                       }
                     >
                       {({ isActive }) => (
@@ -272,8 +266,8 @@ const Header = ({ isCollapsed, setIsCollapsed }) => {
                           <div
                             className={`flex-shrink-0 ${
                               isActive
-                                ? "text-blue-600 dark:text-gray-100"
-                                : "group-hover:text-blue-600 dark:group-hover:text-gray-100 text-gray-500 dark:text-gray-400"
+                                ? "text-[#1976D2] dark:text-gray-100"
+                                : "group-hover:text-[#1976D2] dark:group-hover:text-gray-100 text-gray-500 dark:text-gray-400"
                             } transition-colors`}
                           >
                             {item.icon}
@@ -467,13 +461,13 @@ const Header = ({ isCollapsed, setIsCollapsed }) => {
             </>
           )}
 
-          <div className="rounded-full p-1 dark:bg-gray-500 items-center bg-gray-300 hidden lg:flex md:flex">
+          <div className="rounded-full p-1 dark:bg-gray-600 items-center bg-gray-200 hidden lg:flex md:flex">
             <div
               onClick={() => setTheme("light")}
               className={`${
                 themeContext === "light"
-                  ? "bg-gray-100 text-orange-600 transition-all"
-                  : "cursor-pointer hover:bg-gray-400 transition-all"
+                  ? "bg-white text-orange-600 transition-all"
+                  : "cursor-pointer hover:bg-gray-400 text-gray-300 transition-all"
               } p-1.5 rounded-full `}
             >
               <Sun size={14} />
@@ -482,8 +476,8 @@ const Header = ({ isCollapsed, setIsCollapsed }) => {
               onClick={() => setTheme("dark")}
               className={`${
                 themeContext === "dark"
-                  ? "bg-gray-800 text-gray-200 transition-all "
-                  : "cursor-pointer hover:bg-gray-400 transition-all"
+                  ? "bg-gray-800 text-gray-200 transition-all"
+                  : "cursor-pointer hover:bg-gray-400 dark:text-gray-300 transition-all"
               } p-1.5 rounded-full`}
             >
               <Moon size={14} />
@@ -493,7 +487,7 @@ const Header = ({ isCollapsed, setIsCollapsed }) => {
               className={`${
                 themeContext === "system"
                   ? "bg-gray-800 text-gray-200 transition-all "
-                  : "cursor-pointer hover:bg-gray-400 transition-all"
+                  : "cursor-pointer hover:bg-gray-400 dark:text-gray-300 transition-all"
               } p-1.5 rounded-full`}
             >
               <Monitor size={14} />
@@ -501,7 +495,6 @@ const Header = ({ isCollapsed, setIsCollapsed }) => {
           </div>
 
           <div className="lg:flex md:flex hidden">
-            {/* <Tooltip title="Account settings"> */}
             <IconButton
               onClick={handleClick}
               size="small"
@@ -518,7 +511,6 @@ const Header = ({ isCollapsed, setIsCollapsed }) => {
                 online={user?.isActive}
               />
             </IconButton>
-            {/* </Tooltip> */}
 
             <Menu
               anchorEl={anchorEl}

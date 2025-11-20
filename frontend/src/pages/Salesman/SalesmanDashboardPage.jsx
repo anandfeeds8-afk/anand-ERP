@@ -21,7 +21,7 @@ import { useSalesmanOrder } from "../../hooks/useSalesmanOrder";
 import DueOrdersForSalesman from "../../components/Salesman/OrderManagement/DueOrdersForSalesman";
 import { format } from "date-fns";
 import { useUser } from "../../hooks/useUser";
-import { CircleX } from "lucide-react";
+import { CircleX, CloudUploadIcon } from "lucide-react";
 
 const SalesmanDashboardPage = () => {
   const theme = useTheme();
@@ -213,8 +213,8 @@ const SalesmanDashboardPage = () => {
       {/* Place Order Modal */}
       {openForm && (
         <div className="transition-all bg-gradient-to-b from-black/20 to-black/60 backdrop-blur-sm w-full z-50 h-screen absolute top-0 left-0 flex items-center justify-center">
-          <div className="bg-white p-7 rounded-lg lg:w-[50%] md:w-[50%] sm:w-[95%] w-[95%] max-h-[95%] overflow-y-auto dark:bg-gray-900">
-            <p className="lg:text-lg md:text-lg sm:text-base text-base font-semibold mb-7">
+          <div className="bg-white dark:bg-gray-800 p-7 rounded-lg lg:w-[50%] md:w-[50%] sm:w-[95%] w-[95%] max-h-[95%] overflow-y-auto">
+            <p className="lg:text-lg md:text-lg sm:text-base text-base dark:text-gray-200 font-semibold mb-7">
               Place a new Order
             </p>
             <form
@@ -224,32 +224,14 @@ const SalesmanDashboardPage = () => {
               <div>
                 <div className="mb-5">
                   <div className="flex items-start justify-between">
-                    <h1 className="font-semibold text-gray-800 mb-3 text-sm dark:text-gray-400">
+                    <h1 className="font-semibold text-gray-800 mb-3 text-sm dark:text-gray-300">
                       Party Information
                     </h1>
 
                     {!isNaN(selectedParty?.limit) && (
                       <div>
-                        {selectedParty?.limit > 666666 && (
-                          <span className="text-green-600 text-sm font-semibold">
-                            Limit:{" "}
-                            {formatRupee(Math.round(selectedParty?.limit))}
-                          </span>
-                        )}
-                        {selectedParty?.limit < 666666 && (
-                          <span className="text-yellow-600 text-sm font-semibold">
-                            Limit:{" "}
-                            {formatRupee(Math.round(selectedParty?.limit))}
-                          </span>
-                        )}
-                        {selectedParty?.limit < 333333 && (
-                          <span className="text-orange-600 text-sm font-semibold">
-                            Limit:{" "}
-                            {formatRupee(Math.round(selectedParty?.limit))}
-                          </span>
-                        )}
-                        {selectedParty?.limit < 100000 && (
-                          <span className="text-red-600 text-sm font-semibold">
+                        {selectedParty?.limit && (
+                          <span className="text-gray-300 text-sm font-semibold">
                             Limit:{" "}
                             {formatRupee(Math.round(selectedParty?.limit))}
                           </span>
@@ -328,11 +310,11 @@ const SalesmanDashboardPage = () => {
 
                 <div>
                   <div className="flex items-start justify-between">
-                    <h1 className="font-semibold text-sm text-gray-800 mb-3">
+                    <h1 className="font-semibold text-sm text-gray-800 mb-3 dark:text-gray-300">
                       Product Information
                     </h1>
                     {!isNaN(finalTotalAmount) && (
-                      <span className="text-blue-600 text-sm font-semibold">
+                      <span className="text-blue-600 dark:text-blue-500 text-sm font-semibold">
                         Total: {formatRupee(Math.round(finalTotalAmount))}
                       </span>
                     )}
@@ -405,7 +387,7 @@ const SalesmanDashboardPage = () => {
                           <CircleX
                             onClick={() => remove(index)}
                             size={35}
-                            className="cursor-pointer text-red-600 active:scale-95 transition-all"
+                            className="cursor-pointer text-red-600 hover:text-red-700 active:scale-95 transition-all"
                           />
                         )}
                       </div>
@@ -463,11 +445,11 @@ const SalesmanDashboardPage = () => {
               <div>
                 <div>
                   <div className="flex items-start justify-between">
-                    <h1 className="font-semibold text-gray-800 mb-3 text-sm">
+                    <h1 className="font-semibold text-gray-800 mb-3 text-sm dark:text-gray-300">
                       Payment Information
                     </h1>
                     {!isNaN(dueAmount) && (
-                      <span className="text-red-600 text-sm font-semibold">
+                      <span className="text-red-600 dark:text-red-500 text-sm font-semibold">
                         Due: {formatRupee(Math.round(dueAmount))}
                       </span>
                     )}
@@ -501,9 +483,9 @@ const SalesmanDashboardPage = () => {
                       )}
                     </div>
                     <div>
-                      <span className="text-sm mb-1">
-                        Upload advance payment receipt
-                      </span>
+                      <label className="text-sm mb-2 dark:text-gray-300">
+                        Upload advance payment proof
+                      </label>
                       <input
                         disabled={advanceAmount <= 0 || !advanceAmount}
                         className="relative m-0 block w-full min-w-0 flex-auto rounded border border-solid border-neutral-300 bg-clip-padding px-3 py-[0.32rem] text-base font-normal text-neutral-700 transition duration-300 ease-in-out file:-mx-3 file:-my-[0.32rem] file:overflow-hidden file:rounded-none file:border-0 file:border-solid file:border-inherit file:bg-neutral-100 file:px-3 file:py-[0.32rem] file:text-neutral-700 file:transition file:duration-150 file:ease-in-out file:[border-inline-end-width:1px] file:[margin-inline-end:0.75rem] hover:file:bg-neutral-200 focus:border-primary focus:text-neutral-700 focus:shadow-te-primary focus:outline-none "
@@ -529,6 +511,7 @@ const SalesmanDashboardPage = () => {
                         </p>
                       )}
                     </div>
+
                     <Box sx={{ width: "100%" }}>
                       {dueAmount === 0 ? (
                         <TextField

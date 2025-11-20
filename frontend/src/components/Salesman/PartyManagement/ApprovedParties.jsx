@@ -39,14 +39,14 @@ const ApprovedParties = ({ party }) => {
   };
 
   return (
-    <div className="shadow bg-white dark:bg-gray-800 rounded-lg lg:p-4 md:p-4 sm:p-3 p-3 lg:flex lg:flex-col justify-between hover:shadow-md transition-all">
+    <div className="shadow bg-white dark:bg-gray-900 rounded-lg lg:p-4 md:p-4 sm:p-3 p-3 lg:flex lg:flex-col justify-between hover:shadow-md transition-all">
       <div className="flex flex-col gap-2">
         <div className="flex items-center justify-between">
           <p className="text-left lg:text-lg md:text-base sm:text-base text-base font-bold dark:text-gray-300">
             {party.companyName}
           </p>
           {party?.partyStatus === "approved" && (
-            <p className="text-green-700 dark:text-green-400 dark:bg-green-800 font-semibold text-[10px] lg:text-xs p-1 px-2 bg-green-100 rounded-full">
+            <p className="text-green-700 dark:text-green-200 dark:bg-green-800 font-semibold text-[10px] lg:text-xs p-1 px-2 bg-green-100 rounded-full">
               Approved
             </p>
           )}
@@ -82,7 +82,7 @@ const ApprovedParties = ({ party }) => {
         <div className="flex items-center gap-1">
           {user.isActive ? (
             <SquarePen
-              className="hover:bg-green-100 dark:hover:bg-green-800 dark:hover:text-green-200 text-green-500 active:scale-95 transition-all p-1.5 rounded-lg"
+              className="hover:bg-green-100 dark:hover:bg-green-950 text-green-500 active:scale-95 transition-all p-1.5 rounded-lg"
               size={30}
               onClick={() => setOpenEdit(true)}
             />
@@ -95,7 +95,7 @@ const ApprovedParties = ({ party }) => {
           )}
           {user.isActive ? (
             <Trash2
-              className="hover:bg-red-100 dark:hover:bg-red-800 dark:hover:text-red-200 text-red-500 active:scale-95 transition-all p-1.5 rounded-lg"
+              className="hover:bg-red-100 dark:hover:bg-red-950 text-red-500 active:scale-95 transition-all p-1.5 rounded-lg"
               size={30}
               onClick={() => setOpenDelete(true)}
             />
@@ -112,11 +112,11 @@ const ApprovedParties = ({ party }) => {
       {/* --- Delete Product Modal --- */}
       {openDelete && (
         <div className="transition-all bg-gradient-to-b from-black/20 to-black/60 backdrop-blur-sm w-full z-50 h-screen absolute top-0 left-0 flex items-center justify-center">
-          <div className="bg-white lg:p-7 p-5 rounded-lg lg:w-[29rem] md:w-[29rem] sm:w-[29rem] w-[95%]">
-            <p className="lg:text-lg md:text-lg sm:text-base text-base font-semibold">
+          <div className="bg-white dark:bg-gray-800 lg:p-7 p-5 rounded-lg lg:w-[29rem] md:w-[29rem] sm:w-[29rem] w-[95%]">
+            <p className="lg:text-lg md:text-lg sm:text-base text-base dark:text-gray-200 font-semibold">
               Are you sure you want to delete {party.companyName}?
             </p>
-            <p className="text-gray-500 lg:text-sm md:text-sm sm:text-xs text-xs">
+            <p className="text-gray-500 lg:text-sm md:text-sm sm:text-xs text-xs dark:text-gray-400">
               This action cannot be undone. {party.companyName}'s data will be
               permanently removed.
             </p>
@@ -127,7 +127,7 @@ const ApprovedParties = ({ party }) => {
                 color="error"
                 sx={{ textTransform: "none" }}
                 onClick={() => setOpenDelete(false)}
-                 size="small"
+                size="small"
               >
                 Cancel
               </Button>
@@ -139,7 +139,7 @@ const ApprovedParties = ({ party }) => {
                 color="error"
                 sx={{ textTransform: "none" }}
                 onClick={() => deleteParty(party._id)}
-                 size="small"
+                size="small"
               >
                 Delete
               </Button>
@@ -151,8 +151,8 @@ const ApprovedParties = ({ party }) => {
       {/* --- Edit Product Modal --- */}
       {openEdit && (
         <div className="transition-all bg-gradient-to-b from-black/20 to-black/60 backdrop-blur-sm w-full z-50 h-screen absolute top-0 left-0 flex items-center justify-center">
-          <div className="bg-white lg:p-7 p-5 rounded-lg lg:w-[29rem] md:w-[29rem] sm:w-[29rem] w-[95%]">
-            <p className="lg:text-lg md:text-lg sm:text-base text-base font-semibold mb-7">
+          <div className="bg-white dark:bg-gray-800 lg:p-7 p-5 rounded-lg lg:w-[29rem] md:w-[29rem] sm:w-[29rem] w-[95%]">
+            <p className="lg:text-lg md:text-lg sm:text-base text-base dark:text-gray-200 font-semibold mb-7">
               Edit {party.companyName}
             </p>
             <form
@@ -242,7 +242,7 @@ const ApprovedParties = ({ party }) => {
                   disableElevation
                   sx={{ textTransform: "none" }}
                   onClick={() => setOpenEdit(false)}
-                   size="small"
+                  size="small"
                 >
                   Cancel
                 </Button>
@@ -251,7 +251,7 @@ const ApprovedParties = ({ party }) => {
                   loadingPosition="start"
                   variant="contained"
                   disableElevation
-                   size="small"
+                  size="small"
                   sx={{ textTransform: "none" }}
                   type="submit"
                 >

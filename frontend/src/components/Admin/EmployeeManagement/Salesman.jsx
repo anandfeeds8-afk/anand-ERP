@@ -126,7 +126,7 @@ const Salesman = ({ item }) => {
       {openDelete && (
         <div className="transition-all bg-gradient-to-b from-black/20 to-black/60 backdrop-blur-sm w-full z-50 h-screen absolute top-0 left-0 flex items-center justify-center">
           <div className="bg-white dark:bg-gray-800 lg:p-7 p-5 rounded-lg lg:w-[29rem] sm:w-[60%] md:w-[50%] w-[95%]">
-            <p className="lg:text-xl text-base font-semibold dark:text-gray-300">
+            <p className="lg:text-base font-semibold dark:text-gray-300">
               Are you sure you want to delete {item.name}?
             </p>
             <p className="text-gray-500 lg:text-sm text-xs dark:text-gray-400">
@@ -138,6 +138,7 @@ const Salesman = ({ item }) => {
                 variant="outlined"
                 disableElevation
                 color="error"
+                size="small"
                 sx={{ textTransform: "none" }}
                 onClick={() => setOpenDelete(false)}
               >
@@ -148,6 +149,7 @@ const Salesman = ({ item }) => {
                 variant="contained"
                 disableElevation
                 color="error"
+                size="small"
                 sx={{ textTransform: "none" }}
                 onClick={() => deleteSalesman(item._id)}
               >
@@ -286,12 +288,14 @@ const Salesman = ({ item }) => {
                 <Button
                   variant="outlined"
                   disableElevation
+                  size="small"
                   sx={{ textTransform: "none" }}
                   onClick={() => setOpenEdit(false)}
                 >
                   Cancel
                 </Button>
                 <Button
+                  size="small"
                   loading={isLoading}
                   loadingPosition="start"
                   variant="contained"

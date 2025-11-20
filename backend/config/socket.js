@@ -3,17 +3,18 @@ const { Server } = require("socket.io");
 const Message = require("../models/Message");
 const Notification = require("../models/Notification");
 const sendPushNotification = require("../sendPushNotification");
+const { client } = require("./redis");
 
 let io;
 
 const initSocket = (server) => {
   io = new Server(server, {
     cors: {
-      origin: [
-        "https://poultry-feed-management-software-4.onrender.com",
-        "https://feedmanager.netlify.app",
-      ],
-      // origin: "http://localhost:5173",
+      // origin: [
+      //   "https://poultry-feed-management-software-4.onrender.com",
+      //   "https://feedmanager.netlify.app",
+      // ],
+      origin: "http://localhost:5173",
       methods: ["GET", "POST"],
       credentials: true,
     },
@@ -120,21 +121,13 @@ const initSocket = (server) => {
     // Handle send messages
     socket.on("sendMessage", async (data) => {
       try {
-        console.log("📨 Received message:", data);
-
         // Save message to database
         const message = new Message(data);
         await message.save();
 
-        // Save in Redis sorted set
-        // const chatKey = `chat:${senderId}:${receiverId}`;
-
-        // await client.zAdd(chatKey, [
-        //   {
-        //     score: message.timestamp.getTime(),
-        //     value: JSON.stringify(message),
-        //   },
-        // ]);
+        // const cacheKey = `chat:${data.roomId}:messages`;
+        // await client.lpush(cacheKey, JSON.stringify(message));
+        // await client.ltrim(cacheKey, 0, 49);
 
         io.to(data.senderId).emit("receiveMessage", data);
         io.to(data.receiverId).emit("receiveMessage", data);

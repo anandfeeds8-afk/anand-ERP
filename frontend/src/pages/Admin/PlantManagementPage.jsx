@@ -77,8 +77,10 @@ const PlantManagementPage = () => {
       {/* Add Warehouse Modal */}
       {openForm && (
         <div className="transition-all bg-gradient-to-b from-black/20 to-black/60 backdrop-blur-sm w-full z-50 h-screen absolute top-0 left-0 flex items-center justify-center">
-          <div className="bg-white p-7 rounded-lg lg:w-[29rem] md:w-[29rem] sm:w-[29rem] w-[95%]">
-            <p className="text-lg font-semibold mb-5">Add Plant</p>
+          <div className="bg-white dark:bg-gray-800 p-7 rounded-lg lg:w-[29rem] md:w-[29rem] sm:w-[29rem] w-[95%]">
+            <p className="text-lg font-semibold mb-5 dark:text-gray-200">
+              Add Plant
+            </p>
             <form
               className="space-y-5"
               onSubmit={handleSubmit(onAddingWarehouse)}
@@ -171,6 +173,7 @@ const PlantManagementPage = () => {
               </FormControl>
               <div className="flex items-center justify-end gap-3 mt-5">
                 <Button
+                  size="small"
                   variant="outlined"
                   disableElevation
                   sx={{ textTransform: "none" }}
@@ -179,6 +182,7 @@ const PlantManagementPage = () => {
                   Cancel
                 </Button>
                 <Button
+                  size="small"
                   loading={isLoading}
                   variant="contained"
                   disableElevation

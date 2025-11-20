@@ -1306,8 +1306,8 @@ const addProduct = async (req, res) => {
     }
 
     const newProduct = new Product({
-      name: normalizedName,
-      category: normalizedCategory,
+      name: name.trim(),
+      category: category.trim(),
       description,
       price,
     });
