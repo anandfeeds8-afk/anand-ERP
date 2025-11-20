@@ -18,7 +18,7 @@ const RejectedParties = ({ party }) => {
       companyName: party.companyName,
       contactPersonNumber: party.contactPersonNumber,
       address: party.address,
-      discount: party.discount,
+      limit: party.limit,
     },
   });
 
