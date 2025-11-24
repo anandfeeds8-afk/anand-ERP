@@ -68,11 +68,17 @@ const PlantManagementPage = () => {
         <TotalPlants total={warehouses?.length} />
         <StockItems stockItems={stockItems} />
       </div>
-      <div className="lg:mt-5 md:mt-5 sm:mt-3 mt-3 grid lg:grid-cols-3 md:grid-cols-2 sm:grid-cols-2 lg:gap-5 md:gap-5 sm:gap-3 gap-3">
-        {warehouses?.map((warehouse) => (
-          <Plant key={warehouse._id} warehouse={warehouse} />
-        ))}
-      </div>
+      {warehouses?.length > 0 ? (
+        <div className="lg:mt-5 md:mt-5 sm:mt-3 mt-3 grid lg:grid-cols-3 md:grid-cols-2 sm:grid-cols-2 lg:gap-5 md:gap-5 sm:gap-3 gap-3">
+          {warehouses?.map((warehouse) => (
+            <Plant key={warehouse._id} warehouse={warehouse} />
+          ))}
+        </div>
+      ) : (
+        <div className="w-full h-full flex flex-1 items-center justify-center text-center dark:text-gray-400  lg:min-h-[300px] min-h-[190px]">
+          No Plant Found
+        </div>
+      )}
 
       {/* Add Warehouse Modal */}
       {openForm && (

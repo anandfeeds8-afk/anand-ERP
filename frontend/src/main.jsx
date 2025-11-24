@@ -15,7 +15,12 @@ createRoot(document.getElementById("root")).render(
           <App />
         </NotificationProvider>
       </ThemeProvider>
-      <Toaster />
+      <Toaster
+        toastOptions={{
+          className:
+            "dark:bg-gray-800 dark:text-gray-100 bg-white text-gray-900",
+        }}
+      />
     </BrowserRouter>
   </QueryClientProvider>
 );

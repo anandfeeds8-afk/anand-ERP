@@ -206,7 +206,7 @@ const AdminNotification = ({ setIsOpenNotification }) => {
   const markAsRead = useCallback(async () => {
     if (!selectedEmployee || !user?._id) return;
     try {
-      await axios.put(
+      const res = await axios.put(
         BASE_URL +
           API_PATHS.MESSAGES.MARK_AS_READ(
             user._id,
@@ -223,18 +223,18 @@ const AdminNotification = ({ setIsOpenNotification }) => {
     } catch (error) {
       console.error("Error marking messages as read:", error);
     }
-  }, [selectedEmployee, user?._id, token]);
+  }, [selectedEmployee, user?._id]);
 
   //mark messages as read
   useEffect(() => {
-    if (selectedEmployee) {
+    if (selectedEmployee?._id) {
       markAsRead();
       socket.emit("read-messages", {
         readerId: user._id,
         partnerId: selectedEmployee._id,
       });
     }
-  }, [selectedEmployee, markAsRead, user?._id]);
+  }, [selectedEmployee?._id, markAsRead, user?._id]);
 
   // MEMOIZED: Handle send message
   const handleSendMessage = useCallback(
@@ -313,6 +313,7 @@ const AdminNotification = ({ setIsOpenNotification }) => {
           }
         );
         setMessages(res.data.data);
+        await markAsRead(selectedEmployee._id);
       } catch (err) {
         console.error("Error fetching messages:", err);
       } finally {

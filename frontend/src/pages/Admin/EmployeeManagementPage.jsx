@@ -22,6 +22,7 @@ import { Controller, useForm } from "react-hook-form";
 import TotalEmployees from "../../components/Admin/EmployeeManagement/TotalEmployees";
 import TotalActiveEmployees from "../../components/Admin/EmployeeManagement/TotalActiveEmployees";
 import InactiveEmployees from "../../components/Admin/EmployeeManagement/InactiveEmployees";
+import { useAdminOrder } from "../../hooks/useAdminOrders";
 
 const EmployeeManagementPage = () => {
   const theme = useTheme();
@@ -39,6 +40,8 @@ const EmployeeManagementPage = () => {
   const handleEmployeeChange = (value) => {
     setIsActive(value);
   };
+
+  const { orders, ordersLoading } = useAdminOrder();
 
   const {
     // Salesman
@@ -76,8 +79,6 @@ const EmployeeManagementPage = () => {
     salesauthorizer?.length +
     planthead?.length +
     accountant?.length;
-
-  console.log(totalEmployees);
 
   const totalActiveEmployees =
     salesman?.filter((item) => item.isActive === true)?.length +
@@ -126,8 +127,72 @@ const EmployeeManagementPage = () => {
       item.email.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  const getSalesmanStats = (id) => {
+    return orders?.reduce(
+      (acc, order) => {
+        if (order?.placedBy?._id === id) {
+          acc.count += 1;
+          acc.total += order.totalAmount || 0;
+        }
+        return acc;
+      },
+      { count: 0, total: 0 }
+    );
+  };
+
+  const getSalesManagerStats = (id) => {
+    return orders?.reduce(
+      (acc, order) => {
+        if (order?.forwardedByManager?._id === id) {
+          acc.count += 1;
+          acc.total += order.totalAmount || 0;
+        }
+        return acc;
+      },
+      { count: 0, total: 0 }
+    );
+  };
+
+  const getSalesAuthorizerStats = (id) => {
+    return orders?.reduce(
+      (acc, order) => {
+        if (order?.approvedBy?._id === id) {
+          acc.count += 1;
+          acc.total += order.totalAmount || 0;
+        }
+        return acc;
+      },
+      { count: 0, total: 0 }
+    );
+  };
+
+  const getPlantHeadStats = (id) => {
+    return orders?.reduce(
+      (acc, order) => {
+        if (order?.dispatchInfo?.dispatchedBy?._id === id) {
+          acc.count += 1;
+          acc.total += order.totalAmount || 0;
+        }
+        return acc;
+      },
+      { count: 0, total: 0 }
+    );
+  };
+
+  const getAccountantStats = (id) => {
+    return orders?.reduce(
+      (acc, order) => {
+        if (order?.invoiceDetails?.invoicedBy?._id === id) {
+          acc.count += 1;
+          acc.total += order.totalAmount || 0;
+        }
+        return acc;
+      },
+      { count: 0, total: 0 }
+    );
+  };
+
   const onSubmit = (data) => {
-    console.log(data);
     if (data.role === "salesman") {
       addSalesman(data);
     }
@@ -146,7 +211,7 @@ const EmployeeManagementPage = () => {
     setOpenForm(false);
   };
 
-  if (isLoading) {
+  if (isLoading || ordersLoading) {
     return (
       <div className="flex justify-center items-center h-full">
         <CircularProgress />
@@ -221,7 +286,7 @@ const EmployeeManagementPage = () => {
         <TextField
           fullWidth
           size="small"
-          label="Search employees by name or email address"
+          label={`Search ${isActive} by name or email address`}
           variant="outlined"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
@@ -231,43 +296,103 @@ const EmployeeManagementPage = () => {
       {/* ---Employee List--- */}
       <div>
         {isActive === "Salesman" && (
-          <div className="mt-5 grid lg:grid-cols-3 md:grid-cols-2 sm:grid-cols-2 sm:gap-3 lg:gap-7 gap-3">
-            {FilteredSalesman?.map((item) => (
-              <Salesman key={item._id} item={item} />
-            ))}
-          </div>
+          <>
+            {FilteredSalesman?.length > 0 ? (
+              <div className="mt-5 grid lg:grid-cols-3 md:grid-cols-2 sm:grid-cols-2 sm:gap-3 lg:gap-7 gap-3">
+                {FilteredSalesman?.map((item) => (
+                  <Salesman
+                    key={item._id}
+                    item={item}
+                    getSalesmanStats={getSalesmanStats}
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className="w-full h-full flex flex-1 items-center justify-center text-center dark:text-gray-400  lg:min-h-[300px] min-h-[190px]">
+                No Salesman Found
+              </div>
+            )}
+          </>
         )}
 
         {isActive === "Sales Manager" && (
-          <div className="mt-5 grid lg:grid-cols-3 md:grid-cols-2 sm:grid-cols-2 sm:gap-3 lg:gap-7 gap-3">
-            {FilteredSalesManager?.map((item) => (
-              <SalesManager key={item._id} item={item} />
-            ))}
-          </div>
+          <>
+            {FilteredSalesManager.length > 0 ? (
+              <div className="mt-5 grid lg:grid-cols-3 md:grid-cols-2 sm:grid-cols-2 sm:gap-3 lg:gap-7 gap-3">
+                {FilteredSalesManager?.map((item) => (
+                  <SalesManager
+                    key={item._id}
+                    item={item}
+                    getSalesManagerStats={getSalesManagerStats}
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className="w-full h-full flex flex-1 items-center justify-center text-center dark:text-gray-400  lg:min-h-[300px] min-h-[190px]">
+                No Sales Manager Found
+              </div>
+            )}
+          </>
         )}
 
         {isActive === "Sales Authorizer" && (
-          <div className="mt-5 grid lg:grid-cols-3 md:grid-cols-2 sm:grid-cols-2 sm:gap-3 lg:gap-7 gap-3">
-            {FilteredSalesAuthorizer?.map((item) => (
-              <SalesAuthorizer key={item._id} item={item} />
-            ))}
-          </div>
+          <>
+            {FilteredSalesAuthorizer.length > 0 ? (
+              <div className="mt-5 grid lg:grid-cols-3 md:grid-cols-2 sm:grid-cols-2 sm:gap-3 lg:gap-7 gap-3">
+                {FilteredSalesAuthorizer?.map((item) => (
+                  <SalesAuthorizer
+                    key={item._id}
+                    item={item}
+                    getSalesAuthorizerStats={getSalesAuthorizerStats}
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className="w-full h-full flex flex-1 items-center justify-center text-center dark:text-gray-400  lg:min-h-[300px] min-h-[190px]">
+                No Sales Authorizer Found
+              </div>
+            )}
+          </>
         )}
 
         {isActive === "Plant Head" && (
-          <div className="mt-5 grid lg:grid-cols-3 md:grid-cols-2 sm:grid-cols-2 sm:gap-3 lg:gap-7 gap-3">
-            {FilteredPlantHead?.map((item) => (
-              <PlantHead key={item._id} item={item} />
-            ))}
-          </div>
+          <>
+            {FilteredPlantHead.length > 0 ? (
+              <div className="mt-5 grid lg:grid-cols-3 md:grid-cols-2 sm:grid-cols-2 sm:gap-3 lg:gap-7 gap-3">
+                {FilteredPlantHead?.map((item) => (
+                  <PlantHead
+                    key={item._id}
+                    item={item}
+                    getPlantHeadStats={getPlantHeadStats}
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className="w-full h-full flex flex-1 items-center justify-center text-center dark:text-gray-400  lg:min-h-[300px] min-h-[190px]">
+                No Plant Head Found
+              </div>
+            )}
+          </>
         )}
 
         {isActive === "Accountant" && (
-          <div className="mt-5 grid lg:grid-cols-3 md:grid-cols-2 sm:grid-cols-2 sm:gap-3 lg:gap-7 gap-3">
-            {FilteredAccountant?.map((item) => (
-              <Accountant key={item._id} item={item} />
-            ))}
-          </div>
+          <>
+            {FilteredAccountant.length > 0 ? (
+              <div className="mt-5 grid lg:grid-cols-3 md:grid-cols-2 sm:grid-cols-2 sm:gap-3 lg:gap-7 gap-3">
+                {FilteredAccountant?.map((item) => (
+                  <Accountant
+                    key={item._id}
+                    item={item}
+                    getAccountantStats={getAccountantStats}
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className="w-full h-full flex flex-1 items-center justify-center text-center dark:text-gray-400  lg:min-h-[300px] min-h-[190px]">
+                No Accountant Found
+              </div>
+            )}
+          </>
         )}
       </div>
 
@@ -347,6 +472,7 @@ const EmployeeManagementPage = () => {
               <TextField
                 size="small"
                 fullWidth
+                type="number"
                 id="outlined-basic"
                 label="Phone"
                 variant="outlined"

@@ -12,7 +12,7 @@ import {
 } from "@mui/material";
 import { subscribeUser } from "../../subscribeUser";
 import { useUser } from "../../hooks/useUser";
-import logo from "../../assets/logo4.png";
+import logo from "../../assets/logo6.png";
 import "../../App.css";
 
 const LoginPage = () => {
@@ -55,10 +55,10 @@ const LoginPage = () => {
       <div className="mb-5">
         <h1 className="font-semibold text-center flex flex-col items-center text-2xl dark:text-gray-300">
           <img src={logo} alt="" className="w-14 h-14" />
-          <span className="text-[#1976D2] text-3xl mt-1 text-center logo">
+          <span className="text-[#1976D2] text-3xl mt-2 text-center logo">
             Welcome Back
           </span>
-          <span className="text-gray-400 text-sm mt-5 text-center">
+          <span className="text-gray-400 text-sm mt-2 text-center">
             Select your role and log in to continue
           </span>
         </h1>

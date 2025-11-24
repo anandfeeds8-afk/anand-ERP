@@ -9,11 +9,11 @@ let io;
 const initSocket = (server) => {
   io = new Server(server, {
     cors: {
-      origin: [
-        "https://poultry-feed-management-software-4.onrender.com",
-        "https://feedmanager.netlify.app",
-      ],
-      // origin: "http://localhost:5173",
+      // origin: [
+      //   "https://poultry-feed-management-software-4.onrender.com",
+      //   "https://feedmanager.netlify.app",
+      // ],
+      origin: "http://localhost:5173",
       methods: ["GET", "POST"],
       credentials: true,
     },
@@ -123,10 +123,6 @@ const initSocket = (server) => {
         // Save message to database
         const message = new Message(data);
         await message.save();
-
-        // const cacheKey = `chat:${data.roomId}:messages`;
-        // await client.lpush(cacheKey, JSON.stringify(message));
-        // await client.ltrim(cacheKey, 0, 49);
 
         io.to(data.senderId).emit("receiveMessage", data);
         io.to(data.receiverId).emit("receiveMessage", data);

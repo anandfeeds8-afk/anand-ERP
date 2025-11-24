@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Mail, Phone, Trash2, SquarePen, Eye } from "lucide-react";
 import { Button, IconButton, TextField } from "@mui/material";
 import useEmployees from "../../../hooks/useEmployees";
@@ -6,13 +6,15 @@ import { CircularProgress } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import { useForm } from "react-hook-form";
 import Avatar from "../../Avatar";
+import { formatRupee } from "../../../utils/formatRupee.js";
 
-const PlantHead = ({ item }) => {
+const PlantHead = ({ item, getPlantHeadStats }) => {
   const { _id } = item;
   const { deletePlantHead, isLoading, updatePlantHead } = useEmployees();
   const [openDelete, setOpenDelete] = useState(false);
   const [openView, setOpenView] = useState(false);
   const [openEdit, setOpenEdit] = useState(false);
+  const [orderStats, setOrderStats] = useState({});
 
   const {
     register,
@@ -28,6 +30,11 @@ const PlantHead = ({ item }) => {
       },
     });
   };
+
+  useEffect(() => {
+    const stats = getPlantHeadStats(_id);
+    setOrderStats(stats);
+  }, [_id]);
 
   if (isLoading) {
     return (
@@ -60,11 +67,11 @@ const PlantHead = ({ item }) => {
           </div>
         </div>
         <div className="lg:flex md:flex hidden items-center gap-1">
-          <Eye
+          {/* <Eye
             className="hover:bg-blue-100 text-blue-600 dark:hover:bg-blue-950 dark:text-blue-500 active:scale-95 transition-all p-1.5 rounded-lg"
             size={30}
             onClick={() => setOpenView(true)}
-          />
+          /> */}
           <SquarePen
             className="hover:bg-green-100 text-green-600 dark:hover:bg-green-950 dark:text-green-500 active:scale-95 transition-all p-1.5 rounded-lg"
             size={30}
@@ -77,11 +84,11 @@ const PlantHead = ({ item }) => {
           />
         </div>
         <div className="flex items-center gap-1 md:hidden lg:hidden">
-          <Eye
+          {/* <Eye
             className="hover:bg-blue-100 text-blue-600 dark:hover:bg-blue-950 dark:text-blue-500 active:scale-95 transition-all p-1.5 rounded-lg"
             size={28}
             onClick={() => setOpenView(true)}
-          />
+          /> */}
           <SquarePen
             className="hover:bg-green-100 text-green-600 dark:hover:bg-green-950 dark:text-green-500 active:scale-95 transition-all p-1.5 rounded-lg"
             size={28}
@@ -112,21 +119,21 @@ const PlantHead = ({ item }) => {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-2">
-        <div className=" bg-green-100 dark:bg-green-800 rounded-lg p-2">
-          <p className="text-green-600 dark:text-green-200 font-semibold lg:text-sm md:text-sm sm:text-xs text-xs">
-            Orders
+      <div className="grid grid-cols-2 gap-3">
+        <div className=" bg-green-100 dark:bg-green-800 rounded-lg p-2 flex flex-col justify-center">
+          <p className="text-green-600 dark:text-green-200 font-semibold text-xs">
+            Orders Dispatched
           </p>
           <p className="font-semibold text-base text-green-900 dark:text-green-200">
-            {item.orders}
+            {orderStats.total ? orderStats?.count : "0"}
           </p>
         </div>
-        <div className=" bg-blue-100 dark:bg-blue-800 rounded-lg p-2">
-          <p className="text-blue-600 dark:text-blue-200 font-semibold lg:text-sm md:text-sm sm:text-xs text-xs">
-            Sales
+        <div className=" bg-blue-100 dark:bg-blue-800 rounded-lg p-2 flex flex-col justify-center">
+          <p className="text-blue-600 dark:text-blue-200 font-semibold text-xs">
+            Total Sales
           </p>
           <p className="font-semibold text-base text-blue-900 dark:text-blue-200">
-            ₹{item.sales}
+            {orderStats.total ? formatRupee(orderStats?.total) : "₹0"}
           </p>
         </div>
       </div>
@@ -160,7 +167,7 @@ const PlantHead = ({ item }) => {
                 disableElevation
                 color="error"
                 sx={{ textTransform: "none" }}
-                onClick={() => deleteSalesman(item._id)}
+                onClick={() => deletePlantHead(item._id)}
               >
                 Delete
               </Button>

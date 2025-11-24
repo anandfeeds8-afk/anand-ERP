@@ -99,8 +99,8 @@ const PartyManagementPage = () => {
               <AllPartiesForAdmin party={party} key={party._id} />
             ))
           ) : (
-            <div className="col-span-3 flex items-center justify-center text-gray-600 text-center">
-              No parties found
+            <div className="col-span-3 w-full h-full flex flex-1 items-center justify-center text-center dark:text-gray-400  lg:min-h-[300px] min-h-[190px]">
+              No Parties Found
             </div>
           )}
         </div>
@@ -113,8 +113,8 @@ const PartyManagementPage = () => {
               <PartyToApproveForAdmin party={party} key={party._id} />
             ))
           ) : (
-            <div className="col-span-3 flex items-center justify-center text-gray-600 text-center">
-              No pending parties
+            <div className="col-span-3 w-full h-full flex flex-1 items-center justify-center text-center dark:text-gray-400  lg:min-h-[300px] min-h-[190px]">
+              No Pending Parties Found
             </div>
           )}
         </div>
@@ -127,8 +127,8 @@ const PartyManagementPage = () => {
               <ApprovedPartiesForAdmin party={party} key={party._id} />
             ))
           ) : (
-            <div className="col-span-3 flex items-center justify-center text-gray-600 text-center">
-              No approved parties
+            <div className="col-span-3 w-full h-full flex flex-1 items-center justify-center text-center dark:text-gray-400  lg:min-h-[300px] min-h-[190px]">
+              No Approved Parties Found
             </div>
           )}
         </div>
@@ -141,8 +141,8 @@ const PartyManagementPage = () => {
               <RejectedPartiesForAdmin party={party} key={party._id} />
             ))
           ) : (
-            <div className="col-span-3 flex items-center justify-center text-gray-600 text-center">
-              No rejected parties
+            <div className="col-span-3 w-full h-full flex flex-1 items-center justify-center text-center dark:text-gray-400  lg:min-h-[300px] min-h-[190px]">
+              No Rejected Parties Found
             </div>
           )}
         </div>

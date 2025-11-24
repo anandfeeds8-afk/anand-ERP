@@ -52,9 +52,7 @@ const Notification = ({ setIsOpenNotification }) => {
   const [openEmoji, setOpenEmoji] = useState(false);
   const tabType = ["notifications", "messages"];
   const { clearNotifications, loadingClearNotifications } = useNotification();
-  const { unreadForOthers } = useUnreadChatsContext();
-
-  console.log(unreadForOthers);
+  const { unreadForOthers, setUnreadForOthers } = useUnreadChatsContext();
 
   const handleClearNotifications = () => {
     clearNotifications();
@@ -139,6 +137,7 @@ const Notification = ({ setIsOpenNotification }) => {
           }
         );
         setMessages(res.data.data);
+        await markAsRead(selectedAdmin._id);
       } catch (err) {
         console.error("Error fetching messages:", err);
       } finally {
@@ -229,30 +228,47 @@ const Notification = ({ setIsOpenNotification }) => {
   }, [user?._id, handleNotification, handleIncomingMessage, admins]);
 
   // function to mark the messages as read
-  const markAsRead = async () => {
-    if (!selectedAdmin) return;
-    const res = await axios.put(
-      BASE_URL +
-        API_PATHS.MESSAGES.MARK_AS_READ(selectedAdmin._id, user._id, user._id),
-      {},
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
-  };
+  const markAsRead = useCallback(async () => {
+    if (!selectedAdmin?._id || !user?._id) return;
+    try {
+      await axios.put(
+        BASE_URL +
+          API_PATHS.MESSAGES.MARK_AS_READ(
+            selectedAdmin._id,
+            user._id,
+            user._id
+          ),
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      // socket.emit("read-messages", {
+      //   readerId: user._id,
+      //   partnerId: selectedAdmin._id,
+      // });
+
+      setUnreadForOthers((prev) => ({
+        ...prev,
+        [selectedAdmin._id]: 0,
+      }));
+    } catch (err) {
+      console.error("Error marking as read:", err);
+    }
+  }, [selectedAdmin?._id, user?._id]);
 
   //mark messages as read
   useEffect(() => {
-    if (selectedAdmin) {
+    if (selectedAdmin?._id) {
       markAsRead();
       socket.emit("read-messages", {
         readerId: user._id,
         partnerId: selectedAdmin._id,
       });
     }
-  }, [selectedAdmin]);
+  }, [selectedAdmin?._id, markAsRead, user?._id]);
 
   const handleSendMessage = (e) => {
     e.preventDefault();
@@ -272,28 +288,34 @@ const Notification = ({ setIsOpenNotification }) => {
     setTypedMessage("");
   };
 
-  const sortedMessages = [...messages].sort(
-    (a, b) => new Date(a.timestamp) - new Date(b.timestamp)
-  );
-  const groupedByDate = sortedMessages.reduce((groups, m) => {
-    const msgDate = new Date(m.timestamp);
-    const key = format(msgDate, "yyyy-MM-dd");
-    const lastGroup = groups[groups.length - 1];
-    if (!lastGroup || lastGroup.key !== key) {
-      groups.push({ key, date: msgDate, items: [m] });
-    } else {
-      lastGroup.items.push(m);
-    }
-    return groups;
-  }, []);
+  const sortedMessages = useMemo(() => {
+    return [...messages].sort(
+      (a, b) => new Date(a.timestamp) - new Date(b.timestamp)
+    );
+  }, [messages]);
+
+  const groupedByDate = useMemo(() => {
+    return sortedMessages.reduce((groups, m) => {
+      const msgDate = new Date(m.timestamp);
+      const key = format(msgDate, "yyyy-MM-dd");
+      const lastGroup = groups[groups.length - 1];
+      if (!lastGroup || lastGroup.key !== key) {
+        groups.push({ key, date: msgDate, items: [m] });
+      } else {
+        lastGroup.items.push(m);
+      }
+      return groups;
+    }, []);
+  }, [sortedMessages]);
 
   // sorted and grouped notifications (newest first)
-  const sortedNotifications = [...notifications].sort(
-    (a, b) => new Date(b?.createdAt) - new Date(a?.createdAt)
-  );
+  const sortedNotifications = useMemo(() => {
+    return [...notifications].sort(
+      (a, b) => new Date(b?.createdAt) - new Date(a?.createdAt)
+    );
+  }, [notifications]);
 
-  const groupedByDateNotifications = sortedNotifications_reduce();
-  function sortedNotifications_reduce() {
+  const groupedByDateNotifications = useMemo(() => {
     return sortedNotifications.reduce((groups, n) => {
       const d = new Date(n?.createdAt);
       const key = format(d, "yyyy-MM-dd");
@@ -305,7 +327,7 @@ const Notification = ({ setIsOpenNotification }) => {
       }
       return groups;
     }, []);
-  }
+  }, [sortedNotifications]);
 
   const emojiRegex =
     /^(?:\p{Emoji_Presentation}|\p{Emoji}\uFE0F|\p{Emoji_Modifier_Base}(?:\p{Emoji_Modifier})?|\p{Emoji_Component})+$/u;

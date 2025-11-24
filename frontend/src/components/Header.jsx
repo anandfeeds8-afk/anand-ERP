@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import NotificationsIcon from "@mui/icons-material/Notifications";
-import { Badge, Button, Dialog, IconButton, useTheme } from "@mui/material";
+import { Button, IconButton, useTheme } from "@mui/material";
 
 import MenuItem from "@mui/material/MenuItem";
 import Menu from "@mui/material/Menu";
@@ -37,7 +37,7 @@ import AdminNotification from "./AdminNotification.jsx";
 import { useMediaQuery } from "@mui/material";
 import { unsubscribeUser } from "../unsubscribeUser";
 import useNotification from "../hooks/useNotification.js";
-import logo from "../assets/logo4.png";
+import logo from "../assets/logo6.png";
 import { useUnreadChatsContext } from "../context/UnreadChatsContext";
 import socket from "../utils/socket";
 
@@ -214,7 +214,7 @@ const Header = ({ isCollapsed, setIsCollapsed }) => {
         <div className="hidden lg:block w-full">
           <div className="flex items-center justify-start gap-2 text-[#1976D2] text-xl font-bold">
             <img src={logo} alt="" className="w-7 h-7" />
-            <span className="logo">Feed manager</span>
+            <span className="logo">FeedChain</span>
           </div>
         </div>
 
@@ -427,7 +427,7 @@ const Header = ({ isCollapsed, setIsCollapsed }) => {
               {user.role === "Admin" ? (
                 <>
                   {totalUnread > 0 && (
-                    <div className="flex transition-all items-center gap-1 bg-blue-600/20 backdrop-blur-sm p-0.5 text-xs text-blue-600 font-semibold px-1.5 rounded-full">
+                    <div className="flex transition-all items-center gap-1 dark:bg-blue-600/90 bg-blue-600/20 backdrop-blur-sm p-0.5 text-xs text-blue-600 dark:text-blue-300 font-semibold px-1.5 rounded-full">
                       <MessageCircle size={12} strokeWidth={3} />
                       {totalUnread > 20 ? "20+" : totalUnread}
                     </div>
@@ -436,7 +436,7 @@ const Header = ({ isCollapsed, setIsCollapsed }) => {
               ) : (
                 <>
                   {totalUnreadForOthers > 0 && (
-                    <div className="flex transition-all items-center gap-1 bg-blue-600/20 backdrop-blur-sm p-0.5 text-xs text-blue-600 font-semibold px-1.5 rounded-full">
+                    <div className="flex transition-all items-center gap-1 dark:bg-blue-600/70 bg-blue-600/20 backdrop-blur-sm p-0.5 text-xs text-blue-600 dark:text-blue-300 font-semibold px-1.5 rounded-full">
                       <MessageCircle size={12} strokeWidth={3} />
                       {totalUnreadForOthers > 20 ? "20+" : totalUnreadForOthers}
                     </div>

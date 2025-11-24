@@ -31,7 +31,7 @@ const markAsRead = async (req, res) => {
   try {
     const { adminId, employeeId, currentUserId } = req.params;
 
-    // Wo user jisne page open kiya hai
+    // Wo user jisne message read kiya hai
     const readerId = currentUserId;
 
     const messageFrom = readerId === adminId ? employeeId : adminId;

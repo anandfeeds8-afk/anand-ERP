@@ -800,40 +800,48 @@ const deletePlantHead = async (req, res) => {
 };
 
 const addAccountant = async (req, res) => {
-  const { name, email, password, phone } = req.body;
+  try {
+    const { name, email, password, phone } = req.body;
 
-  if (!name || !email || !password || !phone) {
-    return res
-      .status(422)
-      .json({ success: false, message: "Missing input fields" });
+    if (!name || !email || !password || !phone) {
+      return res
+        .status(422)
+        .json({ success: false, message: "Missing input fields" });
+    }
+
+    if (!isCorrectEmail(email)) {
+      return res
+        .status(422)
+        .json({ success: false, message: "Incorrect email format!" });
+    }
+
+    const existing = await accountantModel.findOne({ email });
+    if (existing) {
+      return res
+        .status(409)
+        .json({ success: false, message: "Email already in use" });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, saltRounds);
+    const newAccountant = await accountantModel.create({
+      name,
+      email,
+      password: hashedPassword,
+      phone,
+    });
+
+    res.status(201).json({
+      success: true,
+      message: "Accountant created successfully",
+      data: { _id: newAccountant._id, name, email, phone },
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Something went wrong",
+      error: error.message,
+    });
   }
-
-  if (!isCorrectEmail(email)) {
-    return res
-      .status(422)
-      .json({ success: false, message: "Incorrect email format!" });
-  }
-
-  const existing = await accountantModel.findOne({ email });
-  if (existing) {
-    return res
-      .status(409)
-      .json({ success: false, message: "Email already in use" });
-  }
-
-  const hashedPassword = await bcrypt.hash(password, saltRounds);
-  const newAccountant = await accountantModel.create({
-    name,
-    email,
-    password: hashedPassword,
-    phone,
-  });
-
-  res.status(201).json({
-    success: true,
-    message: "Accountant created successfully",
-    data: { _id: newAccountant._id, name, email, phone },
-  });
 };
 
 const getAllAccountants = async (req, res) => {
