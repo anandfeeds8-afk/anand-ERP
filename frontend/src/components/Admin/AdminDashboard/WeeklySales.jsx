@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import {
   LineChart,
   Line,
@@ -9,17 +9,51 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
+import { useAdminOrder } from "../../../hooks/useAdminOrders";
+import { CircularProgress } from "@mui/material";
 
 const WeeklySales = () => {
-  const data = [
-    { day: "Mon", sales: 1200 },
-    { day: "Tue", sales: 2100 },
-    { day: "Wed", sales: 800 },
-    { day: "Thu", sales: 1700 },
-    { day: "Fri", sales: 2400 },
-    { day: "Sat", sales: 3000 },
-    { day: "Sun", sales: 2000 },
-  ];
+  const { orders, ordersLoading } = useAdminOrder();
+  const getWeeklySalesData = (orders) => {
+    // starting template (Monday to Sunday)
+    const weekTemplate = {
+      Mon: 0,
+      Tue: 0,
+      Wed: 0,
+      Thu: 0,
+      Fri: 0,
+      Sat: 0,
+      Sun: 0,
+    };
+
+    orders.forEach((order) => {
+      const date = new Date(order.createdAt?.$date || order.createdAt);
+      const dayIndex = date.getDay(); // 0 = Sun, 1 = Mon ...
+
+      const dayMap = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+      const day = dayMap[dayIndex];
+
+      // Add totalAmount to correct day
+      weekTemplate[day] += order.totalAmount;
+    });
+
+    // convert object → array for Recharts:
+    return Object.keys(weekTemplate).map((day) => ({
+      day,
+      sales: weekTemplate[day],
+    }));
+  };
+
+  const [weeklyData, setWeeklyData] = useState([]);
+
+  useEffect(() => {
+    if (orders && orders.length > 0) {
+      const chartData = getWeeklySalesData(orders);
+      setWeeklyData(chartData);
+    }
+  }, [orders]);
+
+  if (ordersLoading) return <CircularProgress />;
 
   return (
     <div className="rounded-lg lg:p-5 md:p-5 sm:p-5 p-3 bg-white dark:bg-gray-900 shadow hover:shadow-md transition-all w-full">
@@ -31,7 +65,7 @@ const WeeklySales = () => {
         tabIndex={-1}
       >
         <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={data}>
+          <LineChart data={weeklyData}>
             <CartesianGrid stroke="#ccc" />
             <XAxis dataKey="day" />
             <YAxis />

@@ -73,12 +73,12 @@ const PlantHead = ({ item, getPlantHeadStats }) => {
             onClick={() => setOpenView(true)}
           /> */}
           <SquarePen
-            className="hover:bg-green-100 text-green-600 dark:hover:bg-green-950 dark:text-green-500 active:scale-95 transition-all p-1.5 rounded-lg"
+            className="hover:bg-green-100 text-green-600 dark:hover:bg-green-950 active:scale-95 transition-all p-1.5 rounded-lg"
             size={30}
             onClick={() => setOpenEdit(true)}
           />
           <Trash2
-            className="hover:bg-red-100 text-red-600 dark:hover:bg-red-950 dark:text-red-500 active:scale-95 transition-all p-1.5 rounded-lg"
+            className="hover:bg-red-100 text-red-600 dark:hover:bg-red-950 active:scale-95 transition-all p-1.5 rounded-lg"
             size={30}
             onClick={() => setOpenDelete(true)}
           />
@@ -90,12 +90,12 @@ const PlantHead = ({ item, getPlantHeadStats }) => {
             onClick={() => setOpenView(true)}
           /> */}
           <SquarePen
-            className="hover:bg-green-100 text-green-600 dark:hover:bg-green-950 dark:text-green-500 active:scale-95 transition-all p-1.5 rounded-lg"
+            className="hover:bg-green-100 text-green-600 dark:hover:bg-green-950 active:scale-95 transition-all p-1.5 rounded-lg"
             size={28}
             onClick={() => setOpenEdit(true)}
           />
           <Trash2
-            className="hover:bg-red-100 text-red-600 dark:hover:bg-red-950 dark:text-red-500 active:scale-95 transition-all p-1.5 rounded-lg"
+            className="hover:bg-red-100 text-red-600 dark:hover:bg-red-950 active:scale-95 transition-all p-1.5 rounded-lg"
             size={28}
             onClick={() => setOpenDelete(true)}
           />

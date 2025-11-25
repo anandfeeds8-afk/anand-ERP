@@ -482,13 +482,13 @@ const SalesmanDashboardPage = () => {
                         <p className="text-red-600 text-xs mt-1">{error}</p>
                       )}
                     </div>
-                    <div>
-                      <label className="text-sm mb-2 dark:text-gray-300">
+                    <div className="flex flex-col gap-1 items-start">
+                      <label className="text-sm dark:text-gray-300">
                         Upload advance payment proof
                       </label>
                       <input
                         disabled={advanceAmount <= 0 || !advanceAmount}
-                        className="relative m-0 block w-full min-w-0 flex-auto rounded border border-solid border-neutral-300 bg-clip-padding px-3 py-[0.32rem] text-base font-normal text-neutral-700 transition duration-300 ease-in-out file:-mx-3 file:-my-[0.32rem] file:overflow-hidden file:rounded-none file:border-0 file:border-solid file:border-inherit file:bg-neutral-100 file:px-3 file:py-[0.32rem] file:text-neutral-700 file:transition file:duration-150 file:ease-in-out file:[border-inline-end-width:1px] file:[margin-inline-end:0.75rem] hover:file:bg-neutral-200 focus:border-primary focus:text-neutral-700 focus:shadow-te-primary focus:outline-none "
+                        className="relative m-0 block w-full min-w-0 flex-auto rounded border border-solid border-gray-500 dark:border-gray-400 bg-clip-padding px-3 py-[0.32rem] text-base font-normal text-gray-700 dark:text-gray-200 dark:bg-gray-800 transition duration-300 ease-in-out file:-mx-3 file:-my-[0.32rem] file:overflow-hidden file:rounded-none file:border-0 file:border-solid file:border-inherit file:bg-gray-100 dark:file:bg-gray-700 file:px-3 file:py-[0.32rem] file:text-gray-700 dark:file:text-gray-200 file:transition file:duration-150 file:ease-in-out file:[border-inline-end-width:1px] file:[margin-inline-end:0.75rem] hover:file:bg-gray-200 dark:hover:file:bg-gray-600 focus:border-primary dark:focus:border-primary focus:text-gray-700 dark:focus:text-gray-200 focus:shadow-te-primary focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
                         type="file"
                         id="formFileMultiple"
                         multiple

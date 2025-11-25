@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   AreaChart,
   Area,
@@ -9,16 +9,36 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
+import { useAdminOrder } from "../../../hooks/useAdminOrders";
+import { CircularProgress } from "@mui/material";
 
 const RateChart = () => {
-  const data = [
-    { date: "01 Jul", rate: 120 },
-    { date: "05 Jul", rate: 135 },
-    { date: "10 Jul", rate: 110 },
-    { date: "15 Jul", rate: 145 },
-    { date: "20 Jul", rate: 150 },
-  ];
+  const { orders, ordersLoading } = useAdminOrder();
 
+  const getRateChartData = (orders) => {
+    return orders.map((order) => {
+      const dateObj = new Date(order.createdAt?.$date || order.createdAt);
+
+      const day = dateObj.getDate().toString().padStart(2, "0");
+      const month = dateObj.toLocaleString("default", { month: "short" });
+
+      return {
+        date: `${day} ${month}`, // e.g. "24 Nov"
+        rate: order.totalAmount || 0,
+      };
+    });
+  };
+
+  const [chartData, setChartData] = useState([]);
+
+  useEffect(() => {
+    if (orders?.length > 0) {
+      const formatted = getRateChartData(orders);
+      setChartData(formatted);
+    }
+  }, [orders]);
+
+  if (ordersLoading) return <CircularProgress />;
   return (
     <div className="bg-white dark:bg-gray-900 rounded-lg lg:p-5 md:p-5 sm:p-5 p-3 shadow hover:shadow-md transition-all">
       <h1 className="lg:text-xl md:text-xl text-sm font-semibold mb-4 dark:text-gray-300">
@@ -29,7 +49,7 @@ const RateChart = () => {
         tabIndex={-1}
       >
         <ResponsiveContainer width="100%" height="100%">
-          <AreaChart data={data}>
+          <AreaChart data={chartData}>
             <defs>
               <linearGradient id="colorRate" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="5%" stopColor="#8884d8" stopOpacity={0.8} />

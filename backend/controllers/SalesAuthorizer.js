@@ -332,7 +332,6 @@ const checkWarehouseApproval = async (req, res) => {
       });
     }
 
-    console.log("order", order);
 
     const isApproved =
       order.orderStatus === "Approved" && !!order.approvedBy?._id;

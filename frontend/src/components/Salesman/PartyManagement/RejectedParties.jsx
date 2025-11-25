@@ -84,12 +84,12 @@ const RejectedParties = ({ party }) => {
       <div className="flex items-center justify-end mt-2">
         <div className="flex items-center gap-1">
           <SquarePen
-            className="hover:bg-green-100 dark:hover:bg-green-950 text-green-500 active:scale-95 transition-all p-1.5 rounded-lg"
+            className="hover:bg-green-100 dark:hover:bg-green-950 text-green-600 active:scale-95 transition-all p-1.5 rounded-lg"
             size={30}
             onClick={() => setOpenEdit(true)}
           />
           <Trash2
-            className="hover:bg-red-100 dark:hover:bg-red-950 text-red-500 active:scale-95 transition-all p-1.5 rounded-lg"
+            className="hover:bg-red-100 dark:hover:bg-red-950 text-red-600 active:scale-95 transition-all p-1.5 rounded-lg"
             size={30}
             onClick={() => setOpenDelete(true)}
           />

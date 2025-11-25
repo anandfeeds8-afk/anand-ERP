@@ -139,20 +139,17 @@ const Plant = ({ warehouse }) => {
           </span>
         </button>
         <Eye
-          color="blue"
-          className="hover:bg-blue-100 dark:hover:bg-blue-950 active:scale-95 transition-all p-0.5 px-2 rounded-lg"
+          className="hover:bg-blue-100 text-blue-600 dark:hover:bg-blue-950 active:scale-95 transition-all p-0.5 px-2 rounded-lg"
           size={40}
           onClick={() => setOpenView(true)}
         />
         <SquarePen
-          color="green"
-          className="hover:bg-green-100 dark:hover:bg-green-950 active:scale-95 transition-all p-0.5 px-2 rounded-lg"
+          className="hover:bg-green-100 text-green-600 dark:hover:bg-green-950 active:scale-95 transition-all p-0.5 px-2 rounded-lg"
           size={40}
           onClick={() => setOpenEdit(true)}
         />
         <Trash2
-          color="red"
-          className="hover:bg-red-100 dark:hover:bg-red-950 active:scale-95 transition-all p-0.5 px-2 rounded-lg"
+          className="hover:bg-red-100 text-red-600 dark:hover:bg-red-950 active:scale-95 transition-all p-0.5 px-2 rounded-lg"
           size={40}
           onClick={() => setOpenDelete(true)}
         />

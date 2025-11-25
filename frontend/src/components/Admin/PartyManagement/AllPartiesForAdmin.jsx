@@ -116,8 +116,7 @@ const AllPartiesForAdmin = ({ party }) => {
         <div className="flex items-center justify-end lg:mt-2">
           <div className="flex items-center gap-1">
             <SquarePen
-              color="green"
-              className="hover:bg-green-100 dark:hover:bg-green-950 active:scale-95 transition-all p-1.5 rounded-lg"
+              className="hover:bg-green-100 dark:hover:bg-green-950 text-green-600 active:scale-95 transition-all p-1.5 rounded-lg"
               size={30}
               onClick={() => setOpenEdit(true)}
             />

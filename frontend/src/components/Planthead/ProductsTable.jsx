@@ -64,8 +64,7 @@ const ProductsTable = () => {
         <div className="flex items-center h-full gap-1">
           <Tooltip title="Update Quantity" placement="top" enterDelay={500}>
             <SquarePen
-              color="green"
-              className="hover:bg-green-100 dark:hover:bg-green-950 active:scale-95 transition-all p-1.5 rounded-lg"
+              className="hover:bg-green-100 text-green-600 dark:hover:bg-green-950 active:scale-95 transition-all p-1.5 rounded-lg"
               size={30}
               onClick={() => {
                 setProductId(params.row.id);

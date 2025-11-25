@@ -107,8 +107,6 @@ const sendPartyForApproval = async (req, res) => {
     const salesmanId = req.user.id;
     const { partyId } = req.body;
 
-    console.log("partyId", partyId);
-    console.log("salesmanId", salesmanId);
 
     const party = await Party.findOne({ _id: partyId, addedBy: salesmanId });
     if (!party) {
@@ -191,8 +189,6 @@ const approveParty = async (req, res) => {
     const admin = await Admin.findById(adminId);
     const salesman = await Salesman.findById(party.addedBy).select("_id");
 
-    console.log(salesman._id.toString());
-    console.log(adminId.toString());
 
     const payload = {
       title: "Party Approved",

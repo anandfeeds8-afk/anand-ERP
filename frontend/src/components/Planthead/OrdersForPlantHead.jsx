@@ -216,7 +216,6 @@ const OrdersForPlantHead = () => {
         <div className="flex items-center h-full gap-1">
           <Tooltip title="View order details" enterDelay={500} placement="top">
             <Eye
-              color="blue"
               className="hover:bg-blue-100 text-blue-600 dark:hover:bg-blue-950 active:scale-95 transition-all p-1.5 rounded-lg"
               size={30}
               onClick={() => handleView(params.row.id)}
@@ -224,7 +223,6 @@ const OrdersForPlantHead = () => {
           </Tooltip>
           <Tooltip title="Dispatch order" enterDelay={500} placement="top">
             <LuTruck
-              color="green"
               className="hover:bg-green-100 text-green-600 dark:hover:bg-green-950 active:scale-95 transition-all p-1.5 rounded-lg"
               size={30}
               onClick={() => {
@@ -235,7 +233,6 @@ const OrdersForPlantHead = () => {
           </Tooltip>
           <Tooltip title="Cancel order" enterDelay={500} placement="top">
             <MdOutlineCancel
-              color="red"
               className="hover:bg-red-100 text-red-600 dark:hover:bg-red-950 active:scale-95 transition-all p-1.5 rounded-lg"
               size={30}
               onClick={() => {
@@ -854,7 +851,7 @@ const OrdersForPlantHead = () => {
                     Upload Dispatch Documents
                   </span>
                   <input
-                    className="relative mt-1 block w-full min-w-0 flex-auto rounded border border-solid border-neutral-300 bg-clip-padding px-3 py-[0.32rem] text-base font-normal text-neutral-700 transition duration-300 ease-in-out file:-mx-3 file:-my-[0.32rem] file:overflow-hidden file:rounded-none file:border-0 file:border-solid file:border-inherit file:bg-neutral-100 file:px-3 file:py-[0.32rem] file:text-neutral-700 file:transition file:duration-150 file:ease-in-out file:[border-inline-end-width:1px] file:[margin-inline-end:0.75rem] hover:file:bg-neutral-200 focus:border-primary focus:text-neutral-700 focus:shadow-te-primary focus:outline-none "
+                    className="relative m-0 block w-full min-w-0 flex-auto rounded border border-solid border-gray-500 dark:border-gray-400 bg-clip-padding px-3 py-[0.32rem] text-base font-normal text-gray-700 dark:text-gray-200 dark:bg-gray-800 transition duration-300 ease-in-out file:-mx-3 file:-my-[0.32rem] file:overflow-hidden file:rounded-none file:border-0 file:border-solid file:border-inherit file:bg-gray-100 dark:file:bg-gray-700 file:px-3 file:py-[0.32rem] file:text-gray-700 dark:file:text-gray-200 file:transition file:duration-150 file:ease-in-out file:[border-inline-end-width:1px] file:[margin-inline-end:0.75rem] hover:file:bg-gray-200 dark:hover:file:bg-gray-600 focus:border-primary dark:focus:border-primary focus:text-gray-700 dark:focus:text-gray-200 focus:shadow-te-primary focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
                     type="file"
                     id="formFileMultiple"
                     multiple

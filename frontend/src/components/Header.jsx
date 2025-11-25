@@ -39,9 +39,11 @@ import { unsubscribeUser } from "../unsubscribeUser";
 import useNotification from "../hooks/useNotification.js";
 import logo from "../assets/logo6.png";
 import { useUnreadChatsContext } from "../context/UnreadChatsContext";
+import { useTheme as useThemeContext } from "../context/ThemeContext";
 import socket from "../utils/socket";
 
 const Header = ({ isCollapsed, setIsCollapsed }) => {
+  const { resolvedTheme } = useThemeContext();
   const [anchorEl, setAnchorEl] = useState(null);
   const open = Boolean(anchorEl);
   const handleClick = (event) => {
@@ -241,7 +243,7 @@ const Header = ({ isCollapsed, setIsCollapsed }) => {
             }`}
           />
 
-          {/* Animated Sidebar */}
+          {/* Sidebar for devices except laptop */}
           <div
             className={`lg:hidden md:block fixed top-0 left-0 min-h-full max-h-lvh w-60 p-2 border-r dark:border-gray-700 border-gray-100 bg-white dark:bg-gray-900 overflow-hidden shadow-lg backdrop-blur-sm z-50 flex flex-col items-start justify-between pb-5 transition-transform duration-300 ease-out ${
               !isCollapsed ? "translate-x-0" : "-translate-x-full"
@@ -306,6 +308,7 @@ const Header = ({ isCollapsed, setIsCollapsed }) => {
                     color="black"
                     sx={{
                       textTransform: "none",
+                      color: resolvedTheme === "dark" ? "white" : "black",
                       fontSize: isSmDown ? "12px" : "14px",
                       borderRadius: "0px",
                       textAlign: "left",

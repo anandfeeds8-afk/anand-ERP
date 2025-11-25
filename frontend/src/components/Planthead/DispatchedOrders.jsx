@@ -181,8 +181,7 @@ const DispatchedOrders = () => {
         <div className="flex items-center h-full gap-1">
           <Tooltip title="View order details" enterDelay={500} placement="top">
             <Eye
-              color="blue"
-              className="hover:bg-blue-100 active:scale-95 dark:hover:bg-blue-950 transition-all p-1.5 rounded-lg"
+              className="hover:bg-blue-100 text-blue-600 active:scale-95 dark:hover:bg-blue-950 transition-all p-1.5 rounded-lg"
               size={30}
               onClick={() => handleView(params.row.id)}
             />
@@ -194,8 +193,7 @@ const DispatchedOrders = () => {
           >
             <FileBox
               strokeWidth={2.1}
-              color="green"
-              className="hover:bg-green-200 active:scale-95 dark:hover:bg-green-950 transition-all p-1.5 rounded-lg"
+              className="hover:bg-green-200 text-green-600 active:scale-95 dark:hover:bg-green-950 transition-all p-1.5 rounded-lg"
               size={30}
               onClick={() => {
                 setSingleOrderId(params.row.id);

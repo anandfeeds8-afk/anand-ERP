@@ -118,8 +118,8 @@ const PartyManagementPage = () => {
             {parties?.length > 0 ? (
               parties?.map((party) => <Party party={party} key={party._id} />)
             ) : (
-              <div className="flex items-center justify-center w-full text-center">
-                <p className="text-gray-500">No parties found</p>
+              <div className="w-full h-full flex flex-1 items-center justify-center text-center dark:text-gray-400  lg:min-h-[300px] min-h-[190px]">
+                No parties found
               </div>
             )}
           </div>
@@ -131,8 +131,8 @@ const PartyManagementPage = () => {
                 <ApprovedParties party={party} key={party._id} />
               ))
             ) : (
-              <div className="flex items-center justify-center w-full text-center">
-                <p className="text-gray-500">No approved parties found</p>
+              <div className="col-span-3 w-full h-full flex flex-1 items-center justify-center text-center dark:text-gray-400  lg:min-h-[300px] min-h-[190px]">
+                No approved parties found
               </div>
             )}
           </div>
@@ -144,8 +144,8 @@ const PartyManagementPage = () => {
                 <RejectedParties party={party} key={party._id} />
               ))
             ) : (
-              <div className="flex items-center justify-center w-full text-center">
-                <p className="text-gray-500">No rejected parties found</p>
+              <div className="col-span-3 w-full h-full flex flex-1 items-center justify-center text-center dark:text-gray-400  lg:min-h-[300px] min-h-[190px]">
+                No rejected parties found
               </div>
             )}
           </div>
