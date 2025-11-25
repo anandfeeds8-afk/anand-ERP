@@ -10,7 +10,6 @@ import {
   Select,
   TextField,
 } from "@mui/material";
-import { subscribeUser } from "../../subscribeUser";
 import { useUser } from "../../hooks/useUser";
 import logo from "../../assets/logo6.png";
 import "../../App.css";
@@ -27,19 +26,10 @@ const LoginPage = () => {
 
   const { login, isPending } = useLogin();
 
-  const browserId =
-    navigator.userAgent + "-" + Math.random().toString(36).slice(2);
 
   const onSubmit = (data) => {
     login(data, {
-      onSuccess: (data) => {
-        subscribeUser(
-          data?.data?._id,
-          data?.data?.role,
-          browserId,
-          "BNcMT8wY9rjGtM_SBQGFyLbrL-Q9r6TVknSCjLWcJYl5Yj3TlERQDjIYbTuAKTolgHw4tAinWVLCzcZyOZG5iS8"
-        );
-      },
+      
     });
   };
 

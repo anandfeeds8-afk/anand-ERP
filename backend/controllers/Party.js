@@ -27,7 +27,7 @@ const addParty = async (req, res) => {
 
     const payload = {
       title: "New party added",
-      message: `New party ${party.companyName} added by ${salesman?.name}, Check and approve it`,
+      message: `New party ${party.companyName} added by ${salesman?.name}`,
       type: "partyAdded",
       senderId: salesmanId,
       receiverId: adminIds,
@@ -125,7 +125,27 @@ const sendPartyForApproval = async (req, res) => {
       });
     } else {
       party.partyStatus = "sentForApproval";
+
+      const salesman = await Salesman.findById(salesmanId);
+
+      const admins = await Admin.find().select("_id");
+      const adminIds = admins.map((u) => u._id.toString());
+
       await party.save();
+
+      const payload = {
+        title: "Check Party Approval",
+        message: `Party ${party.companyName} sent for approval by ${salesman?.name}, Check it out`,
+        type: "partySentForApproval",
+        senderId: salesmanId,
+        receiverId: adminIds,
+        read: false,
+        orderId: party._id,
+      };
+
+      const sendToRoles = ["Admin"];
+
+      await sendNotificationToRole(sendToRoles, payload);
     }
 
     res.status(200).json({

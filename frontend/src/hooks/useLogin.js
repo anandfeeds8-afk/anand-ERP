@@ -3,9 +3,12 @@ import axios from "axios";
 import { BASE_URL, API_PATHS } from "../utils/apiPaths";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-hot-toast";
+import { subscribeUser } from "../subscribeUser";
 
 const useLogin = () => {
   const navigate = useNavigate();
+  const browserId =
+    navigator.userAgent + "-" + Math.random().toString(36).slice(2);
 
   const {
     mutate: login,
@@ -20,6 +23,13 @@ const useLogin = () => {
       return response.data;
     },
     onSuccess: (data) => {
+      subscribeUser(
+        data?.data?._id,
+        data?.data?.role,
+        browserId,
+        "BNcMT8wY9rjGtM_SBQGFyLbrL-Q9r6TVknSCjLWcJYl5Yj3TlERQDjIYbTuAKTolgHw4tAinWVLCzcZyOZG5iS8"
+      );
+
       if (data.data.role === "Admin") navigate("/admin/dashboard");
       if (data.data.role === "Salesman") navigate("/salesman/dashboard");
       if (data.data.role === "SalesManager")
